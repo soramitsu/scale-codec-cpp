@@ -3,12 +3,24 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "append_test_data.hpp"
 #include "scale/encode_append.hpp"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <boost/algorithm/hex.hpp>
 
 using ::testing::ContainerEq;
+
+namespace {
+  std::vector<uint8_t> unhex(std::string_view hex) {
+    std::vector<uint8_t> blob;
+    blob.reserve((hex.size() + 1) / 2);
+
+    boost::algorithm::unhex(hex.begin(), hex.end(), std::back_inserter(blob));
+    return blob;
+  }
+}  // namespace
 
 namespace scale {
 
@@ -37,5 +49,13 @@ namespace scale {
                 ContainerEq(std::vector<uint8_t>({8, 20, 1, 0, 0, 0, 2, 0, 0,
                                                   0, 3,  0, 0, 0, 4, 0, 0, 0,
                                                   5, 0,  0, 0, 2, 0, 0, 0})));
+  }
+
+  TEST(EncodeAppend, HugeBlob) {
+    auto val = unhex(data::val);
+    auto append_bytes = unhex(data::append_bytes);
+
+    auto res = append_or_new_vec(val, append_bytes);
+    ASSERT_TRUE(res.has_value());
   }
 }  // namespace scale

@@ -53,13 +53,12 @@ namespace scale {
       self_encoded.reserve(encoded_new_len + (self_encoded.size() - encoded_len)
                            + opaque_value.v.size());
 
-      // shift encoded new len by one element to give space for new Compact
-      // encoded length
-      const auto shift_size = 1;  // encoded_new_len - encoded_len is always 1
-      BOOST_ASSERT(encoded_new_len - encoded_len == shift_size);
+      // shift the data bytes in a container to give space for the new Compact
+      // encoded length prefix
+      const auto shift_size = encoded_new_len - encoded_len;
       self_encoded.resize(self_encoded.size() + shift_size);
       std::rotate(self_encoded.rbegin(),
-                  self_encoded.rbegin() + 1,
+                  self_encoded.rbegin() + shift_size,
                   self_encoded.rend());
     } else {
       // reserve place for existing and new vector
