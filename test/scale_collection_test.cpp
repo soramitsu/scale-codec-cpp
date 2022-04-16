@@ -59,8 +59,8 @@ TEST(Scale, encodeCollectionUint16) {
  * @then expected result is obtained
  */
 TEST(Scale, encodeCollectionUint32) {
-  std::vector<uint32_t> collection = {50462976, 117835012, 185207048,
-                                      252579084};
+  std::vector<uint32_t> collection = {
+      50462976, 117835012, 185207048, 252579084};
   ScaleEncoderStream s;
   ASSERT_NO_THROW((s << collection));
   auto &&out = s.to_vector();
@@ -232,4 +232,24 @@ TEST(Scale, DISABLED_encodeVeryLongCollectionUint8) {
   }
 
   ASSERT_EQ(stream.hasMore(1), false);
+}
+
+/**
+ * @given collection of 80 items of type uint8_t
+ * @when encodeCollection is applied
+ * @then expected result is obtained: header is 2 byte, items are 1 byte each
+ */
+TEST(Scale, encodeStdMap) {
+  // 80 items of value 1
+  std::map<uint8_t, uint8_t> collection;
+  for (uint8_t i = 0; i < 80; ++i) {
+    collection[i] = 1;
+  }
+  // auto match = ByteArray{65, 1};  // header
+  // match.insert(match.end(), collection.begin(), collection.end());
+  ScaleEncoderStream s;
+  ASSERT_NO_THROW((s << collection));
+  // auto &&out = s.to_vector();
+  // ASSERT_EQ(out.size(), 82);
+  // ASSERT_EQ(out, match);
 }

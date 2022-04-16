@@ -45,6 +45,21 @@ namespace scale {
     size_t size() const;
 
     /**
+     * @brief scale-encodes collection of same time items
+     * @tparam T type of item
+     * @param c collection to encode
+     * @return reference to stream
+     */
+    template <
+        class C,
+        typename T = std::decay_t<decltype(*std::begin(std::declval<C>()))>,
+        typename = std::enable_if_t<
+            std::is_integral_v<decltype(std::size(std::declval<C>()))>>>
+    ScaleEncoderStream &operator<<(const C &c) {
+      return encodeCollection(std::size(c), std::begin(c), std::end(c));
+    }
+
+    /**
      * @brief scale-encodes pair of values
      * @tparam F first value type
      * @tparam S second value type
@@ -111,28 +126,6 @@ namespace scale {
     }
 
     /**
-     * @brief scale-encodes collection of same time items
-     * @tparam T type of item
-     * @param c collection to encode
-     * @return reference to stream
-     */
-    template <class T>
-    ScaleEncoderStream &operator<<(const std::vector<T> &c) {
-      return encodeCollection(c.size(), c.begin(), c.end());
-    }
-
-    /**
-     * @brief scale-encodes collection of same time items
-     * @tparam T type of item
-     * @param c collection to encode
-     * @return reference to stream
-     */
-    template <class T>
-    ScaleEncoderStream &operator<<(const std::list<T> &c) {
-      return encodeCollection(c.size(), c.begin(), c.end());
-    }
-
-    /**
      * @brief scale-encodes optional value
      * @tparam T value type
      * @param v value to encode
@@ -150,16 +143,6 @@ namespace scale {
         return putByte(0u);
       }
       return putByte(1u) << *v;
-    }
-
-    /**
-     * @brief appends sequence of bytes
-     * @param v bytes sequence
-     * @return reference to stream
-     */
-    template <class T>
-    ScaleEncoderStream &operator<<(const gsl::span<T> &v) {
-      return encodeCollection(v.size(), v.begin(), v.end());
     }
 
     /**
