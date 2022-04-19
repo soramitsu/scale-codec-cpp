@@ -45,8 +45,8 @@ namespace scale {
     size_t size() const;
 
     /**
-     * @brief scale-encodes collection of same time items
-     * @tparam T type of item
+     * @brief scale-encodes collection of same type items
+     * @tparam C container type, T type of item
      * @param c collection to encode
      * @return reference to stream
      */

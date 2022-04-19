@@ -41,6 +41,42 @@ TEST(Scale, encodeCollectionUint16) {
   ScaleEncoderStream s;
   ASSERT_NO_THROW((s << collection));
   auto &&out = s.to_vector();
+
+  auto stream = ScaleDecoderStream(gsl::make_span(out));
+  std::vector<uint16_t> decoded;
+  stream >> decoded;
+  ASSERT_TRUE(std::equal(
+      decoded.begin(), decoded.end(), collection.begin(), collection.end()));
+
+  // clang-format off
+  ASSERT_EQ(out,
+          (ByteArray{
+              16,  // header
+            1, 0,  // first item
+            2, 0,  // second item
+            3, 0,  // third item
+            4, 0  // fourth item
+              }));
+  // clang-format on
+}
+
+/**
+ * @given collection of items of type uint16_t
+ * @when encodeCollection is applied
+ * @then expected result is obtained
+ */
+TEST(Scale, encodeDequeUint16) {
+  std::deque<uint16_t> collection = {1, 2, 3, 4};
+  ScaleEncoderStream s;
+  ASSERT_NO_THROW((s << collection));
+  auto &&out = s.to_vector();
+
+  auto stream = ScaleDecoderStream(gsl::make_span(out));
+  std::deque<uint16_t> decoded;
+  stream >> decoded;
+  ASSERT_TRUE(std::equal(
+      decoded.begin(), decoded.end(), collection.begin(), collection.end()));
+
   // clang-format off
   ASSERT_EQ(out,
           (ByteArray{
@@ -232,24 +268,4 @@ TEST(Scale, DISABLED_encodeVeryLongCollectionUint8) {
   }
 
   ASSERT_EQ(stream.hasMore(1), false);
-}
-
-/**
- * @given collection of 80 items of type uint8_t
- * @when encodeCollection is applied
- * @then expected result is obtained: header is 2 byte, items are 1 byte each
- */
-TEST(Scale, encodeStdMap) {
-  // 80 items of value 1
-  std::map<uint8_t, uint8_t> collection;
-  for (uint8_t i = 0; i < 80; ++i) {
-    collection[i] = 1;
-  }
-  // auto match = ByteArray{65, 1};  // header
-  // match.insert(match.end(), collection.begin(), collection.end());
-  ScaleEncoderStream s;
-  ASSERT_NO_THROW((s << collection));
-  // auto &&out = s.to_vector();
-  // ASSERT_EQ(out.size(), 82);
-  // ASSERT_EQ(out, match);
 }

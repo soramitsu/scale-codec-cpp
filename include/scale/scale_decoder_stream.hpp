@@ -168,15 +168,17 @@ namespace scale {
     ScaleDecoderStream &operator>>(CompactInteger &v);
 
     /**
-     * @brief decodes vector of items
+     * @brief decodes container of items (like vector, deque etc)
      * @tparam T item type
-     * @param v reference to vector
+     * @param v reference to container
      * @return reference to stream
      */
-    template <class T>
-    ScaleDecoderStream &operator>>(std::vector<T> &v) {
+    template <
+        class C,
+        typename T = std::decay_t<decltype(*std::begin(std::declval<C>()))>>
+    ScaleDecoderStream &operator>>(C &v) {
       using mutableT = std::remove_const_t<T>;
-      using size_type = typename std::list<T>::size_type;
+      using size_type = typename C::size_type;
 
       static_assert(std::is_default_constructible_v<mutableT>);
 
@@ -185,18 +187,18 @@ namespace scale {
 
       auto item_count = size.convert_to<size_type>();
 
-      std::vector<mutableT> vec;
+      C container;
       try {
-        vec.resize(item_count);
+        container.resize(item_count);
       } catch (const std::bad_alloc &) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
 
       for (size_type i = 0u; i < item_count; ++i) {
-        *this >> vec[i];
+        *this >> container[i];
       }
 
-      v = std::move(vec);
+      v = std::move(container);
       return *this;
     }
 
