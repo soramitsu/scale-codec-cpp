@@ -7,12 +7,16 @@
 #define SCALE_CORE_SCALE_SCALE_DECODER_STREAM_HPP
 
 #include <array>
+#include <iterator>
 #include <optional>
 
 #include <boost/variant.hpp>
 #include <gsl/span>
 
 #include <scale/detail/fixed_width_integer.hpp>
+#include <type_traits>
+#include <utility>
+#include "scale/types.hpp"
 
 namespace scale {
 
@@ -175,10 +179,14 @@ namespace scale {
      */
     template <
         class C,
-        typename T = std::decay_t<decltype(*std::begin(std::declval<C>()))>>
+        typename T = std::decay_t<decltype(*std::begin(std::declval<C>()))>,
+        typename S = typename C::size_type,
+        typename = std::enable_if_t<
+            std::disjunction_v<std::is_same<C, std::vector<T>>,
+                               std::is_same<C, std::deque<T>>>>>
     ScaleDecoderStream &operator>>(C &v) {
       using mutableT = std::remove_const_t<T>;
-      using size_type = typename C::size_type;
+      using size_type = S;
 
       static_assert(std::is_default_constructible_v<mutableT>);
 
@@ -196,6 +204,28 @@ namespace scale {
 
       for (size_type i = 0u; i < item_count; ++i) {
         *this >> container[i];
+      }
+
+      v = std::move(container);
+      return *this;
+    }
+
+    /**
+     * @brief Specification for vector<bool>
+     * @param v reference to container
+     * @return reference to stream
+     */
+    ScaleDecoderStream &operator>>(std::vector<bool> &v) {
+      CompactInteger size{0u};
+      *this >> size;
+
+      auto item_count = size.convert_to<size_t>();
+
+      std::vector<bool> container;
+      bool el;
+      for (size_t i = 0u; i < item_count; ++i) {
+        *this >> el;
+        container.push_back(el);
       }
 
       v = std::move(container);
@@ -232,6 +262,41 @@ namespace scale {
         *this >> lst.back();
       }
       v = std::move(lst);
+      return *this;
+    }
+
+    template <typename T, typename U = void>
+    struct is_map_like : std::false_type {};
+
+    template <typename T>
+    struct is_map_like<T,
+                       std::void_t<typename T::key_type,
+                                   typename T::mapped_type,
+                                   decltype(std::declval<T &>()[std::declval<
+                                       const typename T::key_type &>()])>>
+        : std::true_type {};
+
+    /**
+     * @brief decodes associative containers
+     * @tparam C item type
+     * @param c reference to the map
+     * @return reference to stream
+     */
+    template <class C, typename = std::enable_if_t<is_map_like<C>::value>>
+    ScaleDecoderStream &operator>>(C &c) {
+      CompactInteger size{0u};
+      *this >> size;
+
+      auto item_count = size.convert_to<size_t>();
+
+      C container;
+      typename C::value_type pair;
+      for (size_t i = 0u; i < item_count; ++i) {
+        *this >> pair;
+        container.emplace(pair);
+      }
+
+      c = std::move(container);
       return *this;
     }
 
