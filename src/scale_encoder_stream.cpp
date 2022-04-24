@@ -12,12 +12,12 @@
 namespace scale {
   namespace {
     // must not use these functions outside encodeInteger
-    inline void encodeFirstCategory(uint8_t value, ScaleEncoderStream &out) {
+    void encodeFirstCategory(uint8_t value, ScaleEncoderStream &out) {
       // only values from [0, kMinUint16) can be put here
       out << static_cast<uint8_t>(value << 2u);
     }
 
-    inline void encodeSecondCategory(uint16_t value, ScaleEncoderStream &out) {
+    void encodeSecondCategory(uint16_t value, ScaleEncoderStream &out) {
       // only values from [kMinUint16, kMinUint32) can be put here
       auto v = value;
       v <<= 2u;  // v *= 4
@@ -29,7 +29,7 @@ namespace scale {
       out << minor_byte << major_byte;
     }
 
-    inline void encodeThirdCategory(uint32_t value, ScaleEncoderStream &out) {
+    void encodeThirdCategory(uint32_t value, ScaleEncoderStream &out) {
       // only values from [kMinUint32, kMinBigInteger) can be put here
       uint32_t v = (value << 2u) + 2;
       scale::detail::encodeInteger<uint32_t>(v, out);
