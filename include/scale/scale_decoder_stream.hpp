@@ -171,7 +171,7 @@ namespace scale {
     ScaleDecoderStream &operator>>(CompactInteger &v);
 
     /**
-     * @brief decodes container of items (like vector, deque etc)
+     * @brief decodes container of items (vector or deque)
      * @tparam T item type
      * @param v reference to container
      * @return reference to stream
@@ -179,10 +179,9 @@ namespace scale {
     template <class C,
               typename T = typename C::value_type,
               typename S = typename C::size_type,
-              // typename = std::enable_if_t<is_vector_like<C>::value>,
               typename = std::enable_if_t<
-                  std::disjunction_v<std::is_same<C, std::vector<T>>,
-                                     std::is_same<C, std::deque<T>>>>>
+                  std::disjunction_v<std::is_convertible<C, std::vector<T>>,
+                                     std::is_convertible<C, std::deque<T>>>>>
     ScaleDecoderStream &operator>>(C &v) {
       using mutableT = std::remove_const_t<T>;
       using size_type = S;

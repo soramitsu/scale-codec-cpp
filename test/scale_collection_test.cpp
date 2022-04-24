@@ -92,6 +92,41 @@ TEST(Scale, encodeCollectionUint16) {
 }
 
 /**
+ * @given collection of items of type uint16_t, derived from std::vector
+ * @when encodeCollection is applied
+ * @then expected result is obtained
+ */
+TEST(Scale, encodeDerivedCollectionUint16) {
+  struct TestStruct : std::vector<uint16_t> {};
+  TestStruct collection;
+  collection.push_back(1);
+  collection.push_back(2);
+  collection.push_back(3);
+  collection.push_back(4);
+
+  ScaleEncoderStream s;
+  ASSERT_NO_THROW((s << collection));
+  auto &&out = s.to_vector();
+
+  auto stream = ScaleDecoderStream(gsl::make_span(out));
+  TestStruct decoded;
+  stream >> decoded;
+  ASSERT_TRUE(std::equal(
+      decoded.begin(), decoded.end(), collection.begin(), collection.end()));
+
+  // clang-format off
+  ASSERT_EQ(out,
+          (ByteArray{
+              16,  // header
+            1, 0,  // first item
+            2, 0,  // second item
+            3, 0,  // third item
+            4, 0  // fourth item
+              }));
+  // clang-format on
+}
+
+/**
  * @given collection of items of type uint16_t
  * @when encodeCollection is applied
  * @then expected result is obtained
