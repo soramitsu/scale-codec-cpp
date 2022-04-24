@@ -19,27 +19,6 @@
 #include "scale/types.hpp"
 
 namespace scale {
-
-  template <typename, typename = void>
-  struct is_iterable : std::false_type {};
-
-  template <typename T>
-  struct is_iterable<T,
-                     std::void_t<typename T::value_type,
-                                 decltype(std::begin(std::declval<T>())),
-                                 decltype(std::end(std::declval<T>()))>>
-      : std::true_type {};
-
-  template <typename, typename U = void>
-  struct is_map_like : std::false_type {};
-
-  template <typename T>
-  struct is_map_like<T,
-                     std::void_t<typename T::key_type,
-                                 typename T::mapped_type,
-                                 decltype(std::declval<T &>()[std::declval<
-                                     const typename T::key_type &>()])>>
-      : std::true_type {};
   class ScaleDecoderStream {
    public:
     // special tag to differentiate decoding streams from others
@@ -200,8 +179,10 @@ namespace scale {
     template <class C,
               typename T = typename C::value_type,
               typename S = typename C::size_type,
-              typename = std::enable_if_t<is_iterable<C>::value>,
-              typename = std::enable_if_t<!is_map_like<C>::value>>
+              // typename = std::enable_if_t<is_vector_like<C>::value>,
+              typename = std::enable_if_t<
+                  std::disjunction_v<std::is_same<C, std::vector<T>>,
+                                     std::is_same<C, std::deque<T>>>>>
     ScaleDecoderStream &operator>>(C &v) {
       using mutableT = std::remove_const_t<T>;
       using size_type = S;
@@ -282,6 +263,17 @@ namespace scale {
       v = std::move(lst);
       return *this;
     }
+
+    template <typename, typename U = void>
+    struct is_map_like : std::false_type {};
+
+    template <typename T>
+    struct is_map_like<T,
+                       std::void_t<typename T::key_type,
+                                   typename T::mapped_type,
+                                   decltype(std::declval<T &>()[std::declval<
+                                       const typename T::key_type &>()])>>
+        : std::true_type {};
 
     /**
      * @brief decodes associative containers
