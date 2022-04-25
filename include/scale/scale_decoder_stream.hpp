@@ -180,8 +180,8 @@ namespace scale {
               typename T = typename C::value_type,
               typename S = typename C::size_type,
               typename = std::enable_if_t<
-                  std::disjunction_v<std::is_convertible<C, std::vector<T>>,
-                                     std::is_convertible<C, std::deque<T>>>>>
+                  std::disjunction_v<std::is_base_of<std::vector<T>, C>,
+                                     std::is_base_of<std::deque<T>, C>>>>
     ScaleDecoderStream &operator>>(C &v) {
       using mutableT = std::remove_const_t<T>;
       using size_type = S;
