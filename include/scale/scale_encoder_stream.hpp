@@ -123,6 +123,14 @@ namespace scale {
       }
     }
 
+    ScaleEncoderStream &operator<<(const std::vector<bool> &v) {
+      *this << CompactInteger{v.size()};
+      for (bool el : v) {
+        *this << el;
+      }
+      return *this;
+    }
+
     /**
      * @brief scale-encodes pair of values
      * @tparam F first value type
