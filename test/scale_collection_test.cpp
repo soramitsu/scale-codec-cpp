@@ -91,13 +91,15 @@ TEST(Scale, encodeCollectionUint16) {
   // clang-format on
 }
 
+struct TestStruct : std::vector<uint16_t> {
+  static constexpr bool is_static_collection = false;
+};
 /**
  * @given collection of items of type uint16_t, derived from std::vector
  * @when encodeCollection is applied
  * @then expected result is obtained
  */
 TEST(Scale, encodeDerivedCollectionUint16) {
-  struct TestStruct : std::vector<uint16_t> {};
   TestStruct collection;
   collection.push_back(1);
   collection.push_back(2);

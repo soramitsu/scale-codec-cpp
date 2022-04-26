@@ -171,18 +171,67 @@ namespace scale {
     ScaleDecoderStream &operator>>(CompactInteger &v);
 
     /**
-     * @brief decodes container of items (vector or deque)
+     * @brief decodes custom container with is_static_collection bool class
+     * member
+     * @tparam C container type
+     * @param c reference to container
+     * @return reference to stream
+     */
+    template <class C,
+              typename T = typename C::value_type,
+              typename S = typename C::size_type,
+              typename = std::enable_if_t<C::is_static_collection
+                                          || !C::is_static_collection>>
+    ScaleDecoderStream &operator>>(C &c) {
+      using mutableT = std::remove_const_t<T>;
+      using size_type = S;
+
+      static_assert(std::is_default_constructible_v<mutableT>);
+
+      if constexpr (C::is_static_collection) {
+        C container;
+        for (auto &el : container) {
+          *this >> el;
+        }
+
+        c = std::move(container);
+        return *this;
+      } else {
+        return decodeVectorLike(c);
+      }
+    }
+
+    /**
+     * @brief decodes vector
+     * @tparam T item type
+     * @param v reference to container
+     * @return reference to stream
+     */
+    template <typename T>
+    ScaleDecoderStream &operator>>(std::vector<T> &v) {
+      return decodeVectorLike(v);
+    }
+    /**
+     * @brief decodes deque
+     * @tparam T item type
+     * @param v reference to container
+     * @return reference to stream
+     */
+    template <typename T>
+    ScaleDecoderStream &operator>>(std::deque<T> &v) {
+      return decodeVectorLike(v);
+    }
+
+    /**
+     * @brief decodes random access resizable container
      * @tparam T item type
      * @param v reference to container
      * @return reference to stream
      */
     template <class C,
               typename T = typename C::value_type,
-              typename S = typename C::size_type,
-              typename = std::enable_if_t<
-                  std::disjunction_v<std::is_base_of<std::vector<T>, C>,
-                                     std::is_base_of<std::deque<T>, C>>>>
-    ScaleDecoderStream &operator>>(C &v) {
+              typename S = typename C::size_type>
+    ScaleDecoderStream &decodeVectorLike(C &v) {
       using mutableT = std::remove_const_t<T>;
       using size_type = S;
 
