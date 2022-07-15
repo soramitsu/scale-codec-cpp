@@ -93,7 +93,7 @@ namespace scale {
      * @param span span to encode
      * @return reference to stream
      */
-    template <typename T, ssize_t S>
+    template <typename T, size_t S>
     ScaleEncoderStream &operator<<(const gsl::span<T, S> &span) {
       if constexpr (S == -1) {
         return encodeDynamicCollection(
