@@ -211,16 +211,16 @@ namespace scale {
     ScaleDecoderStream &operator>>(std::vector<T> &v) {
       return decodeVectorLike(v);
     }
-    /**
-     * @brief decodes deque
-     * @tparam T item type
-     * @param v reference to container
-     * @return reference to stream
-     */
-    template <typename T>
-    ScaleDecoderStream &operator>>(std::deque<T> &v) {
-      return decodeVectorLike(v);
-    }
+//    /**
+//     * @brief decodes deque
+//     * @tparam T item type
+//     * @param v reference to container
+//     * @return reference to stream
+//     */
+//    template <typename T>
+//    ScaleDecoderStream &operator>>(std::deque<T> &v) {
+//      return decodeVectorLike(v);
+//    }
 
     /**
      * @brief decodes random access resizable container

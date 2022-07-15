@@ -127,7 +127,7 @@ namespace scale {
 
   ScaleEncoderStream &ScaleEncoderStream::putByte(uint8_t v) {
     ++bytes_written_;
-    if (not drop_data_) {
+    if (!drop_data_) {
       stream_.push_back(v);
     }
     return *this;
