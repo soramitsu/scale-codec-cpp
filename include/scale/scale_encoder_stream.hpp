@@ -6,6 +6,11 @@
 #ifndef SCALE_CORE_SCALE_SCALE_ENCODER_STREAM_HPP
 #define SCALE_CORE_SCALE_SCALE_ENCODER_STREAM_HPP
 
+#if defined(_MSC_VER)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+
 #include <deque>
 #include <optional>
 
@@ -93,7 +98,7 @@ namespace scale {
      * @param span span to encode
      * @return reference to stream
      */
-    template <typename T, size_t S>
+    template <typename T, ssize_t S>
     ScaleEncoderStream &operator<<(const gsl::span<T, S> &span) {
       if constexpr (S == -1) {
         return encodeDynamicCollection(
