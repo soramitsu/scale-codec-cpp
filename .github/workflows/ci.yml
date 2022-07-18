@@ -30,7 +30,7 @@ jobs:
           DEVELOPER_DIR: /Applications/Xcode_11.7.app/Contents/Developer
         run: ./scripts/build.sh
 
-  Windows-MSVсC:
+  Windows-MSVC:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
