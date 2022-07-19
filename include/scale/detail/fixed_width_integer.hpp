@@ -72,7 +72,7 @@ namespace scale::detail {
     // and represent it as native-endian unsigned integer
     uint64_t v = 0u;
 
-    for (size_t i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size && stream.hasMore(1); ++i) {
       v += multiplier(i) * static_cast<uint64_t>(stream.nextByte());
     }
     // now we have an uint64 native-endian value
