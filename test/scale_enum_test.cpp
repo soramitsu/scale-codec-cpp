@@ -5,9 +5,9 @@
 
 #include <gtest/gtest.h>
 
+#include <scale/enum_traits.hpp>
 #include <scale/scale_decoder_stream.hpp>
 #include <scale/scale_encoder_stream.hpp>
-#include <scale/enum_traits.hpp>
 #include <scale/types.hpp>
 
 using scale::ByteArray;
@@ -27,7 +27,7 @@ enum class Foo : uint16_t { A = 0, B = 1, C = 2 };
 enum class Bar : int64_t { A = -32, B = 42, C = 0 };
 
 using MyTypes = ::testing::Types<Foo, Bar>;
-TYPED_TEST_CASE(EnumTest, MyTypes);
+TYPED_TEST_SUITE(EnumTest, MyTypes);
 
 template <>
 const std::string EnumTest<Foo>::enum_name{"Foo"};
@@ -91,7 +91,7 @@ template <>
 const std::vector<int64_t> InvalidEnumTest<Bar>::invalid_values{1, 2, 3};
 
 using MyTypes = ::testing::Types<Foo, Bar>;
-TYPED_TEST_CASE(InvalidEnumTest, MyTypes);
+TYPED_TEST_SUITE(InvalidEnumTest, MyTypes);
 
 TYPED_TEST(InvalidEnumTest, ThrowsOnInvalidValue) {
   for (auto const &param : TestFixture::invalid_values) {

@@ -57,7 +57,7 @@ TEST_P(CompactTest, DecodeSuccess) {
   ASSERT_EQ(v, value_match);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CompactTestCases,
     CompactTest,
     ::testing::Values(
@@ -146,7 +146,7 @@ TEST(ScaleCompactTest, EncodeOutOfRangeBigIntegerFails) {
       "531676044756160413302774714984450425759043258192756736");  // 2^536
 
   ScaleEncoderStream out;
-  ASSERT_ANY_THROW((out << v));     // value is too big, it is not encoded
+  ASSERT_ANY_THROW((out << v));          // value is too big, it is not encoded
   ASSERT_EQ(out.to_vector().size(), 0);  // nothing was written to buffer
 }
 
@@ -159,6 +159,5 @@ TEST(Scale, compactDecodeBigIntegerError) {
   auto bytes = ByteArray{255, 255, 255, 255};
   EXPECT_OUTCOME_FALSE_2(err, decode<CompactInteger>(bytes));
 
-  ASSERT_EQ(err.value(),
-            static_cast<int>(scale::DecodeError::NOT_ENOUGH_DATA));
+  ASSERT_EQ(err.value(), static_cast<int>(scale::DecodeError::NOT_ENOUGH_DATA));
 }
