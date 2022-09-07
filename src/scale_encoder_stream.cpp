@@ -125,6 +125,26 @@ namespace scale {
     return bytes_written_;
   }
 
+  ScaleEncoderStream &ScaleEncoderStream::operator<<(const BitVec &v) {
+    *this << CompactInteger{v.bits.size()};
+    size_t i = 0;
+    uint8_t byte = 0;
+    for (auto bit : v.bits) {
+      if (bit) {
+        byte |= 1 << (i % 8);
+      }
+      ++i;
+      if (i % 8 == 0) {
+        putByte(byte);
+        byte = 0;
+      }
+    }
+    if (i % 8 != 0) {
+      putByte(byte);
+    }
+    return *this;
+  }
+
   ScaleEncoderStream &ScaleEncoderStream::putByte(uint8_t v) {
     ++bytes_written_;
     if (not drop_data_) {

@@ -13,6 +13,7 @@
 #include <boost/variant.hpp>
 #include <gsl/span>
 
+#include <scale/bitvec.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
 #include <type_traits>
 #include <utility>
@@ -278,6 +279,11 @@ namespace scale {
       v = std::move(container);
       return *this;
     }
+
+    /**
+     * @brief scale-decodes BitVec
+     */
+    ScaleDecoderStream &operator>>(BitVec &v);
 
     /**
      * @brief decodes list of items

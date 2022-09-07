@@ -12,6 +12,7 @@
 #include <boost/variant.hpp>
 #include <gsl/span>
 
+#include <scale/bitvec.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
 
 namespace scale {
@@ -130,6 +131,11 @@ namespace scale {
       }
       return *this;
     }
+
+    /**
+     * @brief scale-encodes BitVec
+     */
+    ScaleEncoderStream &operator<<(const BitVec &v);
 
     /**
      * @brief scale-encodes pair of values

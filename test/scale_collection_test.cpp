@@ -8,8 +8,10 @@
 #include "scale/scale.hpp"
 #include "util/outcome.hpp"
 
+using scale::BitVec;
 using scale::ByteArray;
 using scale::CompactInteger;
+using scale::decode;
 using scale::encode;
 using scale::ScaleDecoderStream;
 using scale::ScaleEncoderStream;
@@ -60,6 +62,13 @@ TEST(Scale, encodeVectorOfBool) {
             0   // sixths item
               }));
   // clang-format on
+}
+
+TEST(Scale, encodeBitVec) {
+  auto v = BitVec{{true, true, false, false, false, false, true}};
+  auto encoded = ByteArray{(7 << 2), 0b01000011};
+  ASSERT_EQ(encode(v).value(), encoded);
+  ASSERT_EQ(decode<BitVec>(encoded).value(), v);
 }
 
 /**

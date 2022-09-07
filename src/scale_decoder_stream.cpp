@@ -110,6 +110,24 @@ namespace scale {
     return *this;
   }
 
+  ScaleDecoderStream &ScaleDecoderStream::operator>>(BitVec &v) {
+    v.bits.resize(static_cast<size_t>(decodeCompactInteger(*this)));
+    if (not hasMore((v.bits.size() + 7) / 8)) {
+      raise(DecodeError::NOT_ENOUGH_DATA);
+    }
+    size_t i = 0;
+    uint8_t byte = 0;
+    for (std::vector<bool>::reference bit : v.bits) {
+      if (i % 8 == 0) {
+        byte = nextByte();
+      }
+      bit = ((byte >> (i % 8)) & 1) != 0;
+      ++i;
+    }
+
+    return *this;
+  }
+
   ScaleDecoderStream &ScaleDecoderStream::operator>>(std::string &v) {
     std::vector<uint8_t> collection;
     *this >> collection;
