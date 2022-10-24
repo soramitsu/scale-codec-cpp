@@ -224,6 +224,15 @@ namespace scale {
     }
 
     /**
+     * @brief scale-encodes nullopt  value
+     * @param v - std::nullopt only
+     * @return reference to stream
+     */
+    ScaleEncoderStream &operator<<(const std::nullopt_t &) {
+      return putByte(0u);
+    }
+
+    /**
      * @brief scale-encodes array of items
      * @tparam T item type
      * @tparam size of the array

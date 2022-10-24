@@ -22,7 +22,7 @@ using scale::ScaleEncoderStream;
  * @when encodeOptional function is applied
  * @then expected result obtained
  */
-TEST(Scale, encodeOptional) {
+TEST(Scale, EncodeOptional) {
   // most simple case
   {
     ScaleEncoderStream s;
@@ -191,5 +191,33 @@ TEST(Scale, DecodeOptionalBoolSuccess) {
   ASSERT_EQ(res.b1, std::nullopt);
   ASSERT_EQ(res.b2, optbool(true));
   ASSERT_EQ(res.b3, optbool(false));
-  ASSERT_EQ(res.b4 , optbool(true));
+  ASSERT_EQ(res.b4, optbool(true));
+}
+
+/**
+ * @given encode stream
+ * @when encode nullopt by push it into encode stream
+ * @then obtained byte array with added only one zero-byte
+ */
+TEST(Scale, EncodeNullopt) {
+  ScaleEncoderStream s;
+  ASSERT_NO_THROW((s << std::nullopt));
+  ASSERT_EQ(s.to_vector(), (ByteArray{0}));
+}
+
+/**
+ * @given byte array with only one zero-byte
+ * @when decode it to any optional type
+ * @then obtained optional with nullopt value
+ */
+TEST(Scale, DecodeNullopt) {
+  ByteArray encoded_nullopt{0};
+
+  using OptionalInt = std::optional<int>;
+  ASSERT_OUTCOME_SUCCESS(int_opt, decode<OptionalInt>(encoded_nullopt));
+  EXPECT_EQ(int_opt, std::nullopt);
+
+  using OptionalTuple = std::optional<std::tuple<int, int>>;
+  ASSERT_OUTCOME_SUCCESS(tuple_opt, decode<OptionalTuple>(encoded_nullopt));
+  EXPECT_EQ(tuple_opt, std::nullopt);
 }
