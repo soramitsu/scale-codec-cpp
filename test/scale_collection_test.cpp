@@ -367,9 +367,8 @@ TEST(Scale, encodeMapTest) {
       decoded.begin(), decoded.end(), collection.begin(), collection.end()));
 }
 
-template <size_t MaxSize,
-          template <typename...>
-          class BaseContainer,
+template <template <typename...> class BaseContainer,
+          size_t WithMaxSize,
           typename... Args>
 class SizeLimitedContainer : public BaseContainer<Args...> {
   using Base = BaseContainer<Args...>;
@@ -380,12 +379,13 @@ class SizeLimitedContainer : public BaseContainer<Args...> {
   using typename Base::size_type;
 
   size_type max_size() const {
-    return MaxSize;
+    return WithMaxSize;
   }
 };
 
-template <size_t MaxSize, typename... Args>
-using SizeLimitedVector = SizeLimitedContainer<MaxSize, std::vector, Args...>;
+template <size_t WithMaxSize, typename... Args>
+using SizeLimitedVector =
+    SizeLimitedContainer<std::vector, WithMaxSize, Args...>;
 
 /**
  * @given encoded 3-elements collection
