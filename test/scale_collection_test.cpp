@@ -12,6 +12,7 @@ using scale::BitVec;
 using scale::ByteArray;
 using scale::CompactInteger;
 using scale::decode;
+using scale::DecodeError;
 using scale::encode;
 using scale::ScaleDecoderStream;
 using scale::ScaleEncoderStream;
@@ -364,4 +365,63 @@ TEST(Scale, encodeMapTest) {
   stream >> decoded;
   ASSERT_TRUE(std::equal(
       decoded.begin(), decoded.end(), collection.begin(), collection.end()));
+}
+
+template <std::size_t MaxSize,
+          template <typename...>
+          class BaseContainer,
+          typename... Args>
+class SizeLimitedContainer : public BaseContainer<Args...> {
+  using Base = BaseContainer<Args...>;
+
+ public:
+  static constexpr bool is_static_collection = false;
+  using Base::Base;
+  using typename Base::size_type;
+
+  size_type max_size() const {
+    return MaxSize;
+  }
+};
+
+template <std::size_t MaxSize, typename... Args>
+using SizeLimitedVector = SizeLimitedContainer<MaxSize, std::vector, Args...>;
+
+/**
+ * @given encoded 3-elements collection
+ * @when decode it to collection limited by size 4, 3 and 2 max size
+ * @then if max_size is enough, it is done successful, and error otherwise
+ */
+TEST(Scale, decodeSizeLimitedCollection) {
+  std::vector<int> collection{1, 2, 3};
+
+  ScaleEncoderStream s;
+  ASSERT_NO_THROW((s << collection));
+  auto &&out = s.to_vector();
+
+  {
+    auto stream = ScaleDecoderStream(gsl::make_span(out));
+    SizeLimitedVector<4, int> decoded;
+    ASSERT_NO_THROW((stream >> decoded));
+    ASSERT_TRUE(std::equal(
+        decoded.begin(), decoded.end(), collection.begin(), collection.end()));
+  }
+  {
+    auto stream = ScaleDecoderStream(gsl::make_span(out));
+    SizeLimitedVector<3, int> decoded;
+    ASSERT_NO_THROW((stream >> decoded));
+    ASSERT_TRUE(std::equal(
+        decoded.begin(), decoded.end(), collection.begin(), collection.end()));
+  }
+  {
+    auto stream = ScaleDecoderStream(gsl::make_span(out));
+    SizeLimitedVector<2, int> decoded;
+
+    try {
+      stream >> decoded;
+      FAIL() << "Exception expected";
+    } catch (std::system_error &e) {
+      EXPECT_EQ(e.code(), DecodeError::TOO_MANY_ITEMS);
+    }
+  }
 }

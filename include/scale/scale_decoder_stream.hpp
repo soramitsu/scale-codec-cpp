@@ -242,6 +242,9 @@ namespace scale {
       *this >> size;
 
       auto item_count = size.convert_to<size_type>();
+      if (item_count > v.max_size()) {
+        raise(DecodeError::TOO_MANY_ITEMS);
+      }
 
       C container;
       try {
@@ -268,6 +271,9 @@ namespace scale {
       *this >> size;
 
       auto item_count = size.convert_to<size_t>();
+      if (item_count > v.max_size()) {
+        raise(DecodeError::TOO_MANY_ITEMS);
+      }
 
       std::vector<bool> container;
       bool el;
@@ -302,6 +308,9 @@ namespace scale {
       *this >> size;
 
       auto item_count = size.convert_to<size_type>();
+      if (item_count > v.max_size()) {
+        raise(DecodeError::TOO_MANY_ITEMS);
+      }
 
       std::list<T> lst;
       try {
@@ -341,6 +350,9 @@ namespace scale {
       *this >> size;
 
       auto item_count = size.convert_to<size_t>();
+      if (item_count > c.max_size()) {
+        raise(DecodeError::TOO_MANY_ITEMS);
+      }
 
       C container;
       typename C::value_type pair;
