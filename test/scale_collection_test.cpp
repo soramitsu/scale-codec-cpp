@@ -367,7 +367,7 @@ TEST(Scale, encodeMapTest) {
       decoded.begin(), decoded.end(), collection.begin(), collection.end()));
 }
 
-template <std::size_t MaxSize,
+template <size_t MaxSize,
           template <typename...>
           class BaseContainer,
           typename... Args>
@@ -384,7 +384,7 @@ class SizeLimitedContainer : public BaseContainer<Args...> {
   }
 };
 
-template <std::size_t MaxSize, typename... Args>
+template <size_t MaxSize, typename... Args>
 using SizeLimitedVector = SizeLimitedContainer<MaxSize, std::vector, Args...>;
 
 /**
