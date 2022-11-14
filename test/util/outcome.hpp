@@ -128,7 +128,7 @@
 
 #define _ASSERT_OUTCOME_SUCCESS_TRY(_result_, _expression_)             \
   auto &&_result_ = (_expression_);                                     \
-  if (not(_result_).has_value()) {                                      \
+  if (!(_result_).has_value()) {                                        \
     GTEST_FATAL_FAILURE_("Outcome of: " #_expression_)                  \
         << "  Actual:   Error '" << _result_.error().message() << "'\n" \
         << "Expected:   Success";                                       \
@@ -147,7 +147,7 @@
 #define ASSERT_OUTCOME_SOME_ERROR(_expression_)          \
   {                                                      \
     auto &&result = (_expression_);                      \
-    if (not result.has_error()) {                        \
+    if (!result.has_error()) {                           \
       GTEST_FATAL_FAILURE_("Outcome of: " #_expression_) \
           << "  Actual:   Success\n"                     \
           << "Expected:   Some error";                   \
@@ -182,7 +182,7 @@
 
 #define EXPECT_OUTCOME_SOME_ERROR(_result_, _expression_) \
   [[maybe_unused]] auto &&_result_ = (_expression_);      \
-  if (not _result_.has_error()) {                         \
+  if (!_result_.has_error()) {                            \
     GTEST_NONFATAL_FAILURE_("Outcome of: " #_expression_) \
         << "  Actual:   Success\n"                        \
         << "Expected:   Some error";                      \

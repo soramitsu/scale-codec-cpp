@@ -6,6 +6,11 @@
 #ifndef SCALE_CORE_SCALE_SCALE_ENCODER_STREAM_HPP
 #define SCALE_CORE_SCALE_SCALE_ENCODER_STREAM_HPP
 
+#if defined(_MSC_VER)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+
 #include <deque>
 #include <optional>
 

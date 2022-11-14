@@ -9,6 +9,7 @@
 #include <array>
 #include <iterator>
 #include <optional>
+#include <deque>
 
 #include <boost/variant.hpp>
 #include <gsl/span>
