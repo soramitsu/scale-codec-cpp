@@ -20,10 +20,10 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         build-essential \
         gcc-12 \
         g++-12 \
-        llvm-15-dev \
-        clang-15 \
-        clang-tidy-15 \
-        clang-format-15 \
+        llvm-14-dev \
+        clang-14 \
+        clang-tidy-14 \
+        clang-format-14 \
         make \
         git \
         ccache \
@@ -47,18 +47,18 @@ RUN set -e; \
     rm -rf /tmp/sonar*
 
 # set env
-ENV LLVM_ROOT=/usr/lib/llvm-15
-ENV LLVM_DIR=/usr/lib/llvm-15/lib/cmake/llvm/
+ENV LLVM_ROOT=/usr/lib/llvm-14
+ENV LLVM_DIR=/usr/lib/llvm-14/lib/cmake/llvm/
 ENV PATH=${LLVM_ROOT}/bin:${LLVM_ROOT}/share/clang:${PATH}
 ENV CC=gcc-12
 ENV CXX=g++-12
 
 # set default compilers and tools
-RUN update-alternatives --install /usr/bin/python       python       /usr/bin/python3              90 && \
-    update-alternatives --install /usr/bin/clang-tidy   clang-tidy   /usr/bin/clang-tidy-9         90 && \
-    update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-9       90 && \
-    update-alternatives --install /usr/bin/clang        clang        /usr/lib/llvm-9/bin/clang-9   90 && \
-    update-alternatives --install /usr/bin/clang++      clang++      /usr/bin/clang++-9            90 && \
-    update-alternatives --install /usr/bin/gcc          gcc          /usr/bin/gcc-9                90 && \
-    update-alternatives --install /usr/bin/g++          g++          /usr/bin/g++-9                90 && \
-    update-alternatives --install /usr/bin/gcov         gcov         /usr/bin/gcov-9               90
+RUN update-alternatives --install /usr/bin/python       python       /usr/bin/python3               90 && \
+    update-alternatives --install /usr/bin/clang-tidy   clang-tidy   /usr/bin/clang-tidy-14         90 && \
+    update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-14       90 && \
+    update-alternatives --install /usr/bin/clang        clang        /usr/lib/llvm-14/bin/clang-14  90 && \
+    update-alternatives --install /usr/bin/clang++      clang++      /usr/bin/clang++-14            90 && \
+    update-alternatives --install /usr/bin/gcc          gcc          /usr/bin/gcc-12                90 && \
+    update-alternatives --install /usr/bin/g++          g++          /usr/bin/g++-12                90 && \
+    update-alternatives --install /usr/bin/gcov         gcov         /usr/bin/gcov-12               90
