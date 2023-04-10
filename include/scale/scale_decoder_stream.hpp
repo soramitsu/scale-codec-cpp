@@ -7,7 +7,9 @@
 #define SCALE_CORE_SCALE_SCALE_DECODER_STREAM_HPP
 
 #include <array>
+#include <deque>
 #include <iterator>
+#include <list>
 #include <optional>
 
 #include <boost/variant.hpp>

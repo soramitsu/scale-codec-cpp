@@ -7,6 +7,7 @@
 #define SCALE_CORE_SCALE_SCALE_ENCODER_STREAM_HPP
 
 #include <deque>
+#include <list>
 #include <optional>
 
 #include <boost/variant.hpp>
