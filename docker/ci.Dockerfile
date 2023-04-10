@@ -18,12 +18,12 @@ RUN apt-get update && \
 # add repos for llvm and newer gcc and install docker
 RUN apt-get update && apt-get install --no-install-recommends -y \
         build-essential \
-        gcc-9 \
-        g++-9 \
-        llvm-9-dev \
-        clang-9 \
-        clang-tidy-9 \
-        clang-format-9 \
+        gcc-12 \
+        g++-12 \
+        llvm-15-dev \
+        clang-15 \
+        clang-tidy-15 \
+        clang-format-15 \
         make \
         git \
         ccache \
@@ -47,11 +47,11 @@ RUN set -e; \
     rm -rf /tmp/sonar*
 
 # set env
-ENV LLVM_ROOT=/usr/lib/llvm-9
-ENV LLVM_DIR=/usr/lib/llvm-9/lib/cmake/llvm/
+ENV LLVM_ROOT=/usr/lib/llvm-15
+ENV LLVM_DIR=/usr/lib/llvm-15/lib/cmake/llvm/
 ENV PATH=${LLVM_ROOT}/bin:${LLVM_ROOT}/share/clang:${PATH}
-ENV CC=gcc-9
-ENV CXX=g++-9
+ENV CC=gcc-12
+ENV CXX=g++-12
 
 # set default compilers and tools
 RUN update-alternatives --install /usr/bin/python       python       /usr/bin/python3              90 && \
