@@ -38,7 +38,7 @@ jobs:
           - name: "Linux: gcc-12"
             run: ./scripts/build.sh -DCMAKE_CXX_COMPILER=g++-12
           - name: "Linux: clang-15"
-            run: ./scripts/build.sh -DCMAKE_CXX_COMPILER=/usr/bin/clang++-15
+            run: ./scripts/build.sh -DCMAKE_CXX_COMPILER=/usr/local/bin/clang++-15
     name: "${{ matrix.options.name }}"
     runs-on: ubuntu-latest
     steps:
