@@ -27,7 +27,7 @@ jobs:
           key: ${{ github.job }}-${{ env.CACHE_VERSION }}
       - name: build
         env:
-          DEVELOPER_DIR: /Applications/Xcode_11.7.app/Contents/Developer
+          DEVELOPER_DIR: /Applications/Xcode_13.3.app/Contents/Developer
         run: ./scripts/build.sh
 
   Linux:
@@ -35,10 +35,10 @@ jobs:
       fail-fast: false
       matrix:
         options:
-          - name: "Linux: gcc-9"
-            run: ./scripts/build.sh -DCMAKE_CXX_COMPILER=g++-9
-          - name: "Linux: clang-10"
-            run: ./scripts/build.sh -DCMAKE_CXX_COMPILER=clang++-10
+          - name: "Linux: gcc-12"
+            run: ./scripts/build.sh -DCMAKE_CXX_COMPILER=g++-12
+          - name: "Linux: clang-15"
+            run: ./scripts/build.sh -DCMAKE_CXX_COMPILER=clang++-15
     name: "${{ matrix.options.name }}"
     runs-on: ubuntu-latest
     steps:
