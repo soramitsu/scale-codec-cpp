@@ -439,7 +439,7 @@ namespace scale {
       if (I == i) {
         T val;
         *this >> val;
-        v = std::forward<T>(val);
+        v = val;
         return;
       }
       if constexpr (sizeof...(Ts) > I + 1) {
