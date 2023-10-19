@@ -1,7 +1,8 @@
 /**
-* Copyright Soramitsu Co., Ltd. All Rights Reserved.
-* SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright Quadrivium LLC
+ * All Rights Reserved
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #ifndef SCALE_UNREACHABLE_HPP
 #define SCALE_UNREACHABLE_HPP
