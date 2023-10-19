@@ -118,7 +118,7 @@ template<class T>
 outcome::result<std::vector<uint8_t>> encode(T &&t);
 
 template <class T>
-outcome::result<T> decode(gsl::span<const uint8_t> span)
+outcome::result<T> decode(const RangeOfBytes auto& span)
 
 template <class T>
 outcome::result<T> decode(ScaleDecoderStream &s)  

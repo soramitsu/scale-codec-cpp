@@ -26,11 +26,11 @@ namespace scale {
    * @brief DecoderError enum provides codes of errors for Decoder methods
    */
   enum class DecodeError {
-    NOT_ENOUGH_DATA = 1,    ///< not enough data to decode value
-    UNEXPECTED_VALUE,       ///< unexpected value
-    TOO_MANY_ITEMS,         ///< too many items, cannot address them in memory
-    WRONG_TYPE_INDEX,       ///< wrong type index, cannot decode variant
-    INVALID_ENUM_VALUE      ///< enum value which doesn't belong to the enum
+    NOT_ENOUGH_DATA = 1,  ///< not enough data to decode value
+    UNEXPECTED_VALUE,     ///< unexpected value
+    TOO_MANY_ITEMS,       ///< too many items, cannot address them in memory
+    WRONG_TYPE_INDEX,     ///< wrong type index, cannot decode variant
+    INVALID_ENUM_VALUE    ///< enum value which doesn't belong to the enum
   };
 
 }  // namespace scale

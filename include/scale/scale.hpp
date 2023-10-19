@@ -11,12 +11,11 @@
 
 #include <boost/system/system_error.hpp>
 #include <boost/throw_exception.hpp>
-#include <gsl/span>
 
+#include <scale/enum_traits.hpp>
 #include <scale/outcome/outcome.hpp>
 #include <scale/scale_decoder_stream.hpp>
 #include <scale/scale_encoder_stream.hpp>
-#include <scale/enum_traits.hpp>
 
 #define SCALE_EMPTY_DECODER(TargetType)                             \
   template <typename Stream,                                        \
@@ -44,7 +43,7 @@ namespace scale {
    * @return encoded data
    */
   template <typename... Args>
-  outcome::result<std::vector<uint8_t>> encode(Args &&... args) {
+  outcome::result<std::vector<uint8_t>> encode(Args &&...args) {
     ScaleEncoderStream s{};
     try {
       (s << ... << std::forward<Args>(args));
@@ -61,9 +60,9 @@ namespace scale {
    * @return decoded T
    */
   template <class T>
-  outcome::result<T> decode(gsl::span<const uint8_t> span) {
+  outcome::result<T> decode(ConstSpanOfBytes data) {
     T t{};
-    ScaleDecoderStream s(span);
+    ScaleDecoderStream s(data);
     try {
       s >> t;
     } catch (std::system_error &e) {

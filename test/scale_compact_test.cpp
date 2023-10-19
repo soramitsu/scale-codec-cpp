@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <span>
+
 #include <gtest/gtest.h>
 
 #include <scale/scale.hpp>
@@ -52,7 +54,7 @@ TEST_P(CompactTest, EncodeSuccess) {
  */
 TEST_P(CompactTest, DecodeSuccess) {
   const auto &[value_match, bytes] = GetParam();
-  ScaleDecoderStream s(gsl::make_span(bytes));
+  ScaleDecoderStream s(bytes);
   CompactInteger v{};
   ASSERT_NO_THROW(s >> v);
   ASSERT_EQ(v, value_match);

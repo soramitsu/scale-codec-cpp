@@ -6,8 +6,6 @@
 
 #include "scale/scale_decoder_stream.hpp"
 
-#include <gsl/span>
-
 #include "scale/scale_error.hpp"
 #include "scale/types.hpp"
 
@@ -77,9 +75,6 @@ namespace scale {
       return CompactInteger{number};
     }
   }  // namespace
-
-  ScaleDecoderStream::ScaleDecoderStream(gsl::span<const uint8_t> span)
-      : span_{span}, current_iterator_{span_.begin()}, current_index_{0} {}
 
   std::optional<bool> ScaleDecoderStream::decodeOptionalBool() {
     auto byte = nextByte();

@@ -15,7 +15,7 @@ namespace scale {
    * Vector wrapper, that is scale encoded without prepended CompactInteger
    */
   struct EncodeOpaqueValue {
-    gsl::span<const uint8_t> v;
+    ConstSpanOfBytes v;
   };
 
   template <class Stream,
@@ -44,7 +44,12 @@ namespace scale {
    * @return success if input was appended to self_encoded, failure otherwise
    */
   outcome::result<void> append_or_new_vec(std::vector<uint8_t> &self_encoded,
-                                          gsl::span<const uint8_t> input);
+                                          ConstSpanOfBytes input);
+
+  inline outcome::result<void> append_or_new_vec(
+      std::vector<uint8_t> &self_encoded, const RangeOfBytes auto &input) {
+    return append_or_new_vec(self_encoded, ConstSpanOfBytes(input));
+  }
 }  // namespace scale
 
 #endif  // SCALE_CORE_SCALE_ENCODE_APPEND_HPP

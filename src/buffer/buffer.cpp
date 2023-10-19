@@ -43,14 +43,15 @@ namespace scale {
   }
 
   std::string_view Buffer::toString() const {
-    return std::string_view(reinterpret_cast<const char*>(data_.data()), data_.size()); // NOLINT
+    return {reinterpret_cast<const char *>(data_.data()),  // NOLINT
+            data_.size()};
   }
 
   bool Buffer::empty() const {
     return data_.empty();
   }
 
-  Buffer::Buffer(std::initializer_list<uint8_t> b) : data_(b) {}
+  Buffer::Buffer(std::initializer_list<uint8_t> il) : data_(il) {}
 
   Buffer::iterator Buffer::begin() {
     return data_.begin();
@@ -78,15 +79,12 @@ namespace scale {
     return Buffer{std::move(bytes)};
   }
 
-  Buffer::Buffer(std::vector<uint8_t> v) : data_(std::move(v)) {}
-  Buffer::Buffer(gsl::span<const uint8_t> s) : data_(s.begin(), s.end()) {}
+  Buffer::Buffer(std::vector<uint8_t> vector) : data_(std::move(vector)) {}
+  Buffer::Buffer(const RangeOfBytes auto &range)
+      : data_(range.begin(), range.end()) {}
 
   const std::vector<uint8_t> &Buffer::toVector() const {
     return data_;
-  }
-
-  bool Buffer::operator==(const Buffer &b) const noexcept {
-    return data_ == b.data_;
   }
 
   Buffer::const_iterator Buffer::begin() const {
@@ -107,16 +105,13 @@ namespace scale {
 
   Buffer::Buffer(size_t size, uint8_t byte) : data_(size, byte) {}
 
-  bool Buffer::operator==(const std::vector<uint8_t> &b) const noexcept {
-    return data_ == b;
+  bool Buffer::operator==(const RangeOfBytes auto &other) const noexcept {
+    return std::equal(data_.begin(), data_.end(), other.begin(), other.end());
   }
 
-  bool Buffer::operator==(gsl::span<const uint8_t> s) const noexcept {
-    return std::equal(data_.begin(), data_.end(), s.begin(), s.end());
-  }
-
-  bool Buffer::operator<(const Buffer &b) const noexcept {
-    return std::lexicographical_compare(begin(), end(), b.begin(), b.end());
+  bool Buffer::operator<(const RangeOfBytes auto &other) const noexcept {
+    return std::lexicographical_compare(
+        begin(), end(), other.begin(), other.end());
   }
 
   template <typename T>
@@ -126,16 +121,8 @@ namespace scale {
     return *this;
   }
 
-  Buffer &Buffer::put(std::string_view s) {
-    return putRange(s.begin(), s.end());
-  }
-
-  Buffer &Buffer::put(const std::vector<uint8_t> &v) {
-    return putRange(v.begin(), v.end());
-  }
-
-  Buffer &Buffer::put(gsl::span<const uint8_t> s) {
-    return putRange(s.begin(), s.end());
+  Buffer &Buffer::put(const RangeOfBytes auto &range) {
+    return putRange(range.begin(), range.end());
   }
 
   Buffer &Buffer::putBytes(const uint8_t *begin, const uint8_t *end) {
@@ -176,15 +163,15 @@ namespace scale {
   }
 
   Buffer Buffer::subbuffer(size_t offset, size_t length) const {
-    return Buffer(gsl::make_span(*this).subspan(offset, length));
+    return Buffer(ConstSpanOfBytes(*this).subspan(offset, length));
   }
 
   Buffer &Buffer::operator+=(const Buffer &other) noexcept {
-    return this->putBuffer(other);
+    return this->put(other);
   }
 
   std::ostream &operator<<(std::ostream &os, const Buffer &buffer) {
     return os << buffer.toHex();
   }
 
-}  // namespace scale::common
+}  // namespace scale

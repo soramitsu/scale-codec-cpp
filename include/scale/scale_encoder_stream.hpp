@@ -12,10 +12,10 @@
 #include <optional>
 
 #include <boost/variant.hpp>
-#include <gsl/span>
 
 #include <scale/bitvec.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
+#include <scale/types.hpp>
 
 namespace scale {
 
@@ -90,14 +90,14 @@ namespace scale {
     }
 
     /**
-     * @brief scale-encodes gsl::span
+     * @brief scale-encodes span
      * @tparam T type of item
      * @tparam S container size (-1 for dynamic)
      * @param span span to encode
      * @return reference to stream
      */
     template <typename T, ssize_t S>
-    ScaleEncoderStream &operator<<(const gsl::span<T, S> &span) {
+    ScaleEncoderStream &operator<<(const std::span<T, S> &span) {
       if constexpr (S == -1) {
         return encodeDynamicCollection(
             std::size(span), std::begin(span), std::end(span));
@@ -107,24 +107,35 @@ namespace scale {
     }
 
     /**
-     * @brief scale-encodes collection of same type items, requires bool tag
-     * is_static_collection
-     * @tparam C container type, T type of item
-     * @param c collection to encode
+     * @brief scale-encodes range
+     * @param range range to encode
      * @return reference to stream
      */
-    template <class C,
-              typename T = typename C::value_type,
-              typename = std::enable_if_t<C::is_static_collection
-                                          || !C::is_static_collection>>
-    ScaleEncoderStream &operator<<(const C &c) {
-      if constexpr (C::is_static_collection) {
-        return encodeStaticCollection(c);
-      } else {
-        return encodeDynamicCollection(
-            std::size(c), std::begin(c), std::end(c));
-      }
+    ScaleEncoderStream &operator<<(std::ranges::range auto range) {
+      return encodeDynamicCollection(
+          std::size(range), std::begin(range), std::end(range));
     }
+
+    //    /**
+    //     * @brief scale-encodes collection of same type items, requires bool
+    //     tag
+    //     * is_static_collection
+    //     * @tparam C container type, T type of item
+    //     * @param c collection to encode
+    //     * @return reference to stream
+    //     */
+    //    template <class C,
+    //              typename T = typename C::value_type,
+    //              typename = std::enable_if_t<C::is_static_collection
+    //                                          || !C::is_static_collection>>
+    //    ScaleEncoderStream &operator<<(const C &c) {
+    //      if constexpr (C::is_static_collection) {
+    //        return encodeStaticCollection(c);
+    //      } else {
+    //        return encodeDynamicCollection(
+    //            std::size(c), std::begin(c), std::end(c));
+    //      }
+    //    }
 
     ScaleEncoderStream &operator<<(const std::vector<bool> &v) {
       *this << CompactInteger{v.size()};

@@ -27,8 +27,8 @@ OUTCOME_CPP_DEFINE_CATEGORY_3(scale, DecodeError, e) {
     case DecodeError::UNEXPECTED_VALUE:
       return "SCALE decode: unexpected value occurred";
     case DecodeError::TOO_MANY_ITEMS:
-      return "SCALE decode: collection has too many items or memory is out or data is "
-             "damaged, unable to unpack";
+      return "SCALE decode: collection has too many items or memory is out or "
+             "data is damaged, unable to unpack";
     case DecodeError::WRONG_TYPE_INDEX:
       return "SCALE decode: wrong type index, cannot decode variant";
     case DecodeError::INVALID_ENUM_VALUE:

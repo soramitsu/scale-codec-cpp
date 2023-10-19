@@ -24,4 +24,4 @@ class Unreachable_At_Line {};
 
 #undef GCC_VERSION
 
-#endif // SCALE_UNREACHABLE_HPP
+#endif  // SCALE_UNREACHABLE_HPP

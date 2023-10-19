@@ -10,9 +10,10 @@
 #include <string_view>
 #include <vector>
 
-#include <gsl/span>
+#include <boost/algorithm/hex.hpp>
 
 #include <scale/outcome/outcome.hpp>
+#include <scale/types.hpp>
 
 namespace scale {
 
@@ -38,7 +39,7 @@ namespace scale {
    * @param len length of bytes
    * @return hexstring
    */
-  std::string hex_upper(gsl::span<const uint8_t> bytes) noexcept;
+  std::string hex_upper(const RangeOfBytes auto &bytes) noexcept;
 
   /**
    * @brief Converts bytes to hex representation
@@ -46,14 +47,18 @@ namespace scale {
    * @param len length of bytes
    * @return hexstring
    */
-  std::string hex_lower(gsl::span<const uint8_t> bytes) noexcept;
+  std::string hex_lower(const RangeOfBytes auto &bytes) noexcept {
+    std::string res(bytes.size() * 2, '\x00');
+    boost::algorithm::hex_lower(bytes.begin(), bytes.end(), res.begin());
+    return res;
+  }
 
   /**
    * @brief Converts bytes to hex representation with prefix 0x
    * @param array bytes
    * @return hexstring
    */
-  std::string hex_lower_0x(gsl::span<const uint8_t> bytes) noexcept;
+  std::string hex_lower_0x(RangeOfBytes auto bytes) noexcept;
 
   /**
    * @brief Converts hex representation to bytes
@@ -106,7 +111,7 @@ namespace scale {
     return result;
   }
 
-}  // namespace scale::common
+}  // namespace scale
 
 OUTCOME_HPP_DECLARE_ERROR_2(scale, UnhexError)
 

@@ -46,7 +46,7 @@ TEST(Scale, encodeVectorOfBool) {
   ASSERT_NO_THROW((s << collection));
   auto &&out = s.to_vector();
 
-  auto stream = ScaleDecoderStream(gsl::make_span(out));
+  auto stream = ScaleDecoderStream(out);
   std::vector<bool> decoded;
   stream >> decoded;
   ASSERT_TRUE(std::equal(
@@ -84,7 +84,7 @@ TEST(Scale, encodeCollectionUint16) {
   ASSERT_NO_THROW((s << collection));
   auto &&out = s.to_vector();
 
-  auto stream = ScaleDecoderStream(gsl::make_span(out));
+  auto stream = ScaleDecoderStream(out);
   std::vector<uint16_t> decoded;
   stream >> decoded;
   ASSERT_TRUE(std::equal(
@@ -121,7 +121,7 @@ TEST(Scale, encodeDerivedCollectionUint16) {
   ASSERT_NO_THROW((s << collection));
   auto &&out = s.to_vector();
 
-  auto stream = ScaleDecoderStream(gsl::make_span(out));
+  auto stream = ScaleDecoderStream(out);
   TestStruct decoded;
   stream >> decoded;
   ASSERT_TRUE(std::equal(
@@ -150,7 +150,7 @@ TEST(Scale, encodeDequeUint16) {
   ASSERT_NO_THROW((s << collection));
   auto &&out = s.to_vector();
 
-  auto stream = ScaleDecoderStream(gsl::make_span(out));
+  auto stream = ScaleDecoderStream(out);
   std::deque<uint16_t> decoded;
   stream >> decoded;
   ASSERT_TRUE(std::equal(
@@ -237,7 +237,7 @@ TEST(Scale, encodeLongCollectionUint16) {
   // header takes 4 byte,
   // first 4 bytes represent le-encoded value 2^16 + 2
   // which is compact-encoded value 2^14 = 16384
-  auto stream = ScaleDecoderStream(gsl::make_span(out));
+  auto stream = ScaleDecoderStream(out);
   CompactInteger res{};
   ASSERT_NO_THROW(stream >> res);
   ASSERT_EQ(res, 16384);
@@ -285,7 +285,7 @@ TEST(Scale, encodeVeryLongCollectionUint8) {
   // which means that number of items requires 4 bytes
   // 3 next bytes are 0, and the last 4-th == 2^6 == 64
   // which is compact-encoded value 2^14 = 16384
-  auto stream = ScaleDecoderStream(gsl::make_span(out));
+  auto stream = ScaleDecoderStream(out);
   CompactInteger bi{};
   ASSERT_NO_THROW(stream >> bi);
   ASSERT_EQ(bi, 1048576);
@@ -331,7 +331,7 @@ TEST(Scale, DISABLED_encodeVeryLongCollectionUint8) {
   // requires 4 bytes
   // 3 next bytes are 0, and the last 4-th == 2^6 == 64
   // which is compact-encoded value 2^14 = 16384
-  auto stream = ScaleDecoderStream(gsl::make_span(out));
+  auto stream = ScaleDecoderStream(out);
   CompactInteger bi{};
   ASSERT_NO_THROW(stream >> bi);
   ASSERT_EQ(bi, length);
@@ -361,7 +361,7 @@ TEST(Scale, encodeMapTest) {
   ASSERT_NO_THROW((s << collection));
   auto &&out = s.to_vector();
 
-  auto stream = ScaleDecoderStream(gsl::make_span(out));
+  auto stream = ScaleDecoderStream(out);
   std::map<uint32_t, uint32_t> decoded;
   stream >> decoded;
   ASSERT_TRUE(std::equal(
@@ -401,21 +401,21 @@ TEST(Scale, decodeSizeLimitedCollection) {
   auto &&out = s.to_vector();
 
   {
-    auto stream = ScaleDecoderStream(gsl::make_span(out));
+    auto stream = ScaleDecoderStream(out);
     SizeLimitedVector<4, int> decoded;
     ASSERT_NO_THROW((stream >> decoded));
     ASSERT_TRUE(std::equal(
         decoded.begin(), decoded.end(), collection.begin(), collection.end()));
   }
   {
-    auto stream = ScaleDecoderStream(gsl::make_span(out));
+    auto stream = ScaleDecoderStream(out);
     SizeLimitedVector<3, int> decoded;
     ASSERT_NO_THROW((stream >> decoded));
     ASSERT_TRUE(std::equal(
         decoded.begin(), decoded.end(), collection.begin(), collection.end()));
   }
   {
-    auto stream = ScaleDecoderStream(gsl::make_span(out));
+    auto stream = ScaleDecoderStream(out);
     SizeLimitedVector<2, int> decoded;
 
     try {

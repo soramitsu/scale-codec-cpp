@@ -8,7 +8,6 @@
 
 #include "scale/scale.hpp"
 
-#include <gsl/span>
 #include "util/outcome.hpp"
 
 using scale::ByteArray;

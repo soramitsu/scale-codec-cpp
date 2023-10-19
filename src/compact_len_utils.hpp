@@ -15,7 +15,7 @@ namespace scale::compact {
     size_t counter = 0;
     do {
       ++counter;
-    } while((v >>= 8) != 0);
+    } while ((v >>= 8) != 0);
     return counter;
   }
 

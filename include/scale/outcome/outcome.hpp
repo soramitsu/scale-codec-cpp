@@ -8,8 +8,8 @@
 #define SCALE_OUTCOME_OUTCOME
 
 #pragma warning(push)
-#pragma warning(disable:4583)
-#pragma warning(disable:4582)
+#pragma warning(disable : 4583)
+#pragma warning(disable : 4582)
 #include <boost/outcome/outcome.hpp>
 #include <boost/outcome/try.hpp>
 #pragma warning(pop)
@@ -18,13 +18,14 @@
 
 namespace scale::outcome {
 
-using namespace BOOST_OUTCOME_V2_NAMESPACE;
+  using namespace BOOST_OUTCOME_V2_NAMESPACE;
 
-template <class R, class S = std::error_code,
-          class NoValuePolicy = policy::default_policy<R, S, void>>
-using result = basic_result<R, S, NoValuePolicy>;
+  template <class R,
+            class S = std::error_code,
+            class NoValuePolicy = policy::default_policy<R, S, void>>
+  using result = basic_result<R, S, NoValuePolicy>;
 
-} // namespace scale::outcome
+}  // namespace scale::outcome
 
 // To define OUTCOME_TRY macro, we will need to create OUTCOME_TRY_1 and
 // OUTCOME_TRY_2 depending on number of arguments

@@ -32,5 +32,4 @@ inline std::vector<uint8_t> operator""_unhex(const char *c, size_t s) {
   return scale::unhex(std::string_view(c, s)).value();
 }
 
-
 #endif  // SCAKE_TESTUTIL_LITERALS_HPP

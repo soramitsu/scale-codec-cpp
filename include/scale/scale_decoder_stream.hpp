@@ -12,15 +12,14 @@
 #include <iterator>
 #include <list>
 #include <optional>
+#include <utility>
 
 #include <boost/variant.hpp>
-#include <gsl/span>
 
 #include <scale/bitvec.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
+#include <scale/types.hpp>
 #include <type_traits>
-#include <utility>
-#include "scale/types.hpp"
 
 namespace scale {
   class ScaleDecoderStream {
@@ -28,7 +27,8 @@ namespace scale {
     // special tag to differentiate decoding streams from others
     static constexpr auto is_decoder_stream = true;
 
-    explicit ScaleDecoderStream(gsl::span<const uint8_t> span);
+    explicit ScaleDecoderStream(ConstSpanOfBytes data)
+        : span_{data}, current_iterator_{span_.begin()}, current_index_{0} {}
 
     /**
      * @brief scale-decodes pair of values
@@ -405,7 +405,7 @@ namespace scale {
      */
     uint8_t nextByte();
 
-    using ByteSpan = gsl::span<const uint8_t>;
+    using ByteSpan = ConstSpanOfBytes;
     using SpanIterator = ByteSpan::iterator;
     using SizeType = ByteSpan::size_type;
 

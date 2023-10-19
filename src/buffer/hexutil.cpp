@@ -6,7 +6,7 @@
 
 #include "scale/buffer/hexutil.hpp"
 
-#include <gsl/span>
+#include <string>
 
 #include <boost/algorithm/hex.hpp>
 
@@ -45,25 +45,20 @@ namespace scale {
     return str;
   }
 
-  std::string hex_upper(const gsl::span<const uint8_t> bytes) noexcept {
+  std::string hex_upper(const RangeOfBytes auto &bytes) noexcept {
     std::string res(bytes.size() * 2, '\x00');
     boost::algorithm::hex(bytes.begin(), bytes.end(), res.begin());
     return res;
   }
 
-  std::string hex_lower(const gsl::span<const uint8_t> bytes) noexcept {
-    std::string res(bytes.size() * 2, '\x00');
-    boost::algorithm::hex_lower(bytes.begin(), bytes.end(), res.begin());
-    return res;
-  }
-
-  std::string hex_lower_0x(gsl::span<const uint8_t> bytes) noexcept {
+  std::string hex_lower_0x(const RangeOfBytes auto &bytes) noexcept {
     constexpr size_t prefix_len = sizeof("0x") - 1;
 
     std::string res(bytes.size() * 2 + prefix_len, '\x00');
     res.replace(0, prefix_len, "0x", prefix_len);
 
-    boost::algorithm::hex_lower(bytes.begin(), bytes.end(), res.begin() + prefix_len);
+    boost::algorithm::hex_lower(
+        bytes.begin(), bytes.end(), res.begin() + prefix_len);
     return res;
   }
 

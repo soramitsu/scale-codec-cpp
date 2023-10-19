@@ -58,7 +58,6 @@ TEST(Scale, EncodeDecodeTupleSuccess) {
       std::make_tuple(uint8_t(1), uint16_t(3), uint8_t(2), uint32_t(4));
 
   EXPECT_OUTCOME_TRUE(actual_bytes, scale::encode(tuple));
-  EXPECT_OUTCOME_TRUE(decoded,
-                      scale::decode<tuple_type_t>(actual_bytes));
+  EXPECT_OUTCOME_TRUE(decoded, scale::decode<tuple_type_t>(actual_bytes));
   ASSERT_EQ(decoded, tuple);
 }

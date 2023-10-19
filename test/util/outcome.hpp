@@ -9,8 +9,8 @@
 
 #include <gtest/gtest.h>
 
-#include <scale/visitor.hpp>
 #include <scale/outcome/outcome.hpp>
+#include <scale/visitor.hpp>
 
 #define PP_CAT(a, b) PP_CAT_I(a, b)
 #define PP_CAT_I(a, b) PP_CAT_II(~, a##b)

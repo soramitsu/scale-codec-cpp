@@ -102,6 +102,6 @@ namespace scale::detail {
     I sv = -static_cast<I>((~v) + 1);
     return sv;
   }
-} // namespace scale::detail
+}  // namespace scale::detail
 
-#endif // SCALE_SCALE_UTIL_HPP
+#endif  // SCALE_SCALE_UTIL_HPP
