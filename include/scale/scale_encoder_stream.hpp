@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_CORE_SCALE_SCALE_ENCODER_STREAM_HPP
-#define SCALE_CORE_SCALE_SCALE_ENCODER_STREAM_HPP
+#pragma once
 
 #include <deque>
 #include <list>
@@ -397,5 +396,3 @@ namespace scale {
   }
 
 }  // namespace scale
-
-#endif  // SCALE_CORE_SCALE_SCALE_ENCODER_STREAM_HPP

@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_APPEND_TEST_DATA_HPP
-#define SCALE_APPEND_TEST_DATA_HPP
+#pragma once
 
 namespace data {
   constexpr auto append_bytes =
@@ -15786,5 +15785,3 @@ namespace data {
        "000000");
 
 }  // namespace data
-
-#endif  // SCALE_APPEND_TEST_DATA_HPP

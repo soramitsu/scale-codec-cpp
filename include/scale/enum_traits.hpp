@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_ENUM_TRAITS_HPP
-#define SCALE_ENUM_TRAITS_HPP
+#pragma once
 
 #include <type_traits>
 
@@ -101,5 +100,3 @@ namespace scale {
   }
 
 }  // namespace scale
-
-#endif  // SCALE_ENUM_TRAITS_HPP

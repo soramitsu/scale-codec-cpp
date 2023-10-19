@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_OUTCOME_REGISTER_HPP
-#define SCALE_OUTCOME_REGISTER_HPP
+#pragma once
 
 #include <string>
 #include <system_error>  // bring in std::error_code et al
@@ -119,6 +118,3 @@ namespace scale::__outcome_detail {
 /// with 1 arg : OUTCOME_CPP_DEFINE_CATEGORY_1
 #define OUTCOME_HPP_DECLARE_ERROR(...)                                         \
   OUTCOME_HPP_DECLARE_ERROR_2(__VA_ARGS__)
-
-
-#endif // SCALE_OUTCOME_REGISTER_HPP

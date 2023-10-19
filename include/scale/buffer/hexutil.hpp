@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_HEXUTIL_HPP
-#define SCALE_HEXUTIL_HPP
+#pragma once
 
 #include <string_view>
 #include <vector>
@@ -114,5 +113,3 @@ namespace scale {
 }  // namespace scale
 
 OUTCOME_HPP_DECLARE_ERROR_2(scale, UnhexError)
-
-#endif  // SCALE_HEXUTIL_HPP

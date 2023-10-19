@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_SCALE_DETAIL_VARIANT_HPP
-#define SCALE_SCALE_DETAIL_VARIANT_HPP
+#pragma once
 
 #include <boost/variant.hpp>
 
@@ -117,5 +116,3 @@ namespace scale::detail {
   }
 
 }  // namespace scale::detail
-
-#endif  // SCALE_SCALE_DETAIL_VARIANT_HPP

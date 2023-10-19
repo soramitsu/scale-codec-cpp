@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_GTEST_OUTCOME_UTIL_HPP
-#define SCALE_GTEST_OUTCOME_UTIL_HPP
+#pragma once
 
 #include <gtest/gtest.h>
 
@@ -204,5 +203,3 @@
         << "Expected:   Error '"                                          \
         << outcome::result<void>(_error_).error().message() << "'";       \
   }
-
-#endif  // SCALE_GTEST_OUTCOME_UTIL_HPP

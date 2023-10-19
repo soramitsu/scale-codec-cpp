@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_VISITOR_HPP
-#define SCALE_VISITOR_HPP
+#pragma once
 
 #include <type_traits>  // for std::decay
 #include <utility>      // for std::forward
@@ -99,5 +98,3 @@ namespace scale {
     return match(std::forward<T>(t), make_visitor(std::forward<Fs>(fs)...));
   }
 }  // namespace scale
-
-#endif  // SCALE_VISITOR_HPP

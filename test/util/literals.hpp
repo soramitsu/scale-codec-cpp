@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_TESTUTIL_LITERALS_HPP
-#define SCALE_TESTUTIL_LITERALS_HPP
+#pragma once
 
 #include <scale/buffer/buffer.hpp>
 #include <scale/buffer/hexutil.hpp>
@@ -31,5 +30,3 @@ inline std::vector<uint8_t> operator""_unhex(const char *c, size_t s) {
     return scale::unhexWith0x(std::string_view(c, s)).value();
   return scale::unhex(std::string_view(c, s)).value();
 }
-
-#endif  // SCAKE_TESTUTIL_LITERALS_HPP

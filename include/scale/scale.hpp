@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_SCALE_HPP
-#define SCALE_SCALE_HPP
+#pragma once
 
 #include <vector>
 
@@ -72,5 +71,3 @@ namespace scale {
     return outcome::success(std::move(t));
   }
 }  // namespace scale
-
-#endif  // SCALE_SCALE_HPP

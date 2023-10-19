@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_OUTCOME_OUTCOME
-#define SCALE_OUTCOME_OUTCOME
+#pragma once
 
 #pragma warning(push)
 #pragma warning(disable : 4583)
@@ -36,5 +35,3 @@ namespace scale::outcome {
 #define GET_MACRO(_1, _2, NAME, ...) NAME
 #define OUTCOME_TRY(...) \
   GET_MACRO(__VA_ARGS__, OUTCOME_TRY_2, OUTCOME_TRY_1)(__VA_ARGS__)
-
-#endif // SCALE_OUTCOME_OUTCOME

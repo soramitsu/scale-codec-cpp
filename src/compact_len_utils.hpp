@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_CORE_SCALE_COMPACT_LEN_UTILS_HPP
-#define SCALE_CORE_SCALE_COMPACT_LEN_UTILS_HPP
+#pragma once
 
 #include "scale/types.hpp"
 
@@ -32,5 +31,3 @@ namespace scale::compact {
     return countBytes(val);
   }
 }  // namespace scale::compact
-
-#endif  // SCALE_CORE_SCALE_COMPACT_LEN_UTILS_HPP

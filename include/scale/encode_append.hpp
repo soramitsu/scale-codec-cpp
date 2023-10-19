@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_CORE_SCALE_ENCODE_APPEND_HPP
-#define SCALE_CORE_SCALE_ENCODE_APPEND_HPP
+#pragma once
 
 #include <scale/scale.hpp>
 
@@ -51,5 +50,3 @@ namespace scale {
     return append_or_new_vec(self_encoded, ConstSpanOfBytes(input));
   }
 }  // namespace scale
-
-#endif  // SCALE_CORE_SCALE_ENCODE_APPEND_HPP

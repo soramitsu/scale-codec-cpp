@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_SCALE_TYPES_HPP
-#define SCALE_SCALE_TYPES_HPP
+#pragma once
 
 #include <cstdint>
 #include <ranges>
@@ -58,4 +57,3 @@ namespace scale::compact {
   };
 
 }  // namespace scale::compact
-#endif  // SCALE_SCALE_TYPES_HPP

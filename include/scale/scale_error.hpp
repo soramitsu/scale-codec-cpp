@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef SCALE_SCALE_ERROR_HPP
-#define SCALE_SCALE_ERROR_HPP
+#pragma once
 
 #include <scale/outcome/outcome.hpp>
 
@@ -37,5 +36,3 @@ namespace scale {
 
 OUTCOME_HPP_DECLARE_ERROR_2(scale, EncodeError)
 OUTCOME_HPP_DECLARE_ERROR_2(scale, DecodeError)
-
-#endif  // SCALE_SCALE_ERROR_HPP
