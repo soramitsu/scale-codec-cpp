@@ -174,92 +174,43 @@ namespace scale {
     ScaleDecoderStream &operator>>(CompactInteger &v);
 
     /**
-     * @brief decodes custom container with is_static_collection bool class
-     * member
-     * @tparam C container type
-     * @param c reference to container
+     * @brief scale-decodes to any static (fixed-size) collection
+     * @param collection decoding collection to
      * @return reference to stream
      */
-    template <class C,
-              typename T = typename C::value_type,
-              typename S = typename C::size_type,
-              typename = std::enable_if_t<C::is_static_collection
-                                          || !C::is_static_collection>>
-    ScaleDecoderStream &operator>>(C &c) {
-      using mutableT = std::remove_const_t<T>;
-      using size_type = S;
-
-      static_assert(std::is_default_constructible_v<mutableT>);
-
-      if constexpr (C::is_static_collection) {
-        C container;
-        for (auto &el : container) {
-          *this >> el;
-        }
-
-        c = std::move(container);
-        return *this;
-      } else {
-        return decodeVectorLike(c);
+    ScaleDecoderStream &operator>>(StaticCollection auto &container) {
+      for (auto &item : container) {
+        *this >> item;
       }
+      return *this;
     }
 
     /**
-     * @brief decodes vector
-     * @tparam T item type
-     * @param v reference to container
+     * @brief scale-decodes to resizeable collection (which can be resized first
+     * and rewrite elements while decoding)
+     * @param collection decoding collection to
      * @return reference to stream
      */
-    template <typename T>
-    ScaleDecoderStream &operator>>(std::vector<T> &v) {
-      return decodeVectorLike(v);
-    }
-    /**
-     * @brief decodes deque
-     * @tparam T item type
-     * @param v reference to container
-     * @return reference to stream
-     */
-    template <typename T>
-    ScaleDecoderStream &operator>>(std::deque<T> &v) {
-      return decodeVectorLike(v);
-    }
-
-    /**
-     * @brief decodes random access resizable container
-     * @tparam T item type
-     * @param v reference to container
-     * @return reference to stream
-     */
-    template <class C,
-              typename T = typename C::value_type,
-              typename S = typename C::size_type>
-    ScaleDecoderStream &decodeVectorLike(C &v) {
-      using mutableT = std::remove_const_t<T>;
-      using size_type = S;
-
-      static_assert(std::is_default_constructible_v<mutableT>);
+    ScaleDecoderStream &operator>>(ResizeableCollection auto &collection) {
+      using size_type = decltype(collection.size());
 
       CompactInteger size{0u};
       *this >> size;
 
       auto item_count = size.convert_to<size_type>();
-      if (item_count > v.max_size()) {
+      if (item_count > collection.max_size()) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
 
-      C container;
       try {
-        container.resize(item_count);
+        collection.resize(item_count);
       } catch (const std::bad_alloc &) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
 
-      for (size_type i = 0u; i < item_count; ++i) {
-        *this >> container[i];
+      for (auto &item : collection) {
+        *this >> item;
       }
-
-      v = std::move(container);
       return *this;
     }
 
@@ -268,23 +219,27 @@ namespace scale {
      * @param v reference to container
      * @return reference to stream
      */
-    ScaleDecoderStream &operator>>(std::vector<bool> &v) {
+    ScaleDecoderStream &operator>>(std::vector<bool> &collection) {
       CompactInteger size{0u};
       *this >> size;
 
       auto item_count = size.convert_to<size_t>();
-      if (item_count > v.max_size()) {
+      if (item_count > collection.max_size()) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
 
-      std::vector<bool> container;
-      bool el;
-      for (size_t i = 0u; i < item_count; ++i) {
-        *this >> el;
-        container.push_back(el);
+      try {
+        collection.resize(item_count);
+      } catch (const std::bad_alloc &) {
+        raise(DecodeError::TOO_MANY_ITEMS);
       }
 
-      v = std::move(container);
+      bool item;
+      for (size_t i = 0u; i < item_count; ++i) {
+        *this >> item;
+        collection[i] = item;
+      }
+
       return *this;
     }
 
@@ -294,101 +249,68 @@ namespace scale {
     ScaleDecoderStream &operator>>(BitVec &v);
 
     /**
-     * @brief decodes list of items
-     * @tparam T item type
-     * @param v reference to collection
+     * @brief scale-decodes to sequential collection (which can be reserved
+     * space first and push element by element back while decoding)
      * @return reference to stream
      */
     template <class T>
-    ScaleDecoderStream &operator>>(std::list<T> &v) {
-      using mutableT = std::remove_const_t<T>;
-      using size_type = typename std::list<T>::size_type;
-
-      static_assert(std::is_default_constructible_v<mutableT>);
+    ScaleDecoderStream &operator>>(SequentialCollection auto &collection) {
+      using size_type = std::decay_t<decltype(collection)>::size_type;
+      using value_type = std::decay_t<decltype(collection)>::value_type;
 
       CompactInteger size{0u};
       *this >> size;
 
       auto item_count = size.convert_to<size_type>();
-      if (item_count > v.max_size()) {
+      if (item_count > collection.max_size()) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
 
-      std::list<T> lst;
+      collection.clear();
       try {
-        lst.reserve(item_count);
+        collection.reserve(item_count);
       } catch (const std::bad_alloc &) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
 
       for (size_type i = 0u; i < item_count; ++i) {
-        lst.emplace_back();
-        *this >> lst.back();
+        collection.emplace_back();
+        *this >> collection.back();
       }
-      v = std::move(lst);
       return *this;
     }
 
-    template <typename, typename U = void>
-    struct is_map_like : std::false_type {};
-
-    template <typename T>
-    struct is_map_like<T,
-                       std::void_t<typename T::key_type,
-                                   typename T::mapped_type,
-                                   decltype(std::declval<T &>()[std::declval<
-                                       const typename T::key_type &>()])>>
-        : std::true_type {};
-
     /**
-     * @brief decodes associative containers
-     * @tparam C item type
-     * @param c reference to the map
+     * @brief scale-decodes to non-sequential collection (which can not be
+     * reserved space or resize, but each element can be emplaced while
+     * decoding)
      * @return reference to stream
      */
-    template <class C, typename = std::enable_if_t<is_map_like<C>::value>>
-    ScaleDecoderStream &operator>>(C &c) {
+    ScaleDecoderStream &operator>>(NonSequentialCollection auto &collection) {
+      using size_type = std::decay_t<decltype(collection)>::size_type;
+      using value_type = std::decay_t<decltype(collection)>::value_type;
+
       CompactInteger size{0u};
       *this >> size;
 
-      auto item_count = size.convert_to<size_t>();
-      if (item_count > c.max_size()) {
+      auto item_count = size.convert_to<size_type>();
+      if (item_count > collection.max_size()) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
 
-      C container;
-      typename C::value_type pair;
-      for (size_t i = 0u; i < item_count; ++i) {
-        *this >> pair;
-        container.emplace(pair);
-      }
+      value_type item;
 
-      c = std::move(container);
-      return *this;
-    }
-
-    /**
-     * @brief decodes array of items
-     * @tparam T item type
-     * @tparam size of the array
-     * @param a reference to the array
-     * @return reference to stream
-     */
-    template <class T, size_t size>
-    ScaleDecoderStream &operator>>(std::array<T, size> &a) {
-      using mutableT = std::remove_const_t<T>;
-      for (size_t i = 0u; i < size; ++i) {
-        *this >> const_cast<mutableT &>(a[i]);  // NOLINT
+      collection.clear();
+      for (size_type i = 0u; i < item_count; ++i) {
+        *this >> item;
+        try {
+          collection.emplace(std::move(item));
+        } catch (const std::bad_alloc &) {
+          raise(DecodeError::TOO_MANY_ITEMS);
+        }
       }
       return *this;
     }
-
-    /**
-     * @brief decodes string from stream
-     * @param v value to decode
-     * @return reference to stream
-     */
-    ScaleDecoderStream &operator>>(std::string &v);
 
     /**
      * @brief hasMore Checks whether n more bytes are available

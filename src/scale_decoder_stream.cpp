@@ -124,14 +124,6 @@ namespace scale {
     return *this;
   }
 
-  ScaleDecoderStream &ScaleDecoderStream::operator>>(std::string &v) {
-    std::vector<uint8_t> collection;
-    *this >> collection;
-    v.clear();
-    v.append(collection.begin(), collection.end());
-    return *this;
-  }
-
   bool ScaleDecoderStream::hasMore(uint64_t n) const {
     return static_cast<size_t>(current_index_ + n) <= span_.size();
   }

@@ -105,6 +105,7 @@ TEST(Scale, encodeCollectionUint16) {
 struct TestStruct : std::vector<uint16_t> {
   static constexpr bool is_static_collection = false;
 };
+
 /**
  * @given collection of items of type uint16_t, derived from std::vector
  * @when encodeCollection is applied
@@ -425,4 +426,87 @@ TEST(Scale, decodeSizeLimitedCollection) {
       EXPECT_EQ(e.code(), DecodeError::TOO_MANY_ITEMS);
     }
   }
+}
+
+struct ExplicitlyDefinedAsStatic : public std::vector<int> {
+  static constexpr bool is_static_collection = true;
+  using Collection = std::vector<int>;
+  using Collection::Collection;
+};
+
+struct ExplicitlyDefinedAsDynamic : public std::vector<int> {
+  static constexpr bool is_static_collection = false;
+  using Collection = std::vector<int>;
+  using Collection::Collection;
+};
+
+struct ImplicitlyDefinedAsStatic : public std::array<int, 5> {
+  //  using Collection = std::array<int, 5>;
+  //  using Collection::Collection;
+};
+
+struct ImplicitlyDefinedAsDynamic : public std::vector<int> {
+  using Collection = std::vector<int>;
+  using Collection::Collection;
+};
+
+TEST(Scale, encodeExplicitlyDefinedAsStatic) {
+  using TestCollection = ExplicitlyDefinedAsStatic;
+
+  const TestCollection collection{1, 2, 3, 4, 5};
+
+  ScaleEncoderStream s;
+  ASSERT_NO_THROW((s << collection));
+  auto &&out = s.to_vector();
+
+  auto stream = ScaleDecoderStream(out);
+  TestCollection decoded{0xff, 0xff, 0xff, 0xff, 0xff};
+  stream >> decoded;
+  ASSERT_TRUE(std::equal(
+      decoded.begin(), decoded.end(), collection.begin(), collection.end()));
+}
+
+TEST(Scale, encodeExplicitlyDefinedAsDynamic) {
+  using TestCollection = ExplicitlyDefinedAsDynamic;
+
+  const TestCollection collection{1, 2, 3, 4, 5};
+  ScaleEncoderStream s;
+  ASSERT_NO_THROW((s << collection));
+  auto &&out = s.to_vector();
+
+  auto stream = ScaleDecoderStream(out);
+  TestCollection decoded{0xff, 0xff, 0xff};
+  stream >> decoded;
+  ASSERT_TRUE(std::equal(
+      decoded.begin(), decoded.end(), collection.begin(), collection.end()));
+}
+
+TEST(Scale, encodeImplicitlyDefinedAsStatic) {
+  using TestCollection = ImplicitlyDefinedAsStatic;
+
+  const TestCollection collection{1, 2, 3, 4, 5};
+  ScaleEncoderStream s;
+  ASSERT_NO_THROW((s << collection));
+  auto &&out = s.to_vector();
+
+  auto stream = ScaleDecoderStream(out);
+  TestCollection decoded{0xff, 0xff, 0xff, 0xff, 0xff};
+  stream >> decoded;
+  ASSERT_TRUE(std::equal(
+      decoded.begin(), decoded.end(), collection.begin(), collection.end()));
+}
+
+TEST(Scale, encodeImplicitlyDefinedAsDynamic) {
+  using TestCollection = ImplicitlyDefinedAsDynamic;
+
+  const TestCollection collection{1, 2, 3, 4, 5};
+  ScaleEncoderStream s;
+  ASSERT_NO_THROW((s << collection));
+  auto &&out = s.to_vector();
+
+  auto stream = ScaleDecoderStream(out);
+  TestCollection decoded{0xff, 0xff, 0xff};
+  stream >> decoded;
+  ASSERT_TRUE(std::equal(
+      decoded.begin(), decoded.end(), collection.begin(), collection.end()));
 }
