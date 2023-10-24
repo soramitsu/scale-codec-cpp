@@ -248,13 +248,30 @@ namespace scale {
      */
     ScaleDecoderStream &operator>>(BitVec &v);
 
+    ScaleDecoderStream &operator>>(DynamicSpan auto &collection) {
+      using size_type = std::decay_t<decltype(collection)>::size_type;
+      using value_type = std::decay_t<decltype(collection)>::value_type;
+
+      CompactInteger size{0u};
+      *this >> size;
+
+      auto item_count = size.convert_to<size_type>();
+      if (item_count > collection.size()) {
+        raise(DecodeError::TOO_MANY_ITEMS);
+      }
+
+      for (auto &item : collection) {
+        *this >> item;
+      }
+      return *this;
+    }
+
     /**
      * @brief scale-decodes to sequential collection (which can be reserved
      * space first and push element by element back while decoding)
      * @return reference to stream
      */
-    template <class T>
-    ScaleDecoderStream &operator>>(SequentialCollection auto &collection) {
+    ScaleDecoderStream &operator>>(ExtensibleBackCollection auto &collection) {
       using size_type = std::decay_t<decltype(collection)>::size_type;
       using value_type = std::decay_t<decltype(collection)>::value_type;
 
@@ -286,7 +303,8 @@ namespace scale {
      * decoding)
      * @return reference to stream
      */
-    ScaleDecoderStream &operator>>(NonSequentialCollection auto &collection) {
+    ScaleDecoderStream &operator>>(
+        RandomExtensibleCollection auto &collection) {
       using size_type = std::decay_t<decltype(collection)>::size_type;
       using value_type = std::decay_t<decltype(collection)>::value_type;
 

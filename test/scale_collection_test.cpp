@@ -306,9 +306,9 @@ TEST(Scale, encodeVeryLongCollectionUint8) {
 
 // following test takes too much time, don't run it
 /**
- * @given very long collection of items of type uint8_t containing 2^30 ==
- * 1073741824 items this number takes ~ 1 Gb of data where collection[i]  == i %
- * 256
+ * @given very long collection of items of type uint8_t containing
+ * 2^30 == 1073741824 items this number takes ~ 1 Gb of data where
+ * collection[i] == i % 256
  * @when encodeCollection is applied
  * @then obtain byte array of length 1073741824 + 5 bytes (header) bytes
  * where first bytes represent header, other are data itself
@@ -434,22 +434,6 @@ struct ExplicitlyDefinedAsStatic : public std::vector<int> {
   using Collection::Collection;
 };
 
-struct ExplicitlyDefinedAsDynamic : public std::vector<int> {
-  static constexpr bool is_static_collection = false;
-  using Collection = std::vector<int>;
-  using Collection::Collection;
-};
-
-struct ImplicitlyDefinedAsStatic : public std::array<int, 5> {
-  //  using Collection = std::array<int, 5>;
-  //  using Collection::Collection;
-};
-
-struct ImplicitlyDefinedAsDynamic : public std::vector<int> {
-  using Collection = std::vector<int>;
-  using Collection::Collection;
-};
-
 TEST(Scale, encodeExplicitlyDefinedAsStatic) {
   using TestCollection = ExplicitlyDefinedAsStatic;
 
@@ -466,6 +450,12 @@ TEST(Scale, encodeExplicitlyDefinedAsStatic) {
       decoded.begin(), decoded.end(), collection.begin(), collection.end()));
 }
 
+struct ExplicitlyDefinedAsDynamic : public std::vector<int> {
+  static constexpr bool is_static_collection = false;
+  using Collection = std::vector<int>;
+  using Collection::Collection;
+};
+
 TEST(Scale, encodeExplicitlyDefinedAsDynamic) {
   using TestCollection = ExplicitlyDefinedAsDynamic;
 
@@ -480,6 +470,11 @@ TEST(Scale, encodeExplicitlyDefinedAsDynamic) {
   ASSERT_TRUE(std::equal(
       decoded.begin(), decoded.end(), collection.begin(), collection.end()));
 }
+
+struct ImplicitlyDefinedAsStatic : public std::array<int, 5> {
+  //    using Collection = std::array<int, 5>;
+  //    using Collection::Collection;
+};
 
 TEST(Scale, encodeImplicitlyDefinedAsStatic) {
   using TestCollection = ImplicitlyDefinedAsStatic;
@@ -496,6 +491,11 @@ TEST(Scale, encodeImplicitlyDefinedAsStatic) {
       decoded.begin(), decoded.end(), collection.begin(), collection.end()));
 }
 
+struct ImplicitlyDefinedAsDynamic : public std::vector<int> {
+  using Collection = std::vector<int>;
+  using Collection::Collection;
+};
+
 TEST(Scale, encodeImplicitlyDefinedAsDynamic) {
   using TestCollection = ImplicitlyDefinedAsDynamic;
 
@@ -506,6 +506,51 @@ TEST(Scale, encodeImplicitlyDefinedAsDynamic) {
 
   auto stream = ScaleDecoderStream(out);
   TestCollection decoded{0xff, 0xff, 0xff};
+  stream >> decoded;
+  ASSERT_TRUE(std::equal(
+      decoded.begin(), decoded.end(), collection.begin(), collection.end()));
+}
+
+struct StaticSpan : public std::span<int, 5> {
+  using Collection = std::span<int, 5>;
+  using Collection::Collection;
+};
+
+TEST(Scale, encodeStaticSpan) {
+  using TestCollection = StaticSpan;
+
+  std::array<int, 5> original_data{1, 2, 3, 4, 5};
+  const TestCollection collection(original_data);
+  ScaleEncoderStream s;
+  ASSERT_NO_THROW((s << collection));
+  auto &&out = s.to_vector();
+
+  auto stream = ScaleDecoderStream(out);
+  std::array<int, 5> data{0xff, 0xff, 0xff, 0xff, 0xff};
+  TestCollection decoded{data};
+  stream >> decoded;
+  ASSERT_TRUE(std::equal(
+      decoded.begin(), decoded.end(), collection.begin(), collection.end()));
+}
+
+struct DynamicSpan : public std::span<int> {
+  using Collection = std::span<int>;
+  using Collection::Collection;
+};
+
+TEST(Scale, encodeDynamicSpan) {
+  using TestCollection = DynamicSpan;
+
+  std::vector<int> original_data{1, 2, 3, 4, 5};
+  const TestCollection collection(original_data);
+  ScaleEncoderStream s;
+  ASSERT_NO_THROW((s << collection));
+  auto &&out = s.to_vector();
+
+  auto stream = ScaleDecoderStream(out);
+
+  std::vector<int> data{1, 2, 3, 4, 5};
+  TestCollection decoded{data};
   stream >> decoded;
   ASSERT_TRUE(std::equal(
       decoded.begin(), decoded.end(), collection.begin(), collection.end()));

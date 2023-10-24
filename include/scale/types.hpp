@@ -54,59 +54,90 @@ namespace scale {
   concept ExplicitlyDefinedAsStaticOrDynamic =
       requires(T) { T::is_static_collection; };
 
-  template <class T>
-  concept ExplicitlyDefinedAsStatic =
-      ExplicitlyDefinedAsStaticOrDynamic<T> and T::is_static_collection;
+  template <typename T>
+  struct __is_derived_of_span_impl {
+    template <typename V, size_t S>
+    static constexpr std::true_type test(const std::span<V, S> *);
+    static constexpr std::false_type test(...);
+    using type = decltype(test(std::declval<T *>()));
+  };
+
+  template <typename T>
+  using __is_derived_of_span = typename __is_derived_of_span_impl<T>::type;
+
+  template <typename T>
+  concept SomeSpan = __is_derived_of_span<T>::value  //
+                     and requires(T) { T::extent; };
 
   template <class T>
-  concept ExplicitlyDefinedAsDynamic =
-      ExplicitlyDefinedAsStaticOrDynamic<T> and not(T::is_static_collection);
+  concept ExplicitlyDefinedAsStatic = ExplicitlyDefinedAsStaticOrDynamic<T>  //
+                                      and T::is_static_collection;
+
+  template <class T>
+  concept ExplicitlyDefinedAsDynamic = ExplicitlyDefinedAsStaticOrDynamic<T>  //
+                                       and not(T::is_static_collection);
 
   template <class T>
   concept HasSomeInsertMethod =
-      requires(T val) { val.insert(val.end(), *val.begin()); }
-      or requires(T val) { val.insert_after(val.end(), *val.begin()); };
+      requires(T v) { v.insert(v.end(), *v.begin()); }
+      or requires(T v) { v.insert_after(v.end(), *v.begin()); };
 
   template <class T>
-  concept HasResizeMethod = requires(T val) { val.resize(val.size()); };
+  concept HasResizeMethod = requires(T v) { v.resize(v.size()); };
 
   template <class T>
-  concept HasReserveMethod = requires(T val) { val.reserve(val.size()); };
+  concept HasReserveMethod = requires(T v) { v.reserve(v.size()); };
 
   template <class T>
-  concept HasEmplaceMethod = requires(T val) { val.emplace(*val.begin()); };
+  concept HasEmplaceMethod = requires(T v) { v.emplace(*v.begin()); };
 
   template <class T>
-  concept HasEmplaceBackMethod = requires(T val) { val.emplace(*val.begin()); };
+  concept HasEmplaceBackMethod = requires(T v) { v.emplace_back(*v.begin()); };
 
   template <class T>
-  concept ImplicitlyDefinedAsStatic = not
-  ExplicitlyDefinedAsStaticOrDynamic<T> and not HasSomeInsertMethod<T>;
+  concept ImplicitlyDefinedAsStatic =
+      not(ExplicitlyDefinedAsStaticOrDynamic<T>) and  //
+      not(SomeSpan<T>) and                            //
+      not(HasSomeInsertMethod<T>);
 
   template <class T>
-  concept ImplicitlyDefinedAsDynamic = not
-  ExplicitlyDefinedAsStaticOrDynamic<T> and HasSomeInsertMethod<T>;
+  concept ImplicitlyDefinedAsDynamic =
+      not(ExplicitlyDefinedAsStaticOrDynamic<T>) and  //
+      not(SomeSpan<T>) and                            //
+      HasSomeInsertMethod<T>;
+
+  template <typename T>
+  concept StaticSpan = SomeSpan<T>  //
+                       and (T::extent != std::dynamic_extent);
+
+  template <typename T>
+  concept DynamicSpan = SomeSpan<T>  //
+                        and (T::extent == std::dynamic_extent);
 
   template <class T>
   concept StaticCollection = std::ranges::range<T>
-                             and (ExplicitlyDefinedAsStatic<T>
-                                  or ImplicitlyDefinedAsStatic<T>);
+                             and (ExplicitlyDefinedAsStatic<T>     //
+                                  or ImplicitlyDefinedAsStatic<T>  //
+                                  or StaticSpan<T>);
 
   template <class T>
   concept DynamicCollection = std::ranges::sized_range<T>
-                              and (ExplicitlyDefinedAsDynamic<T>
-                                   or ImplicitlyDefinedAsDynamic<T>);
+                              and (ExplicitlyDefinedAsDynamic<T>     //
+                                   or ImplicitlyDefinedAsDynamic<T>  //
+                                   or DynamicSpan<T>);
 
   template <class T>
-  concept ResizeableCollection = DynamicCollection<T> and HasResizeMethod<T>;
+  concept ResizeableCollection = DynamicCollection<T>  //
+                                 and HasResizeMethod<T>;
 
   template <class T>
-  concept SequentialCollection =
-      DynamicCollection<T> and HasEmplaceBackMethod<T>;
+  concept ExtensibleBackCollection = DynamicCollection<T>         //
+                                     and not(HasResizeMethod<T>)  //
+                                     and HasEmplaceBackMethod<T>;
 
   template <class T>
-  concept NonSequentialCollection =
-      DynamicCollection<T> and HasEmplaceMethod<T>;
+  concept RandomExtensibleCollection = DynamicCollection<T>  //
+                                       and HasEmplaceMethod<T>;
 
 }  // namespace scale
 

@@ -47,24 +47,6 @@ namespace scale {
     size_t size() const;
 
     /**
-     * @brief scale-encodes span
-     * @tparam T type of item
-     * @tparam S container size (-1 for dynamic)
-     * @param span span to encode
-     * @return reference to stream
-     */
-    template <typename T, size_t S>
-    ScaleEncoderStream &operator<<(const std::span<T, S> &span) {
-      if constexpr (S == -1) {
-        return encodeDynamicCollection(
-            ExplicitlyDynamic<std::span<T, S>>(span));
-      } else {
-        return encodeStaticCollection(  //
-            ExplicitlyStatic<std::span<T, S>>(span));
-      }
-    }
-
-    /**
      * @brief scale-encodes range
      * @param collection range to encode
      * @return reference to stream
