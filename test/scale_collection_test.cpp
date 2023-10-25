@@ -472,8 +472,7 @@ TEST(Scale, encodeExplicitlyDefinedAsDynamic) {
 }
 
 struct ImplicitlyDefinedAsStatic : public std::array<int, 5> {
-  //    using Collection = std::array<int, 5>;
-  //    using Collection::Collection;
+  using Collection = std::array<int, 5>;
 };
 
 TEST(Scale, encodeImplicitlyDefinedAsStatic) {

@@ -45,13 +45,19 @@ namespace scale {
     return str;
   }
 
-  std::string hex_upper(const RangeOfBytes auto &bytes) noexcept {
+  std::string hex_upper(ConstSpanOfBytes bytes) noexcept {
     std::string res(bytes.size() * 2, '\x00');
     boost::algorithm::hex(bytes.begin(), bytes.end(), res.begin());
     return res;
   }
 
-  std::string hex_lower_0x(const RangeOfBytes auto &bytes) noexcept {
+  std::string hex_lower(ConstSpanOfBytes bytes) noexcept {
+    std::string res(bytes.size() * 2, '\x00');
+    boost::algorithm::hex_lower(bytes.begin(), bytes.end(), res.begin());
+    return res;
+  }
+
+  std::string hex_lower_0x(ConstSpanOfBytes bytes) noexcept {
     constexpr size_t prefix_len = sizeof("0x") - 1;
 
     std::string res(bytes.size() * 2 + prefix_len, '\x00');

@@ -38,7 +38,7 @@ namespace scale {
    * @param len length of bytes
    * @return hexstring
    */
-  std::string hex_upper(const RangeOfBytes auto &bytes) noexcept;
+  std::string hex_upper(ConstSpanOfBytes bytes) noexcept;
 
   /**
    * @brief Converts bytes to hex representation
@@ -46,18 +46,14 @@ namespace scale {
    * @param len length of bytes
    * @return hexstring
    */
-  std::string hex_lower(const RangeOfBytes auto &bytes) noexcept {
-    std::string res(bytes.size() * 2, '\x00');
-    boost::algorithm::hex_lower(bytes.begin(), bytes.end(), res.begin());
-    return res;
-  }
+  std::string hex_lower(ConstSpanOfBytes bytes) noexcept;
 
   /**
    * @brief Converts bytes to hex representation with prefix 0x
    * @param array bytes
    * @return hexstring
    */
-  std::string hex_lower_0x(RangeOfBytes auto bytes) noexcept;
+  std::string hex_lower_0x(ConstSpanOfBytes bytes) noexcept;
 
   /**
    * @brief Converts hex representation to bytes
