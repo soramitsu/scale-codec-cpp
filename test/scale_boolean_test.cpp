@@ -11,7 +11,6 @@
 #include "scale/scale_encoder_stream.hpp"
 #include "scale/scale_error.hpp"
 
-#include "util/literals.hpp"
 #include "util/outcome.hpp"
 
 using scale::ByteArray;

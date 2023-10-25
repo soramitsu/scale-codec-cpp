@@ -39,7 +39,7 @@ endif ()
 
 include(GNUInstallDirs)
 
-install(TARGETS scale buffer scale_encode_append EXPORT scaleConfig
+install(TARGETS scale scale_encode_append EXPORT scaleConfig
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

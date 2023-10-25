@@ -1,6 +1,3 @@
-
-add_subdirectory(buffer)
-
 add_library(scale
     scale_decoder_stream.cpp
     scale_encoder_stream.cpp
@@ -13,7 +10,6 @@ target_include_directories(scale PUBLIC
     )
 target_link_libraries(scale
     Boost::boost
-    buffer
     )
 
 add_library(scale_encode_append

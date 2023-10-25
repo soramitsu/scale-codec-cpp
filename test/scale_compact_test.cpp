@@ -11,7 +11,6 @@
 #include <scale/scale.hpp>
 #include <scale/scale_error.hpp>
 
-#include "util/literals.hpp"
 #include "util/outcome.hpp"
 
 using scale::ByteArray;
@@ -112,9 +111,7 @@ INSTANTIATE_TEST_SUITE_P(
                 "224945689727159819140526925384299092943484855915095831"
                 "655037778630591879033574393515952034305194542857496045"
                 "531676044756160413302774714984450425759043258192756735"),
-            "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
-            "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
-            "FFFF"_unhex)));
+            std::vector<uint8_t>(68, 0xFF))));
 
 /**
  * Negative tests
