@@ -14,7 +14,6 @@
 #include "util/literals.hpp"
 #include "util/outcome.hpp"
 
-using scale::Buffer;
 using scale::ByteArray;
 using scale::CompactInteger;
 using scale::decode;

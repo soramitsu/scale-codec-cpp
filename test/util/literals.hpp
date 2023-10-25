@@ -6,23 +6,11 @@
 
 #pragma once
 
-#include <scale/buffer/buffer.hpp>
 #include <scale/buffer/hexutil.hpp>
-
-/// creates a buffer filled with characters from the original string
-/// mind that it does not perform unhexing, there is ""_unhex for it
-inline scale::Buffer operator"" _buf(const char *c, size_t s) {
-  std::vector<uint8_t> chars(c, c + s);
-  return scale::Buffer(std::move(chars));
-}
 
 inline std::vector<uint8_t> operator"" _v(const char *c, size_t s) {
   std::vector<uint8_t> chars(c, c + s);
   return chars;
-}
-
-inline scale::Buffer operator"" _hex2buf(const char *c, size_t s) {
-  return scale::Buffer::fromHex(std::string_view(c, s)).value();
 }
 
 inline std::vector<uint8_t> operator""_unhex(const char *c, size_t s) {

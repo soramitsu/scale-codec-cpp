@@ -1,6 +1,5 @@
 
 add_library(buffer
-    buffer.cpp
     hexutil.cpp
     )
 target_include_directories(buffer PUBLIC
