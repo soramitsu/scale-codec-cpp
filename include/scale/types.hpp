@@ -35,11 +35,6 @@ namespace scale {
     OPT_FALSE = 2u,
   };
 
-  template <class T>
-  concept RangeOfBytes =
-      std::ranges::sized_range<T> and std::ranges::contiguous_range<T>
-      and std::is_same_v<std::ranges::range_value_t<std::decay_t<T>>, uint8_t>;
-
   template <typename T>
   struct ExplicitlyStatic : public T {
     static constexpr bool is_static_collection = true;

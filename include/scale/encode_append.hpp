@@ -44,9 +44,4 @@ namespace scale {
    */
   outcome::result<void> append_or_new_vec(std::vector<uint8_t> &self_encoded,
                                           ConstSpanOfBytes input);
-
-  inline outcome::result<void> append_or_new_vec(
-      std::vector<uint8_t> &self_encoded, const RangeOfBytes auto &input) {
-    return append_or_new_vec(self_encoded, ConstSpanOfBytes(input));
-  }
 }  // namespace scale
