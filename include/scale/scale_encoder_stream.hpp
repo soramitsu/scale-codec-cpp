@@ -176,7 +176,7 @@ namespace scale {
      * @return reference to stream
      */
     ScaleEncoderStream &operator<<(std::string_view sv) {
-      return encodeDynamicCollection(ExplicitlyDynamic<std::string_view>(sv));
+      return encodeDynamicCollection(ExplicitlyDynamic<std::string_view>{sv});
     }
 
     /**

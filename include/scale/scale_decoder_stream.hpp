@@ -249,8 +249,8 @@ namespace scale {
     ScaleDecoderStream &operator>>(BitVec &v);
 
     ScaleDecoderStream &operator>>(DynamicSpan auto &collection) {
-      using size_type = std::decay_t<decltype(collection)>::size_type;
-      using value_type = std::decay_t<decltype(collection)>::value_type;
+      using size_type = typename std::decay_t<decltype(collection)>::size_type;
+      using value_type = typename std::decay_t<decltype(collection)>::value_type;
 
       CompactInteger size{0u};
       *this >> size;
@@ -272,8 +272,8 @@ namespace scale {
      * @return reference to stream
      */
     ScaleDecoderStream &operator>>(ExtensibleBackCollection auto &collection) {
-      using size_type = std::decay_t<decltype(collection)>::size_type;
-      using value_type = std::decay_t<decltype(collection)>::value_type;
+      using size_type = typename std::decay_t<decltype(collection)>::size_type;
+      using value_type = typename std::decay_t<decltype(collection)>::value_type;
 
       CompactInteger size{0u};
       *this >> size;
@@ -305,8 +305,8 @@ namespace scale {
      */
     ScaleDecoderStream &operator>>(
         RandomExtensibleCollection auto &collection) {
-      using size_type = std::decay_t<decltype(collection)>::size_type;
-      using value_type = std::decay_t<decltype(collection)>::value_type;
+      using size_type = typename std::decay_t<decltype(collection)>::size_type;
+      using value_type = typename std::decay_t<decltype(collection)>::value_type;
 
       CompactInteger size{0u};
       *this >> size;
