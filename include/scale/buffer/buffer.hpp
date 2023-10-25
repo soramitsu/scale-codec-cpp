@@ -165,7 +165,7 @@ namespace scale {
 
     /**
      * Returns a copy of a part of the buffer
-     * Works alike subspan() of gsl::span
+     * Works alike subspan() of std::span
      */
     Buffer subbuffer(size_t offset = 0, size_t length = -1) const;
 
