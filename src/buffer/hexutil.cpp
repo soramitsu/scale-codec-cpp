@@ -28,43 +28,9 @@ OUTCOME_CPP_DEFINE_CATEGORY_3(scale, UnhexError, e) {
 }
 
 namespace scale {
-
-  std::string int_to_hex(uint64_t n, size_t fixed_width) noexcept {
-    std::stringstream result;
-    result.width(fixed_width);
-    result.fill('0');
-    result << std::hex << std::uppercase << n;
-    auto str = result.str();
-    if (str.length() % 2 != 0) {
-      str.push_back('\0');
-      for (int64_t i = str.length() - 2; i >= 0; --i) {
-        str[i + 1] = str[i];
-      }
-      str[0] = '0';
-    }
-    return str;
-  }
-
-  std::string hex_upper(ConstSpanOfBytes bytes) noexcept {
-    std::string res(bytes.size() * 2, '\x00');
-    boost::algorithm::hex(bytes.begin(), bytes.end(), res.begin());
-    return res;
-  }
-
   std::string hex_lower(ConstSpanOfBytes bytes) noexcept {
     std::string res(bytes.size() * 2, '\x00');
     boost::algorithm::hex_lower(bytes.begin(), bytes.end(), res.begin());
-    return res;
-  }
-
-  std::string hex_lower_0x(ConstSpanOfBytes bytes) noexcept {
-    constexpr size_t prefix_len = sizeof("0x") - 1;
-
-    std::string res(bytes.size() * 2 + prefix_len, '\x00');
-    res.replace(0, prefix_len, "0x", prefix_len);
-
-    boost::algorithm::hex_lower(
-        bytes.begin(), bytes.end(), res.begin() + prefix_len);
     return res;
   }
 

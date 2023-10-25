@@ -28,32 +28,12 @@ namespace scale {
   };
 
   /**
-   * @brief Converts an integer to an uppercase hex representation
-   */
-  std::string int_to_hex(uint64_t n, size_t fixed_width = 2) noexcept;
-
-  /**
-   * @brief Converts bytes to uppercase hex representation
-   * @param array bytes
-   * @param len length of bytes
-   * @return hexstring
-   */
-  std::string hex_upper(ConstSpanOfBytes bytes) noexcept;
-
-  /**
    * @brief Converts bytes to hex representation
    * @param array bytes
    * @param len length of bytes
    * @return hexstring
    */
   std::string hex_lower(ConstSpanOfBytes bytes) noexcept;
-
-  /**
-   * @brief Converts bytes to hex representation with prefix 0x
-   * @param array bytes
-   * @return hexstring
-   */
-  std::string hex_lower_0x(ConstSpanOfBytes bytes) noexcept;
 
   /**
    * @brief Converts hex representation to bytes
@@ -75,37 +55,6 @@ namespace scale {
    * @return unhexed buffer
    */
   outcome::result<std::vector<uint8_t>> unhexWith0x(std::string_view hex);
-
-  /**
-   * @brief unhex hex-string with 0x or without it in the beginning
-   * @tparam T unsigned integer value type to decode
-   * @param value source hex string
-   * @return unhexed value
-   */
-  template <class T, typename = std::enable_if<std::is_unsigned_v<T>>>
-  outcome::result<T> unhexNumber(std::string_view value) {
-    std::vector<uint8_t> bytes;
-    OUTCOME_TRY(bts, unhexWith0x(value));
-    bytes = std::move(bts);
-
-    if (bytes.size() > sizeof(T)) {
-      return UnhexError::VALUE_OUT_OF_RANGE;
-    }
-
-    T result{0u};
-    for (auto b : bytes) {
-      // check if `multiply by 10` will cause overflow
-      if constexpr (sizeof(T) > 1) {
-        result <<= 8u;
-      } else {
-        result = 0;
-      }
-      result += b;
-    }
-
-    return result;
-  }
-
 }  // namespace scale
 
 OUTCOME_HPP_DECLARE_ERROR_2(scale, UnhexError)

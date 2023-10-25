@@ -8,11 +8,6 @@
 
 #include <scale/buffer/hexutil.hpp>
 
-inline std::vector<uint8_t> operator"" _v(const char *c, size_t s) {
-  std::vector<uint8_t> chars(c, c + s);
-  return chars;
-}
-
 inline std::vector<uint8_t> operator""_unhex(const char *c, size_t s) {
   if (s > 2 and c[0] == '0' and c[1] == 'x')
     return scale::unhexWith0x(std::string_view(c, s)).value();
