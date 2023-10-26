@@ -531,26 +531,3 @@ TEST(Scale, encodeStaticSpan) {
   ASSERT_TRUE(std::equal(
       decoded.begin(), decoded.end(), collection.begin(), collection.end()));
 }
-
-struct DynamicSpan : public std::span<int> {
-  using Collection = std::span<int>;
-  using Collection::Collection;
-};
-
-TEST(Scale, encodeDynamicSpan) {
-  using TestCollection = DynamicSpan;
-
-  std::vector<int> original_data{1, 2, 3, 4, 5};
-  const TestCollection collection(original_data);
-  ScaleEncoderStream s;
-  ASSERT_NO_THROW((s << collection));
-  auto &&out = s.to_vector();
-
-  auto stream = ScaleDecoderStream(out);
-
-  std::vector<int> data{1, 2, 3, 4, 5};
-  TestCollection decoded{data};
-  stream >> decoded;
-  ASSERT_TRUE(std::equal(
-      decoded.begin(), decoded.end(), collection.begin(), collection.end()));
-}
