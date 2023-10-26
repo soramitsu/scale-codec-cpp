@@ -180,6 +180,19 @@ namespace scale {
     }
 
     /**
+     * @brief scale-encodes a vector of bool
+     * @param v vector of bool
+     * @return reference to stream
+     */
+    ScaleEncoderStream &operator<<(const std::vector<bool> &v) {
+      *this << CompactInteger{v.size()};
+      for (bool el : v) {
+        *this << el;
+      }
+      return *this;
+    }
+
+    /**
      * @brief scale-encodes any integral type including bool
      * @tparam T integral type
      * @param v value of integral type
