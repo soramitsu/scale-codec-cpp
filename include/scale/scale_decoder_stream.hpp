@@ -6,10 +6,8 @@
 
 #pragma once
 
-#include <array>
-#include <deque>
 #include <iterator>
-#include <list>
+#include <memory>
 #include <optional>
 #include <utility>
 
@@ -17,6 +15,7 @@
 
 #include <scale/bitvec.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
+#include <scale/scale_error.hpp>
 #include <scale/types.hpp>
 #include <type_traits>
 

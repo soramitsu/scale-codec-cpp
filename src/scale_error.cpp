@@ -6,7 +6,7 @@
 
 #include "scale/scale_error.hpp"
 
-OUTCOME_CPP_DEFINE_CATEGORY_3(scale, EncodeError, e) {
+OUTCOME_CPP_DEFINE_CATEGORY(scale, EncodeError, e) {
   using scale::EncodeError;
   switch (e) {
     case EncodeError::NEGATIVE_COMPACT_INTEGER:
@@ -19,7 +19,7 @@ OUTCOME_CPP_DEFINE_CATEGORY_3(scale, EncodeError, e) {
   return "unknown EncodeError";
 }
 
-OUTCOME_CPP_DEFINE_CATEGORY_3(scale, DecodeError, e) {
+OUTCOME_CPP_DEFINE_CATEGORY(scale, DecodeError, e) {
   using scale::DecodeError;
   switch (e) {
     case DecodeError::NOT_ENOUGH_DATA:

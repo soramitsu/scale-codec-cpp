@@ -6,7 +6,9 @@
 
 #pragma once
 
-#include <scale/scale.hpp>
+#include <qtils/outcome.hpp>
+
+#include <scale/types.hpp>
 
 namespace scale {
 

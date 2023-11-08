@@ -6,9 +6,7 @@
 
 #pragma once
 
-#include <scale/outcome/outcome.hpp>
-
-#include <scale/types.hpp>
+#include <qtils/enum_error_code.hpp>
 
 namespace scale {
 
@@ -34,5 +32,5 @@ namespace scale {
 
 }  // namespace scale
 
-OUTCOME_HPP_DECLARE_ERROR_2(scale, EncodeError)
-OUTCOME_HPP_DECLARE_ERROR_2(scale, DecodeError)
+OUTCOME_HPP_DECLARE_ERROR(scale, EncodeError)
+OUTCOME_HPP_DECLARE_ERROR(scale, DecodeError)
