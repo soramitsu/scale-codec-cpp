@@ -59,8 +59,7 @@ TEST(ScaleVariant, DecodeU8Success) {
   ScaleDecoderStream s(match);
   boost::variant<uint8_t, uint32_t> val{};
   ASSERT_NO_THROW(s >> val);
-  scale::visit_in_place(
-      val, [](uint8_t v) { ASSERT_EQ(v, 1); }, [](uint32_t v) { FAIL(); });
+  ASSERT_EQ(boost::get<uint8_t>(val), 1);
 }
 
 /**
@@ -75,6 +74,5 @@ TEST(ScaleVariant, DecodeU32Success) {
   ScaleDecoderStream s(match);
   boost::variant<uint8_t, uint32_t> val{};
   ASSERT_NO_THROW(s >> val);
-  scale::visit_in_place(
-      val, [](uint32_t v) { ASSERT_EQ(v, 1); }, [](uint8_t v) { FAIL(); });
+  ASSERT_EQ(boost::get<uint32_t>(val), 1);
 }

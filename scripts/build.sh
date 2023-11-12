@@ -6,9 +6,14 @@ BUILD_TARGET="${BUILD_TARGET:-test}"
 JOBS_NUM="$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu) + 1 ))"
 MAKE_ARGS="${MAKE_ARGS:-"-j$JOBS_NUM"}"
 
-cd "$(dirname "$0")/.."
+if [[ -n "$GITHUB_WORKSPACE" ]]; then
+  git config --global --add safe.directory $GITHUB_WORKSPACE
+fi
+if [[ -n "$CI" && -f /venv/bin/activate ]]; then
+  source /venv/bin/activate
+fi
 
-git submodule update --init
+cd "$(dirname "$0")/.."
 
 CMAKE_ARGS=( "-B" "${BUILD_DIR}" "$@" )
 

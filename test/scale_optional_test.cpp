@@ -175,8 +175,7 @@ Stream &operator>>(Stream &s, FourOptBools &v) {
 TEST(Scale, DecodeOptionalBoolFail) {
   auto bytes = ByteArray{0, 1, 2, 3};
 
-  EXPECT_OUTCOME_FALSE_2(err, decode<FourOptBools>(bytes))
-  ASSERT_EQ(err.value(), static_cast<int>(DecodeError::UNEXPECTED_VALUE));
+  EXPECT_EC(decode<FourOptBools>(bytes), DecodeError::UNEXPECTED_VALUE);
 }
 
 /**
@@ -215,10 +214,10 @@ TEST(Scale, DecodeNullopt) {
   ByteArray encoded_nullopt{0};
 
   using OptionalInt = std::optional<int>;
-  ASSERT_OUTCOME_SUCCESS(int_opt, decode<OptionalInt>(encoded_nullopt));
+  EXPECT_OUTCOME_TRUE(int_opt, decode<OptionalInt>(encoded_nullopt));
   EXPECT_EQ(int_opt, std::nullopt);
 
   using OptionalTuple = std::optional<std::tuple<int, int>>;
-  ASSERT_OUTCOME_SUCCESS(tuple_opt, decode<OptionalTuple>(encoded_nullopt));
+  EXPECT_OUTCOME_TRUE(tuple_opt, decode<OptionalTuple>(encoded_nullopt));
   EXPECT_EQ(tuple_opt, std::nullopt);
 }

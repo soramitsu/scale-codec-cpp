@@ -6,13 +6,12 @@
 
 #pragma once
 
-#include <vector>
-
 #include <boost/system/system_error.hpp>
 #include <boost/throw_exception.hpp>
 
+#include <qtils/outcome.hpp>
+
 #include <scale/enum_traits.hpp>
-#include <scale/outcome/outcome.hpp>
 #include <scale/scale_decoder_stream.hpp>
 #include <scale/scale_encoder_stream.hpp>
 
@@ -35,6 +34,22 @@
   SCALE_EMPTY_DECODER(TargetType)
 
 namespace scale {
+  template <typename F>
+  outcome::result<std::invoke_result_t<F>> outcomeCatch(F &&f) {
+    try {
+      if constexpr (std::is_void_v<std::invoke_result_t<F>>) {
+        f();
+        return outcome::success();
+      } else {
+        return outcome::success(f());
+      }
+    } catch (std::system_error &e) {
+      return Q_ERROR(e.code());
+    } catch (qtils::Errors &e) {
+      return std::move(e);
+    }
+  }
+
   /**
    * @brief convenience function for encoding primitives data to stream
    * @tparam Args primitive types to be encoded
@@ -44,12 +59,12 @@ namespace scale {
   template <typename... Args>
   outcome::result<std::vector<uint8_t>> encode(Args &&...args) {
     ScaleEncoderStream s{};
-    try {
-      (s << ... << std::forward<Args>(args));
-    } catch (std::system_error &e) {
-      return outcome::failure(e.code());
-    }
+    OUTCOME_TRY(encode(s, std::forward<Args>(args)...));
     return s.to_vector();
+  }
+  template <typename... Args>
+  outcome::result<void> encode(ScaleEncoderStream &s, Args &&...args) {
+    return outcomeCatch([&] { (s << ... << std::forward<Args>(args)); });
   }
 
   /**
@@ -60,14 +75,17 @@ namespace scale {
    */
   template <class T>
   outcome::result<T> decode(ConstSpanOfBytes data) {
-    T t{};
     ScaleDecoderStream s(data);
-    try {
-      s >> t;
-    } catch (std::system_error &e) {
-      return outcome::failure(e.code());
-    }
-
+    return decode<T>(s);
+  }
+  template <typename T>
+  outcome::result<T> decode(ScaleDecoderStream &s) {
+    T t{};
+    OUTCOME_TRY(decode<T>(s, t));
     return outcome::success(std::move(t));
+  }
+  template <typename T>
+  outcome::result<void> decode(ScaleDecoderStream &s, T &t) {
+    return outcomeCatch([&] { s >> t; });
   }
 }  // namespace scale

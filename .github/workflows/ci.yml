@@ -18,7 +18,7 @@ env:
 
 jobs:
   MacOS:
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
@@ -26,8 +26,6 @@ jobs:
           path: ${{ env.CACHE_PATHS }}
           key: ${{ github.job }}-${{ env.CACHE_VERSION }}
       - name: build
-        env:
-          DEVELOPER_DIR: /Applications/Xcode_13.3.app/Contents/Developer
         run: ./scripts/build.sh
 
   Linux:
@@ -53,7 +51,7 @@ jobs:
   clang-tidy:
     name: "Linux: clang-tidy"
     runs-on: ubuntu-latest
-    container: soramitsu/kagome-dev:2-minideb
+    container: qdrvm/kagome-dev@sha256:14d5aa92c971073e82ba9bbac9b615701e99c71f64e58bdd45e5b3dbc09944bd
     steps:
       - uses: actions/checkout@v2
         with:

@@ -37,7 +37,7 @@ function(addtest test_name)
       COMMAND $<TARGET_FILE:${test_name}> ${xml_output}
   )
   set_target_properties(${test_name} PROPERTIES
-      RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests_bin
+      RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test_bin
       ARCHIVE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/tests_lib
       LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/tests_lib
   )
@@ -58,7 +58,7 @@ addtest(scale_encode_append_test
     scale_encode_append_test.cpp
 )
 target_link_libraries(scale_encode_append_test
-    scale_encode_append
+    scale
 )
 
 addtest(scale_compact_test

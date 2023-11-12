@@ -6,11 +6,15 @@
 
 cmake_minimum_required(VERSION 3.12)
 
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.27")
+    cmake_policy(SET CMP0144 NEW)
+endif()
+
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/HunterGate.cmake)
 
 HunterGate(
-    URL  https://github.com/qdrvm/hunter/archive/refs/tags/v0.23.257-qdrvm10.tar.gz
-    SHA1 72b446a4424ba28ea90f9a68a9134b0f8e44b5b2
+    URL  https://github.com/qdrvm/hunter/archive/refs/heads/turuslan/qtils.zip
+    SHA1 9f5aee42751b243f847dec0a8b6f0352a99a5611
 )
 
 project(Scale LANGUAGES CXX VERSION 1.1.0)
@@ -25,12 +29,16 @@ option(BUILD_TESTS "Whether to include the test suite in build" OFF)
 
 hunter_add_package(Boost)
 find_package(Boost CONFIG REQUIRED)
+hunter_add_package(fmt)
+find_package(fmt CONFIG REQUIRED)
+hunter_add_package(qtils)
+find_package(qtils CONFIG REQUIRED)
 
 add_subdirectory(src)
 
 if (BUILD_TESTS)
     enable_testing()
-    add_subdirectory(test ${CMAKE_BINARY_DIR}/tests_bin)
+    add_subdirectory(test ${CMAKE_BINARY_DIR}/test_bin)
 endif ()
 
 ###############################################################################
@@ -39,7 +47,7 @@ endif ()
 
 include(GNUInstallDirs)
 
-install(TARGETS scale scale_encode_append EXPORT scaleConfig
+install(TARGETS scale EXPORT scaleConfig
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
