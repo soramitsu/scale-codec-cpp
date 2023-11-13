@@ -70,51 +70,22 @@ namespace scale::__outcome_detail {
 /// MUST BE EXECUTED A FILE LEVEL (no namespace) in HPP
 // ns - fully qualified enum namespace. Example: libp2p::common
 // Enum - enum name. Example: EncodeError
-#define OUTCOME_HPP_DECLARE_ERROR_2(ns, Enum) \
-  namespace ns {                              \
-    __OUTCOME_DECLARE_MAKE_ERROR_CODE(Enum)   \
-  }                                           \
-                                              \
-  template <>                                 \
+#define OUTCOME_HPP_DECLARE_ERROR(ns, Enum) \
+  namespace ns {                            \
+    __OUTCOME_DECLARE_MAKE_ERROR_CODE(Enum) \
+  }                                         \
+                                            \
+  template <>                               \
   struct std::is_error_code_enum<ns::Enum> : std::true_type {};
-
-/// MUST BE EXECUTED A FILE LEVEL (global namespace) in HPP
-// Enum - enum name. Example: EncodeError
-#define OUTCOME_HPP_DECLARE_ERROR_1(Enum) \
-  __OUTCOME_DECLARE_MAKE_ERROR_CODE(Enum) \
-  template <>                             \
-  struct std::is_error_code_enum<Enum> : std::true_type {};
 
 /// MUST BE EXECUTED AT FILE LEVEL(no namespace) IN CPP
 // ns - fully qualified enum namespace. Example: libp2p::common
 // Enum - enum name. Example: EncodeError
 // Name - variable name. Example: e
-#define OUTCOME_CPP_DEFINE_CATEGORY_3(ns, Enum, Name)                \
+#define OUTCOME_CPP_DEFINE_CATEGORY(ns, Enum, Name)                  \
   namespace ns {                                                     \
     __OUTCOME_DEFINE_MAKE_ERROR_CODE(Enum)                           \
   };                                                                 \
   template <>                                                        \
   std::string scale::__outcome_detail::Category<ns::Enum>::toString( \
       ns::Enum Name)
-
-/// MUST BE EXECUTED AT FILE LEVEL(global namespace) IN CPP
-// Enum - enum name. Example: EncodeError
-// Name - variable name. Example: e
-#define OUTCOME_CPP_DEFINE_CATEGORY_2(Enum, Name) \
-  __OUTCOME_DEFINE_MAKE_ERROR_CODE(Enum)          \
-  template <>                                     \
-  std::string scale::__outcome_detail::Category<Enum>::toString(Enum Name)
-
-// kind of "macro overloading"
-#define __GET_MACRO_3(_1, _2, _3, NAME, ...) NAME
-#define __GET_MACRO_2(_1, _2, NAME, ...) NAME
-
-/// with 3 args: OUTCOME_CPP_DEFINE_CATEGORY_3
-/// with 2 args: OUTCOME_CPP_DEFINE_CATEGORY_2
-#define OUTCOME_CPP_DEFINE_CATEGORY(...) \
-  OUTCOME_CPP_DEFINE_CATEGORY_3(__VA_ARGS__)
-
-/// with 2 args: OUTCOME_CPP_DEFINE_CATEGORY_2
-/// with 1 arg : OUTCOME_CPP_DEFINE_CATEGORY_1
-#define OUTCOME_HPP_DECLARE_ERROR(...)                                         \
-  OUTCOME_HPP_DECLARE_ERROR_2(__VA_ARGS__)

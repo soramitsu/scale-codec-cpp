@@ -6,6 +6,10 @@
 
 cmake_minimum_required(VERSION 3.12)
 
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.27")
+    cmake_policy(SET CMP0144 NEW)
+endif()
+
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/HunterGate.cmake)
 
 HunterGate(
@@ -30,7 +34,7 @@ add_subdirectory(src)
 
 if (BUILD_TESTS)
     enable_testing()
-    add_subdirectory(test ${CMAKE_BINARY_DIR}/tests_bin)
+    add_subdirectory(test ${CMAKE_BINARY_DIR}/test_bin)
 endif ()
 
 ###############################################################################
@@ -39,7 +43,7 @@ endif ()
 
 include(GNUInstallDirs)
 
-install(TARGETS scale scale_encode_append EXPORT scaleConfig
+install(TARGETS scale EXPORT scaleConfig
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

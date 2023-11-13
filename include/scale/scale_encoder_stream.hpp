@@ -7,13 +7,14 @@
 #pragma once
 
 #include <deque>
-#include <list>
+#include <memory>
 #include <optional>
 
 #include <boost/variant.hpp>
 
 #include <scale/bitvec.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
+#include <scale/scale_error.hpp>
 #include <scale/types.hpp>
 
 namespace scale {

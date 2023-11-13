@@ -6,9 +6,6 @@
 
 #include "scale/scale_decoder_stream.hpp"
 
-#include "scale/scale_error.hpp"
-#include "scale/types.hpp"
-
 namespace scale {
   namespace {
     CompactInteger decodeCompactInteger(ScaleDecoderStream &stream) {

@@ -7,8 +7,6 @@
 #include "scale/scale_encoder_stream.hpp"
 
 #include "compact_len_utils.hpp"
-#include "scale/scale_error.hpp"
-#include "scale/types.hpp"
 
 namespace scale {
   namespace {

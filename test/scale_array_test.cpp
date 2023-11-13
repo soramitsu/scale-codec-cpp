@@ -30,10 +30,8 @@ void testArray() {
     Array testee;
     std::fill(testee.begin(), testee.end(), value);
 
-    ASSERT_OUTCOME_SUCCESS(data, encode(testee));
-    EXPECT_OUTCOME_SUCCESS(decoded_res, decode<Array>(data));
-
-    const Array &result = decoded_res.value();
+    EXPECT_OUTCOME_TRUE(data, encode(testee));
+    EXPECT_OUTCOME_TRUE(result, decode<Array>(data));
 
     EXPECT_EQ(testee, result);
   }

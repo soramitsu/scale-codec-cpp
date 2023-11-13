@@ -12,7 +12,6 @@
 #include <vector>
 
 #include <boost/multiprecision/cpp_int.hpp>
-#include <scale/outcome/outcome.hpp>
 
 namespace scale {
 

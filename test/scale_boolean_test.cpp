@@ -59,8 +59,7 @@ Stream &operator>>(Stream &s, ThreeBooleans &v) {
  */
 TEST(Scale, fixedwidthDecodeBoolFail) {
   auto bytes = ByteArray{0, 1, 2};
-  EXPECT_OUTCOME_FALSE_2(err, scale::decode<ThreeBooleans>(bytes))
-  ASSERT_EQ(err.value(), static_cast<int>(DecodeError::UNEXPECTED_VALUE));
+  EXPECT_EC(scale::decode<ThreeBooleans>(bytes), DecodeError::UNEXPECTED_VALUE);
 }
 
 /**
