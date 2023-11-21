@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <qtils/enum_error_code.hpp>
+#include <scale/outcome/outcome-register.hpp>
 
 namespace scale {
 

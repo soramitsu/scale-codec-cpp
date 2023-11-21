@@ -11,5 +11,4 @@ target_include_directories(scale PUBLIC
     )
 target_link_libraries(scale
     Boost::boost
-    qtils::qtils
     )
