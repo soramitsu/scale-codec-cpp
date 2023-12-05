@@ -18,8 +18,5 @@ namespace scale {
     bool operator==(const BitVec &other) const {
       return bits == other.bits;
     }
-    bool operator!=(const BitVec &other) const {
-      return !(*this == other);
-    }
   };
 }  // namespace scale

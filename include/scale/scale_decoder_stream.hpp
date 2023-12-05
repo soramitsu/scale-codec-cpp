@@ -29,6 +29,19 @@ namespace scale {
     explicit ScaleDecoderStream(ConstSpanOfBytes data)
         : span_{data}, current_iterator_{span_.begin()}, current_index_{0} {}
 
+    template <typename T>
+    T decodeCompact() {
+      // TODO(turuslan): don't allocate cpp_int
+      scale::CompactInteger big;
+      *this >> big;
+      if (not big.is_zero() and msb(big) >= std::numeric_limits<T>::digits) {
+        raise(DecodeError::TOO_MANY_ITEMS);
+      }
+      return static_cast<T>(big);
+    }
+
+    size_t decodeLength();
+
     /**
      * @brief scale-decodes pair of values
      * @tparam F first value type
@@ -192,12 +205,7 @@ namespace scale {
      * @return reference to stream
      */
     ScaleDecoderStream &operator>>(ResizeableCollection auto &collection) {
-      using size_type = decltype(collection.size());
-
-      CompactInteger size{0u};
-      *this >> size;
-
-      auto item_count = size.convert_to<size_type>();
+      auto item_count = decodeLength();
       if (item_count > collection.max_size()) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
@@ -220,10 +228,7 @@ namespace scale {
      * @return reference to stream
      */
     ScaleDecoderStream &operator>>(std::vector<bool> &collection) {
-      CompactInteger size{0u};
-      *this >> size;
-
-      auto item_count = size.convert_to<size_t>();
+      auto item_count = decodeLength();
       if (item_count > collection.max_size()) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
@@ -260,10 +265,7 @@ namespace scale {
     ScaleDecoderStream &operator>>(ExtensibleBackCollection auto &collection) {
       using size_type = typename std::decay_t<decltype(collection)>::size_type;
 
-      CompactInteger size{0u};
-      *this >> size;
-
-      auto item_count = size.convert_to<size_type>();
+      auto item_count = decodeLength();
       if (item_count > collection.max_size()) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
@@ -294,10 +296,7 @@ namespace scale {
       using value_type =
           typename std::decay_t<decltype(collection)>::value_type;
 
-      CompactInteger size{0u};
-      *this >> size;
-
-      auto item_count = size.convert_to<size_type>();
+      auto item_count = decodeLength();
       if (item_count > collection.max_size()) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }

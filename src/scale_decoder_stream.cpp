@@ -76,6 +76,14 @@ namespace scale {
     }
   }  // namespace
 
+  size_t ScaleDecoderStream::decodeLength() {
+    size_t size = decodeCompact<size_t>();
+    if (not hasMore(size)) {
+      raise(DecodeError::NOT_ENOUGH_DATA);
+    }
+    return size;
+  }
+
   std::optional<bool> ScaleDecoderStream::decodeOptionalBool() {
     auto byte = nextByte();
     switch (static_cast<OptionalBool>(byte)) {
@@ -107,10 +115,11 @@ namespace scale {
   }
 
   ScaleDecoderStream &ScaleDecoderStream::operator>>(BitVec &v) {
-    v.bits.resize(static_cast<size_t>(decodeCompactInteger(*this)));
-    if (not hasMore((v.bits.size() + 7) / 8)) {
+    auto size = decodeCompact<size_t>();
+    if (not hasMore((size + 7) / 8)) {
       raise(DecodeError::NOT_ENOUGH_DATA);
     }
+    v.bits.resize(size);
     size_t i = 0;
     uint8_t byte = 0;
     for (std::vector<bool>::reference bit : v.bits) {
