@@ -27,7 +27,7 @@ namespace scale {
     static constexpr auto is_decoder_stream = true;
 
     explicit ScaleDecoderStream(ConstSpanOfBytes data)
-        : span_{data}, current_iterator_{span_.begin()}, current_index_{0} {}
+        : span_{data}, current_index_{0} {}
 
     template <typename T>
     T decodeCompact() {
@@ -144,7 +144,13 @@ namespace scale {
         return *this;
       }
       // decode any other integer
-      v = detail::decodeInteger<I>(*this);
+      if (not hasMore(sizeof(T))) {
+        raise(DecodeError::NOT_ENOUGH_DATA);
+      }
+      v = boost::endian::
+          endian_load<T, sizeof(T), boost::endian::order::little>(
+              &span_[current_index_]);
+      current_index_ += sizeof(T);
       return *this;
     }
 
@@ -373,7 +379,6 @@ namespace scale {
     }
 
     ByteSpan span_;
-    SpanIterator current_iterator_;
     SizeType current_index_;
   };
 

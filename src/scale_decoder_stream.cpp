@@ -141,7 +141,6 @@ namespace scale {
     if (not hasMore(1)) {
       raise(DecodeError::NOT_ENOUGH_DATA);
     }
-    ++current_index_;
-    return *current_iterator_++;
+    return span_[current_index_++];
   }
 }  // namespace scale
