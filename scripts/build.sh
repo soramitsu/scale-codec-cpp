@@ -9,7 +9,7 @@ MAKE_ARGS="${MAKE_ARGS:-"-j$JOBS_NUM"}"
 if [[ -n "$GITHUB_WORKSPACE" ]]; then
   git config --global --add safe.directory $GITHUB_WORKSPACE
 fi
-if [[ -n "$CI" && -f /venv/bin/activate ]]; then
+if [[ -n "$KAGOME_IN_DOCKER" ]]; then
   source /venv/bin/activate
 fi
 
