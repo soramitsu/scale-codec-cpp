@@ -35,20 +35,6 @@ namespace scale {
   };
 
   template <typename T>
-  struct ExplicitlyStatic : public T {
-    static constexpr bool is_static_collection = true;
-  };
-
-  template <typename T>
-  struct ExplicitlyDynamic : public T {
-    static constexpr bool is_static_collection = false;
-  };
-
-  template <class T>
-  concept ExplicitlyDefinedAsStaticOrDynamic =
-      requires(T) { T::is_static_collection; };
-
-  template <typename T>
   struct __is_derived_of_span_impl {
     template <typename V, size_t S>
     static constexpr std::true_type test(const std::span<V, S> *);
@@ -62,14 +48,6 @@ namespace scale {
   template <typename T>
   concept SomeSpan = __is_derived_of_span<T>::value  //
                      and requires(T) { T::extent; };
-
-  template <class T>
-  concept ExplicitlyDefinedAsStatic = ExplicitlyDefinedAsStaticOrDynamic<T>  //
-                                      and T::is_static_collection;
-
-  template <class T>
-  concept ExplicitlyDefinedAsDynamic = ExplicitlyDefinedAsStaticOrDynamic<T>  //
-                                       and not(T::is_static_collection);
 
   template <class T>
   concept HasSomeInsertMethod =
@@ -89,16 +67,12 @@ namespace scale {
   concept HasEmplaceBackMethod = requires(T v) { v.emplace_back(*v.begin()); };
 
   template <class T>
-  concept ImplicitlyDefinedAsStatic =
-      not(ExplicitlyDefinedAsStaticOrDynamic<T>) and  //
-      not(SomeSpan<T>) and                            //
-      not(HasSomeInsertMethod<T>);
+  concept ImplicitlyDefinedAsStatic = not(SomeSpan<T>) and  //
+                                      not(HasSomeInsertMethod<T>);
 
   template <class T>
-  concept ImplicitlyDefinedAsDynamic =
-      not(ExplicitlyDefinedAsStaticOrDynamic<T>) and  //
-      not(SomeSpan<T>) and                            //
-      HasSomeInsertMethod<T>;
+  concept ImplicitlyDefinedAsDynamic = not(SomeSpan<T>) and  //
+                                       HasSomeInsertMethod<T>;
 
   template <typename T>
   concept StaticSpan = SomeSpan<T>  //
@@ -110,14 +84,12 @@ namespace scale {
 
   template <class T>
   concept StaticCollection = std::ranges::range<T>
-                             and (ExplicitlyDefinedAsStatic<T>     //
-                                  or ImplicitlyDefinedAsStatic<T>  //
+                             and (ImplicitlyDefinedAsStatic<T>  //
                                   or StaticSpan<T>);
 
   template <class T>
   concept DynamicCollection = std::ranges::sized_range<T>
-                              and (ExplicitlyDefinedAsDynamic<T>     //
-                                   or ImplicitlyDefinedAsDynamic<T>  //
+                              and (ImplicitlyDefinedAsDynamic<T>  //
                                    or DynamicSpan<T>);
 
   template <class T>

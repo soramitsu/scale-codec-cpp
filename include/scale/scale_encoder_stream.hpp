@@ -177,7 +177,7 @@ namespace scale {
      * @return reference to stream
      */
     ScaleEncoderStream &operator<<(std::string_view sv) {
-      return encodeDynamicCollection(ExplicitlyDynamic<std::string_view>{sv});
+      return encodeDynamicCollection(sv);
     }
 
     /**
@@ -252,7 +252,7 @@ namespace scale {
      * @return reference to stream
      */
     ScaleEncoderStream &encodeDynamicCollection(
-        const DynamicCollection auto &collection) {
+        const std::ranges::sized_range auto &collection) {
       *this << CompactInteger{collection.size()};
       for (const auto &item : collection) {
         *this << item;
