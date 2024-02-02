@@ -1,7 +1,6 @@
 add_library(scale
     encode_append.cpp
     scale_decoder_stream.cpp
-    scale_encoder_stream.cpp
     scale_error.cpp
     )
 

@@ -15,8 +15,6 @@ namespace scale {
   struct BitVec {
     std::vector<bool> bits;
 
-    bool operator==(const BitVec &other) const {
-      return bits == other.bits;
-    }
+    bool operator==(const BitVec &) const = default;
   };
 }  // namespace scale

@@ -25,7 +25,6 @@ function(addtest test_name)
       ${ARGN}
   )
   target_link_libraries(${test_name}
-      GTest::gtest
       GTest::gmock_main
   )
   target_include_directories(${test_name} PRIVATE
@@ -110,13 +109,6 @@ target_link_libraries(scale_variant_test
     scale
 )
 
-addtest(scale_pair_test
-    scale_pair_test.cpp
-)
-target_link_libraries(scale_pair_test
-    scale
-)
-
 addtest(scale_strings_test
     scale_strings_test.cpp
 )
@@ -142,12 +134,5 @@ addtest(scale_array_test
     scale_array_test.cpp
 )
 target_link_libraries(scale_array_test
-    scale
-)
-
-addtest(scale_encode_counter_test
-    scale_encode_counter_test.cpp
-)
-target_link_libraries(scale_encode_counter_test
     scale
 )

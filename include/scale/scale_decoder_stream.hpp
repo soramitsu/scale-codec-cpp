@@ -10,12 +10,14 @@
 #include <memory>
 #include <optional>
 #include <utility>
+#include <variant>
 
 #include <boost/variant.hpp>
 
 #include <scale/bitvec.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
 #include <scale/scale_error.hpp>
+#include <scale/tie.hpp>
 #include <scale/types.hpp>
 #include <type_traits>
 
@@ -42,20 +44,6 @@ namespace scale {
     size_t decodeLength();
 
     /**
-     * @brief scale-decodes pair of values
-     * @tparam F first value type
-     * @tparam S second value type
-     * @param p pair of values to decode
-     * @return reference to stream
-     */
-    template <class F, class S>
-    ScaleDecoderStream &operator>>(std::pair<F, S> &p) {
-      static_assert(!std::is_reference_v<F> && !std::is_reference_v<S>);
-      return *this >> const_cast<std::remove_const_t<F> &>(p.first)  // NOLINT
-             >> const_cast<std::remove_const_t<S> &>(p.second);      // NOLINT
-    }
-
-    /**
      * @brief scale-decoding of tuple
      * @tparam T enumeration of tuples types
      * @param v reference to tuple
@@ -63,10 +51,21 @@ namespace scale {
      */
     template <class... T>
     ScaleDecoderStream &operator>>(std::tuple<T...> &v) {
-      if constexpr (sizeof...(T) > 0) {
-        decodeElementOfTuple<0>(v);
+      if constexpr (sizeof...(T) != 0) {
+        std::apply(
+            [&](T &...v) {
+              (*this >> ... >> const_cast<std::remove_cvref_t<T> &>(v));
+            },
+            v);
       }
       return *this;
+    }
+
+    template <IsTie T>
+      requires(not std::ranges::sized_range<T>)
+    ScaleDecoderStream &operator>>(T &v) {
+      auto t = ::scale::tie(v);
+      return *this >> t;
     }
 
     /**
@@ -77,16 +76,13 @@ namespace scale {
      */
     template <class... Ts>
     ScaleDecoderStream &operator>>(boost::variant<Ts...> &v) {
-      // first byte means type index
-      uint8_t type_index = 0u;
-      *this >> type_index;  // decode type index
+      decodeVariant<Ts...>(v);
+      return *this;
+    }
 
-      // ensure that index is in [0, types_count)
-      if (type_index >= sizeof...(Ts)) {
-        raise(DecodeError::WRONG_TYPE_INDEX);
-      }
-
-      tryDecodeAsOneOfVariant<0>(v, type_index);
+    template <class... Ts>
+    ScaleDecoderStream &operator>>(std::variant<Ts...> &v) {
+      decodeVariant<Ts...>(v);
       return *this;
     }
 
@@ -353,17 +349,22 @@ namespace scale {
      */
     std::optional<bool> decodeOptionalBool();
 
-    template <size_t I, class... Ts>
-    void decodeElementOfTuple(std::tuple<Ts...> &v) {
-      using T = std::remove_const_t<std::tuple_element_t<I, std::tuple<Ts...>>>;
-      *this >> const_cast<T &>(std::get<I>(v));  // NOLINT
-      if constexpr (sizeof...(Ts) > I + 1) {
-        decodeElementOfTuple<I + 1>(v);
+    template <typename... Ts>
+    void decodeVariant(auto &v) {
+      // first byte means type index
+      uint8_t type_index = 0u;
+      *this >> type_index;  // decode type index
+
+      // ensure that index is in [0, types_count)
+      if (type_index >= sizeof...(Ts)) {
+        raise(DecodeError::WRONG_TYPE_INDEX);
       }
+
+      tryDecodeAsOneOfVariant<0, Ts...>(v, type_index);
     }
 
     template <size_t I, class... Ts>
-    void tryDecodeAsOneOfVariant(boost::variant<Ts...> &v, size_t i) {
+    void tryDecodeAsOneOfVariant(auto &v, size_t i) {
       using T = std::remove_const_t<std::tuple_element_t<I, std::tuple<Ts...>>>;
       static_assert(std::is_default_constructible_v<T>);
       if (I == i) {
@@ -373,7 +374,7 @@ namespace scale {
         return;
       }
       if constexpr (sizeof...(Ts) > I + 1) {
-        tryDecodeAsOneOfVariant<I + 1>(v, i);
+        return tryDecodeAsOneOfVariant<I + 1, Ts...>(v, i);
       }
     }
 

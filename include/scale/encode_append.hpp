@@ -6,26 +6,14 @@
 
 #pragma once
 
+#include <cstdint>
 #include <scale/outcome/outcome.hpp>
-#include <scale/types.hpp>
+#include <span>
+#include <vector>
 
 namespace scale {
-
-  /**
-   * Vector wrapper, that is scale encoded without prepended CompactInteger
-   */
-  struct EncodeOpaqueValue {
-    ConstSpanOfBytes v;
-  };
-
-  template <class Stream,
-            typename = std::enable_if_t<Stream::is_encoder_stream>>
-  Stream &operator<<(Stream &s, const EncodeOpaqueValue &value) {
-    for (auto &&it = value.v.begin(), end = value.v.end(); it != end; ++it) {
-      s << *it;
-    }
-    return s;
-  }
+  using BytesIn = std::span<const uint8_t>;
+  using Bytes = std::vector<uint8_t>;
 
   /**
    * Adds an EncodeOpaqueValue to a scale encoded vector of EncodeOpaqueValue's.
@@ -43,6 +31,7 @@ namespace scale {
    * \param self_encoded
    * @return success if input was appended to self_encoded, failure otherwise
    */
-  outcome::result<void> append_or_new_vec(std::vector<uint8_t> &self_encoded,
-                                          ConstSpanOfBytes input);
+  outcome::result<void> append_or_new_vec(Bytes &encoded,
+                                          BytesIn items_raw,
+                                          size_t items_count);
 }  // namespace scale

@@ -4,16 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <gtest/gtest.h>
-
-#include <scale/enum_traits.hpp>
-#include <scale/scale_decoder_stream.hpp>
-#include <scale/scale_encoder_stream.hpp>
-#include <scale/types.hpp>
-
-using scale::ByteArray;
-using scale::ScaleDecoderStream;
-using scale::ScaleEncoderStream;
+#include "util/scale.hpp"
 
 template <typename T>
 class EnumTest : public ::testing::Test {
@@ -48,28 +39,10 @@ SCALE_DEFINE_ENUM_VALUE_LIST(, Bar, Bar::A, Bar::B, Bar::C);
 TYPED_TEST(EnumTest, ConsistentEncodingDecoding) {
   SCOPED_TRACE(TestFixture::enum_name);
   for (auto const &param : TestFixture::values) {
-    ScaleEncoderStream encoder{};
-    ASSERT_NO_THROW((encoder << param));
-
-    auto v = encoder.to_vector();
-    ScaleDecoderStream decoder{v};
-    TypeParam decoded_value;
-    ASSERT_NO_THROW((decoder >> decoded_value));
-
-    EXPECT_EQ(decoded_value, param);
-  }
-}
-
-TYPED_TEST(EnumTest, CorrectEncoding) {
-  for (auto const &param : TestFixture::values) {
-    ScaleEncoderStream encoder{};
-    ASSERT_NO_THROW((encoder << param));
-    auto v = encoder.to_vector();
-    ScaleDecoderStream decoder{v};
-    std::underlying_type_t<TypeParam> decoded_value;
-    ASSERT_NO_THROW((decoder >> decoded_value));
-    EXPECT_EQ(decoded_value,
-              static_cast<std::underlying_type_t<TypeParam>>(param));
+    auto raw =
+        scale::encode(static_cast<std::underlying_type_t<TypeParam>>(param))
+            .value();
+    TEST_SCALE_ENCODE_DECODE(param, raw);
   }
 }
 
@@ -96,11 +69,7 @@ TYPED_TEST_SUITE(InvalidEnumTest, MyTypes);
 
 TYPED_TEST(InvalidEnumTest, ThrowsOnInvalidValue) {
   for (auto const &param : TestFixture::invalid_values) {
-    ScaleEncoderStream encoder{};
-    ASSERT_NO_THROW((encoder << param));
-    auto v = encoder.to_vector();
-    ScaleDecoderStream decoder{v};
-    TypeParam decoded_value;
-    ASSERT_THROW((decoder >> decoded_value), std::runtime_error);
+    auto raw = scale::encode(param).value();
+    TEST_SCALE_DECODE_ERROR(TypeParam, raw, DecodeError::INVALID_ENUM_VALUE);
   }
 }

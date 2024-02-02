@@ -76,13 +76,31 @@ try {
 You may need to encode or decode custom data types, you have to define custom << and >> operators.
 Please note, that your custom data types must be default-constructible.
 ```c++
-struct MyType {
+// Implicit encoding/decoding as tuple deduced for `MyTuple1`.
+struct MyTuple1 {
     int a = 0;
     std::string b;
 };
 
-ScaleEncoderStream &operator<<(ScaleEncoderStream &s, const MyType &v) {
-  return s << v.a << v.b;
+struct MyTuple2 {
+    int a = 0;
+    std::string b;
+    str::string debug_message;
+
+    // Select fields for encoding/decoding as tuple.
+    auto tie() { return std::tie(a, b); }
+};
+
+struct MyType {
+    int a = 0;
+    std::string b;
+
+    // Disable encoding/decoding as tuple.
+    void tie();
+};
+
+void encodeTo(SCALE_FN, const MyType &v) {
+  encodeTo(tag, fn, v.a, v.b);
 }
 
 ScaleDecoderStream &operator>>(ScaleDecoderStream &s, MyType &v) {

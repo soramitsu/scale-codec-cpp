@@ -1,4 +1,5 @@
 BasedOnStyle: Google
+BreakStringLiterals: false
 NamespaceIndentation: All
 BreakBeforeBinaryOperators: NonAssignment
 AlignOperands: true

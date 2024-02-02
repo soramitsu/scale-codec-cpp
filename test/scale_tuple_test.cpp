@@ -4,60 +4,38 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "scale/scale.hpp"
+#include "util/scale.hpp"
 
-#include <gtest/gtest.h>
-#include "util/outcome.hpp"
+using T1 = uint8_t;
+using T2 = uint16_t;
+using T3 = uint32_t;
 
-using scale::ByteArray;
-using scale::ScaleDecoderStream;
-using scale::ScaleEncoderStream;
+#define TEST_TUPLE(type) \
+  TEST_SCALE_ENCODE_DECODE(type{1, 2, 3}, "01020003000000"_unhex)
 
-/**
- * @given 3 values of different types: uint8_t, uint32_t and uint8_t
- * @when encode is applied
- * @then obtained serialized value meets predefined one
- */
-TEST(Scale, EncodeTupleSuccess) {
-  uint8_t v1 = 1;
-  uint32_t v2 = 2;
-  uint8_t v3 = 3;
-  ByteArray expected_bytes = {1, 2, 0, 0, 0, 3};
+struct Tie1 {
+  T1 t1;
+  T2 t2;
+  T3 t3;
+};
+struct Tie2 {
+  T1 t1;
+  T2 t2;
+  T3 t3;
+  int t4 = 4;
+  auto tie() {
+    return std::tie(t1, t2, t3);
+  }
+};
+struct Pairs {
+  Pairs() = default;
+  Pairs(T1 t1, T2 t2, T3 t3) : t{{t1, t2}, t3} {}
+  std::pair<std::pair<T1, T2>, T3> t;
+};
 
-  ScaleEncoderStream s;
-  ASSERT_NO_THROW((s << std::make_tuple(v1, v2, v3)));
-  ASSERT_EQ(s.to_vector(), (expected_bytes));
-}
-
-/**
- * @given byte sequence containign 3 encoded values of
- * different types: uint8_t, uint32_t and uint8_t
- * @when decode is applied
- * @then obtained pair mathces predefined one
- */
-TEST(Scale, DecodeTupleSuccess) {
-  ByteArray bytes = {1, 2, 0, 0, 0, 3};
-  ScaleDecoderStream s(bytes);
-  using tuple_type = std::tuple<uint8_t, uint32_t, uint8_t>;
-  tuple_type tuple{};
-  ASSERT_NO_THROW((s >> tuple));
-  auto &&[v1, v2, v3] = tuple;
-  ASSERT_EQ(v1, 1);
-  ASSERT_EQ(v2, 2);
-  ASSERT_EQ(v3, 3);
-}
-
-/**
- * @given a tuple composed of 4 different values and correspondent byte array
- * @when tuple is encoded, @and then decoded
- * @then decoded value come up with original tuple
- */
-TEST(Scale, EncodeDecodeTupleSuccess) {
-  using tuple_type_t = std::tuple<uint8_t, uint16_t, uint8_t, uint32_t>;
-  tuple_type_t tuple =
-      std::make_tuple(uint8_t(1), uint16_t(3), uint8_t(2), uint32_t(4));
-
-  EXPECT_OUTCOME_TRUE(actual_bytes, scale::encode(tuple));
-  EXPECT_OUTCOME_TRUE(decoded, scale::decode<tuple_type_t>(actual_bytes));
-  ASSERT_EQ(decoded, tuple);
+TEST(Tuple, Test) {
+  TEST_TUPLE((std::tuple<T1, T2, T3>));
+  TEST_TUPLE(Tie1);
+  TEST_TUPLE(Tie2);
+  TEST_TUPLE(Pairs);
 }
