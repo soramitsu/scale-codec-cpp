@@ -4,10 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include <gtest/gtest.h>
-#include <exception>
 
-#include <boost/exception/all.hpp>
-#include <boost/exception/info.hpp>
 #include "scale/scale_decoder_stream.hpp"
 #include "scale/types.hpp"
 

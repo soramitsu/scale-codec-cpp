@@ -6,64 +6,11 @@
 
 #pragma once
 
-#include <boost/system/system_error.hpp>
-#include <boost/throw_exception.hpp>
-
 #include <scale/enum_traits.hpp>
-#include <scale/outcome/outcome.hpp>
+#include <scale/outcome/catch.hpp>
 #include <scale/scale_decoder_stream.hpp>
-#include <scale/scale_encoder_stream.hpp>
-
-#define SCALE_EMPTY_DECODER(TargetType)                             \
-  template <typename Stream,                                        \
-            typename = std::enable_if_t<Stream::is_decoder_stream>> \
-  Stream &operator>>(Stream &s, TargetType &) {                     \
-    return s;                                                       \
-  }
-
-#define SCALE_EMPTY_ENCODER(TargetType)                             \
-  template <typename Stream,                                        \
-            typename = std::enable_if_t<Stream::is_encoder_stream>> \
-  Stream &operator<<(Stream &s, const TargetType &) {               \
-    return s;                                                       \
-  }
-
-#define SCALE_EMPTY_CODER(TargetType) \
-  SCALE_EMPTY_ENCODER(TargetType)     \
-  SCALE_EMPTY_DECODER(TargetType)
 
 namespace scale {
-  template <typename F>
-  outcome::result<std::invoke_result_t<F>> outcomeCatch(F &&f) {
-    try {
-      if constexpr (std::is_void_v<std::invoke_result_t<F>>) {
-        f();
-        return outcome::success();
-      } else {
-        return outcome::success(f());
-      }
-    } catch (std::system_error &e) {
-      return outcome::failure(e.code());
-    }
-  }
-
-  /**
-   * @brief convenience function for encoding primitives data to stream
-   * @tparam Args primitive types to be encoded
-   * @param args data to encode
-   * @return encoded data
-   */
-  template <typename... Args>
-  outcome::result<std::vector<uint8_t>> encode(Args &&...args) {
-    ScaleEncoderStream s{};
-    OUTCOME_TRY(encode(s, std::forward<Args>(args)...));
-    return s.to_vector();
-  }
-  template <typename... Args>
-  outcome::result<void> encode(ScaleEncoderStream &s, Args &&...args) {
-    return outcomeCatch([&] { (s << ... << std::forward<Args>(args)); });
-  }
-
   /**
    * @brief convenience function for decoding primitives data from stream
    * @tparam T primitive type that is decoded from provided span

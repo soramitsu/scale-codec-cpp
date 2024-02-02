@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "scale/scale.hpp"
-
 #include <gtest/gtest.h>
+#include <scale/encode.hpp>
+#include <scale/scale.hpp>
 
 #include "util/outcome.hpp"
 
@@ -17,15 +17,8 @@ struct TestStruct {
   std::string a;
   int b;
 
-  inline bool operator==(const TestStruct &rhs) const {
-    return a == rhs.a && b == rhs.b;
-  }
+  bool operator==(const TestStruct &rhs) const = default;
 };
-
-template <class Stream, typename = std::enable_if_t<Stream::is_encoder_stream>>
-Stream &operator<<(Stream &s, const TestStruct &test_struct) {
-  return s << test_struct.a << test_struct.b;
-}
 
 template <class Stream, typename = std::enable_if_t<Stream::is_decoder_stream>>
 Stream &operator>>(Stream &s, TestStruct &test_struct) {

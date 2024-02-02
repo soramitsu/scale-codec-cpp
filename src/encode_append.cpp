@@ -4,71 +4,40 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <cstring>
+#include <scale/encode.hpp>
 #include <scale/encode_append.hpp>
 #include <scale/scale.hpp>
 
-#include "compact_len_utils.hpp"
-
 namespace scale {
-
-  /**
-   * @param data Scale encoded vector of EncodeOpaqueValues
-   * @return tuple containing:
-   *  1. new length of vector after inserting there one more EncodeOpaqueValues
-   *  2. current length of CompactInteger-scale-encoded length of
-   * EncodeOpaqueValues vector
-   *  3. length of CompactInteger-scale-encoded length of EncodeOpaqueValues
-   * vector after insertion there one more EncodeOpaqueValue
-   */
-  outcome::result<std::tuple<uint32_t, uint32_t, uint32_t>> extract_length_data(
-      const std::vector<uint8_t> &data) {
-    OUTCOME_TRY(len, scale::decode<CompactInteger>(data));
-    auto new_len = (len + 1).convert_to<uint32_t>();
-    auto encoded_len = compact::compactLen(len.convert_to<uint32_t>());
-    auto encoded_new_len = compact::compactLen(new_len);
-    return std::make_tuple(new_len, encoded_len, encoded_new_len);
-  }
-
-  outcome::result<void> append_or_new_vec(std::vector<uint8_t> &self_encoded,
-                                          ConstSpanOfBytes input) {
-    EncodeOpaqueValue opaque_value{.v = input};
-
+  outcome::result<void> append_or_new_vec(Bytes &encoded,
+                                          BytesIn items_raw,
+                                          size_t items_count) {
     // No data present, just encode the given input data.
-    if (self_encoded.empty()) {
-      self_encoded =
-          scale::encode(std::vector<EncodeOpaqueValue>{opaque_value}).value();
+    if (encoded.empty()) {
+      EncodeCompact count{items_count};
+      encoded.reserve(encodeSize(count) + items_raw.size());
+      OUTCOME_TRY(encodeTo(encoded, count, EncodeRaw{items_raw}));
       return outcome::success();
     }
-
-    OUTCOME_TRY(extract_tuple, extract_length_data(self_encoded));
-    const auto &[new_len, encoded_len, encoded_new_len] = extract_tuple;
-
-    auto replace_len = [new_len = new_len](std::vector<uint8_t> &dest) {
-      auto e = scale::encode(CompactInteger{new_len}).value();
-      std::move(e.begin(), e.end(), dest.begin());
-    };
-
-    // If old and new encoded len is equal, we don't need to copy the
-    // already encoded data.
-    if (encoded_len != encoded_new_len) {
-      // reserve place for new len, old vector and new vector
-      self_encoded.reserve(encoded_new_len + (self_encoded.size() - encoded_len)
-                           + opaque_value.v.size());
-
-      // shift the data bytes in a container to give space for the new Compact
-      // encoded length prefix
-      const auto shift_size = encoded_new_len - encoded_len;
-      self_encoded.resize(self_encoded.size() + shift_size);
-      std::rotate(self_encoded.rbegin(),
-                  self_encoded.rbegin() + shift_size,
-                  self_encoded.rend());
-    } else {
-      // reserve place for existing and new vector
-      self_encoded.reserve(self_encoded.size() + opaque_value.v.size());
+    OUTCOME_TRY(old_count_big, decode<CompactInteger>(encoded));
+    auto old_count = size_t{old_count_big};
+    size_t new_count = old_count + items_count;
+    auto old_count_len = encodeSize(EncodeCompact{old_count});
+    auto new_count_len = encodeSize(EncodeCompact{new_count});
+    auto old = encoded.size() - old_count_len;
+    encoded.reserve(new_count_len + old + items_raw.size());
+    if (new_count_len != old_count_len) {
+      encoded.resize(new_count_len + old);
+      std::memmove(
+          encoded.data() + new_count_len, encoded.data() + old_count_len, old);
     }
-    replace_len(self_encoded);
-    self_encoded.insert(
-        self_encoded.end(), opaque_value.v.begin(), opaque_value.v.end());
+    auto it = encoded.begin();
+    encodeCompact(
+        FnTag{},
+        [&](BytesIn raw) { it = std::copy(raw.begin(), raw.end(), it); },
+        new_count);
+    OUTCOME_TRY(encodeTo(encoded, EncodeRaw{items_raw}));
     return outcome::success();
   }
 }  // namespace scale

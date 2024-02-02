@@ -4,6 +4,7 @@
 
 #include <cassert>
 
+#include <scale/encode.hpp>
 #include <scale/scale.hpp>
 
 int main() {
