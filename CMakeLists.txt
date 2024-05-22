@@ -13,8 +13,8 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/HunterGate.cmake)
 
 HunterGate(
-    URL  https://github.com/qdrvm/hunter/archive/refs/tags/v0.23.257-qdrvm10.tar.gz
-    SHA1 72b446a4424ba28ea90f9a68a9134b0f8e44b5b2
+    URL  https://github.com/qdrvm/hunter/archive/f7e047b26b7baece6dd195d1010149e606c48ec3.zip
+    SHA1 be4f7995065c18d4ca894f69f616b367c3237366
 )
 
 project(Scale LANGUAGES CXX VERSION 1.1.0)
@@ -29,6 +29,9 @@ option(BUILD_TESTS "Whether to include the test suite in build" OFF)
 
 hunter_add_package(Boost)
 find_package(Boost CONFIG REQUIRED)
+
+hunter_add_package(qtils)
+find_package(qtils CONFIG REQUIRED)
 
 add_subdirectory(src)
 
