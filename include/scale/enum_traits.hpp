@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <type_traits>
 
 #include <scale/outcome/outcome_throw.hpp>
