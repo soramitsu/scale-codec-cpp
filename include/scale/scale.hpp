@@ -10,7 +10,7 @@
 #include <boost/throw_exception.hpp>
 
 #include <scale/enum_traits.hpp>
-#include <scale/outcome/outcome.hpp>
+#include <qtils/outcome.hpp>
 #include <scale/scale_decoder_stream.hpp>
 #include <scale/scale_encoder_stream.hpp>
 
