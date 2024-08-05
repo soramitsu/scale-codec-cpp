@@ -7,7 +7,7 @@ add_library(scale
 
 target_include_directories(scale PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include/scale>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
 target_link_libraries(scale
     Boost::boost
