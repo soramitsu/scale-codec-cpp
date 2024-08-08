@@ -69,11 +69,11 @@ write_basic_package_version_file(
 
 install(
     FILES ${CMAKE_CURRENT_BINARY_DIR}/scaleConfigVersion.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/scale
+    DESTINATION share/scale
 )
 
 install(
     EXPORT scaleConfig
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/scale
+    DESTINATION share/scale
     NAMESPACE scale::
 )
