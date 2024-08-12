@@ -4,10 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "scale/encode_append.hpp"
-
 #include <gtest/gtest.h>
-
+#include <scale/encode_append.hpp>
 #include <scale/scale.hpp>
 
 namespace scale {

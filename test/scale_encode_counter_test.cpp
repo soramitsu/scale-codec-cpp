@@ -5,11 +5,7 @@
  */
 
 #include <gtest/gtest.h>
-
-#include <optional>
-#include <string>
-
-#include <scale/scale_encoder_stream.hpp>
+#include <scale/scale.hpp>
 
 using scale::ScaleEncoderStream;
 

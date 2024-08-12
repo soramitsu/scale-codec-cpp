@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "scale/scale_encoder_stream.hpp"
+#include <scale/scale_encoder_stream.hpp>
 
 #include "compact_len_utils.hpp"
 

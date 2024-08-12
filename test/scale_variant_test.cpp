@@ -5,10 +5,7 @@
  */
 
 #include <gtest/gtest.h>
-
-#include "scale/scale.hpp"
-
-#include "util/outcome.hpp"
+#include <scale/scale.hpp>
 
 using scale::ByteArray;
 using scale::decode;

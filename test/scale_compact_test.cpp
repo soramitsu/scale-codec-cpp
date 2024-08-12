@@ -4,14 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <span>
-
 #include <gtest/gtest.h>
-
+#include <qtils/test/outcome.hpp>
 #include <scale/scale.hpp>
-#include <scale/scale_error.hpp>
-
-#include "util/outcome.hpp"
 
 using scale::ByteArray;
 using scale::CompactInteger;

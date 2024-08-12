@@ -5,13 +5,8 @@
  */
 
 #include <gtest/gtest.h>
-
-#include "scale/scale.hpp"
-#include "scale/scale_decoder_stream.hpp"
-#include "scale/scale_encoder_stream.hpp"
-#include "scale/scale_error.hpp"
-
-#include "util/outcome.hpp"
+#include <qtils/test/outcome.hpp>
+#include <scale/scale.hpp>
 
 using scale::ByteArray;
 using scale::DecodeError;
@@ -70,7 +65,7 @@ TEST(Scale, fixedwidthDecodeBoolFail) {
  */
 TEST(Scale, fixedwidthDecodeBoolSuccess) {
   auto bytes = ByteArray{0, 1, 0};
-  EXPECT_OUTCOME_TRUE(res, scale::decode<ThreeBooleans>(bytes))
+  auto res = EXPECT_OK(scale::decode<ThreeBooleans>(bytes));
   ASSERT_EQ(res.b1, false);
   ASSERT_EQ(res.b2, true);
   ASSERT_EQ(res.b3, false);

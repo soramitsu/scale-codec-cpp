@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "scale/scale_decoder_stream.hpp"
+#include <scale/scale_decoder_stream.hpp>
 
 namespace scale {
   namespace {
