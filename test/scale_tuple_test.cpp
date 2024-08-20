@@ -4,10 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "scale/scale.hpp"
-
 #include <gtest/gtest.h>
-#include "util/outcome.hpp"
+#include <qtils/test/outcome.hpp>
+#include <scale/scale.hpp>
 
 using scale::ByteArray;
 using scale::ScaleDecoderStream;
@@ -57,7 +56,7 @@ TEST(Scale, EncodeDecodeTupleSuccess) {
   tuple_type_t tuple =
       std::make_tuple(uint8_t(1), uint16_t(3), uint8_t(2), uint32_t(4));
 
-  EXPECT_OUTCOME_TRUE(actual_bytes, scale::encode(tuple));
-  EXPECT_OUTCOME_TRUE(decoded, scale::decode<tuple_type_t>(actual_bytes));
+  auto actual_bytes = EXPECT_OK(scale::encode(tuple));
+  auto decoded = EXPECT_OK(scale::decode<tuple_type_t>(actual_bytes));
   ASSERT_EQ(decoded, tuple);
 }

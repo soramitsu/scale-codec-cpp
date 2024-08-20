@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "scale/scale_error.hpp"
+#include <scale/scale_error.hpp>
 
 OUTCOME_CPP_DEFINE_CATEGORY(scale, EncodeError, e) {
   using scale::EncodeError;

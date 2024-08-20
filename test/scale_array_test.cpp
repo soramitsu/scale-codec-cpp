@@ -4,12 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <array>
-
 #include <gtest/gtest.h>
-
-#include "scale/scale.hpp"
-#include "util/outcome.hpp"
+#include <qtils/test/outcome.hpp>
+#include <scale/scale.hpp>
 
 using scale::decode;
 using scale::encode;
@@ -30,8 +27,8 @@ void testArray() {
     Array testee;
     std::fill(testee.begin(), testee.end(), value);
 
-    EXPECT_OUTCOME_TRUE(data, encode(testee));
-    EXPECT_OUTCOME_TRUE(result, decode<Array>(data));
+    auto data = EXPECT_OK(encode(testee));
+    auto result = EXPECT_OK(decode<Array>(data));
 
     EXPECT_EQ(testee, result);
   }

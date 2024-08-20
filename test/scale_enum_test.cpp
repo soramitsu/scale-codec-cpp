@@ -5,11 +5,7 @@
  */
 
 #include <gtest/gtest.h>
-
-#include <scale/enum_traits.hpp>
-#include <scale/scale_decoder_stream.hpp>
-#include <scale/scale_encoder_stream.hpp>
-#include <scale/types.hpp>
+#include <scale/scale.hpp>
 
 using scale::ByteArray;
 using scale::ScaleDecoderStream;

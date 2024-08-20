@@ -13,8 +13,8 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/HunterGate.cmake)
 
 HunterGate(
-    URL  https://github.com/qdrvm/hunter/archive/refs/tags/v0.25.3-qdrvm12.zip
-    SHA1 9d4b9844b84d3dfbf4a90923eedb3875718abf54
+    URL  https://github.com/qdrvm/hunter/archive/refs/tags/v0.25.3-qdrvm21.zip
+    SHA1 5b52ab9a309771f172ca609a46e26dde60a8edd7
 )
 
 project(Scale LANGUAGES CXX VERSION 1.1.0)

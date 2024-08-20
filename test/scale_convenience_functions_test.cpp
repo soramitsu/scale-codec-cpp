@@ -4,11 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "scale/scale.hpp"
-
 #include <gtest/gtest.h>
-
-#include "util/outcome.hpp"
+#include <qtils/test/outcome.hpp>
+#include <scale/scale.hpp>
 
 using scale::decode;
 using scale::encode;
@@ -40,8 +38,8 @@ Stream &operator>>(Stream &s, TestStruct &test_struct) {
 TEST(ScaleConvenienceFuncsTest, EncodeSingleValidArgTest) {
   TestStruct s1{"some_string", 42};
 
-  EXPECT_OUTCOME_TRUE(encoded, encode(s1));
-  EXPECT_OUTCOME_TRUE(decoded, decode<TestStruct>(encoded));
+  auto encoded = EXPECT_OK(encode(s1));
+  auto decoded = EXPECT_OK(decode<TestStruct>(encoded));
 
   ASSERT_EQ(decoded, s1);
 }
@@ -55,8 +53,8 @@ TEST(ScaleConvenienceFuncsTest, EncodeSeveralValidArgTest) {
   std::string expected_string = "some_string";
   int expected_int = 42;
 
-  EXPECT_OUTCOME_TRUE(encoded, encode(expected_string, expected_int));
-  EXPECT_OUTCOME_TRUE(decoded, decode<TestStruct>(encoded));
+  auto encoded = EXPECT_OK(encode(expected_string, expected_int));
+  auto decoded = EXPECT_OK(decode<TestStruct>(encoded));
 
   ASSERT_EQ(decoded.a, expected_string);
   ASSERT_EQ(decoded.b, expected_int);

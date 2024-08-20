@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "scale/types.hpp"
+#include <scale/types.hpp>
 
 namespace scale::compact {
   // calculate number of bytes required

@@ -5,9 +5,8 @@
  */
 
 #include <gtest/gtest.h>
-
-#include "scale/scale.hpp"
-#include "util/outcome.hpp"
+#include <qtils/test/outcome.hpp>
+#include <scale/scale.hpp>
 
 using scale::ByteArray;
 using scale::decode;
@@ -187,7 +186,7 @@ TEST(Scale, DecodeOptionalBoolSuccess) {
   auto bytes = ByteArray{0, 1, 2, 1};
   using optbool = std::optional<bool>;
 
-  EXPECT_OUTCOME_TRUE(res, decode<FourOptBools>(bytes))
+  auto res = EXPECT_OK(decode<FourOptBools>(bytes));
   ASSERT_EQ(res.b1, std::nullopt);
   ASSERT_EQ(res.b2, optbool(true));
   ASSERT_EQ(res.b3, optbool(false));
@@ -214,10 +213,10 @@ TEST(Scale, DecodeNullopt) {
   ByteArray encoded_nullopt{0};
 
   using OptionalInt = std::optional<int>;
-  EXPECT_OUTCOME_TRUE(int_opt, decode<OptionalInt>(encoded_nullopt));
+  auto int_opt = EXPECT_OK(decode<OptionalInt>(encoded_nullopt));
   EXPECT_EQ(int_opt, std::nullopt);
 
   using OptionalTuple = std::optional<std::tuple<int, int>>;
-  EXPECT_OUTCOME_TRUE(tuple_opt, decode<OptionalTuple>(encoded_nullopt));
+  auto tuple_opt = EXPECT_OK(decode<OptionalTuple>(encoded_nullopt));
   EXPECT_EQ(tuple_opt, std::nullopt);
 }

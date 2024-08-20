@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "scale/scale.hpp"
-
 #include <gtest/gtest.h>
+#include <scale/scale.hpp>
 
 using scale::ByteArray;
 using scale::ScaleDecoderStream;
