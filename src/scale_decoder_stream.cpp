@@ -67,7 +67,7 @@ namespace scale {
             value += (stream.nextByte()) * multiplier;
             multiplier *= 256u;
           }
-          if (not value) {
+          if (value.is_zero()) {
             raise(DecodeError::REDUNDANT_COMPACT_ENCODING);
           }
           auto bits = msb(value) + 1;
