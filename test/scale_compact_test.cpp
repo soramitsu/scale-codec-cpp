@@ -153,3 +153,21 @@ TEST(Scale, compactDecodeBigIntegerError) {
   auto bytes = ByteArray{255, 255, 255, 255};
   EXPECT_EC(decode<CompactInteger>(bytes), scale::DecodeError::NOT_ENOUGH_DATA);
 }
+
+/**
+ * @given redundant bytes in compact encoding
+ * @when decode compact
+ * @then error
+ */
+struct RedundantCompactTest : ::testing::TestWithParam<ByteArray> {};
+TEST_P(RedundantCompactTest, DecodeError) {
+  EXPECT_EC(scale::decode<CompactInteger>(GetParam()),
+            scale::DecodeError::REDUNDANT_COMPACT_ENCODING);
+}
+INSTANTIATE_TEST_SUITE_P(
+    RedundantCompactTestCases,
+    RedundantCompactTest,
+    ::testing::Values(ByteArray{0b100000'01, 0},
+                      ByteArray{0b000000'10, 0b10000000, 0, 0},
+                      ByteArray{0b000000'11, 0, 0, 0, 0b00'100000},
+                      ByteArray{0b000001'11, 0, 0, 0, 0b01'000000, 0}));

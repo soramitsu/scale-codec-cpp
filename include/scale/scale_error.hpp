@@ -27,7 +27,8 @@ namespace scale {
     UNEXPECTED_VALUE,     ///< unexpected value
     TOO_MANY_ITEMS,       ///< too many items, cannot address them in memory
     WRONG_TYPE_INDEX,     ///< wrong type index, cannot decode variant
-    INVALID_ENUM_VALUE    ///< enum value which doesn't belong to the enum
+    INVALID_ENUM_VALUE,   ///< enum value which doesn't belong to the enum
+    REDUNDANT_COMPACT_ENCODING,  ///< redundant bytes in compact encoding
   };
 
 }  // namespace scale

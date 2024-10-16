@@ -33,6 +33,8 @@ OUTCOME_CPP_DEFINE_CATEGORY(scale, DecodeError, e) {
       return "SCALE decode: wrong type index, cannot decode variant";
     case DecodeError::INVALID_ENUM_VALUE:
       return "SCALE decode: decoded enum value does not belong to the enum";
+    case DecodeError::REDUNDANT_COMPACT_ENCODING:
+      return "SCALE decode: redundant bytes in compact encoding";
   }
   return "unknown SCALE DecodeError";
 }

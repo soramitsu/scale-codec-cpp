@@ -27,6 +27,9 @@ namespace scale {
           number = (static_cast<size_t>((first_byte)&0b11111100u)
                     + static_cast<size_t>(second_byte) * 256u)
                    >> 2u;
+          if ((number >> 6) == 0) {
+            raise(DecodeError::REDUNDANT_COMPACT_ENCODING);
+          }
           break;
         }
 
@@ -44,6 +47,9 @@ namespace scale {
             multiplier = multiplier << 8u;
           }
           number = number >> 2u;
+          if ((number >> 14) == 0) {
+            raise(DecodeError::REDUNDANT_COMPACT_ENCODING);
+          }
           break;
         }
 
@@ -61,7 +67,13 @@ namespace scale {
             value += (stream.nextByte()) * multiplier;
             multiplier *= 256u;
           }
-
+          if (value.is_zero()) {
+            raise(DecodeError::REDUNDANT_COMPACT_ENCODING);
+          }
+          auto bits = msb(value) + 1;
+          if (bits <= 30 or (bits + 7) / 8 < bytes_count) {
+            raise(DecodeError::REDUNDANT_COMPACT_ENCODING);
+          }
           return value;  // special case
         }
 
