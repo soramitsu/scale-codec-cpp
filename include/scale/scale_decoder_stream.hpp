@@ -6,6 +6,9 @@
 
 #pragma once
 
+#ifdef CUSTOM_CONFIG_ENABLED
+#include <any>
+#endif
 #include <iterator>
 #include <memory>
 #include <optional>
@@ -14,7 +17,9 @@
 #include <boost/variant.hpp>
 
 #include <scale/bitvec.hpp>
+#include <scale/detail/compact_integer.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
+#include <scale/detail/jam_compact_integer.hpp>
 #include <scale/scale_error.hpp>
 #include <scale/types.hpp>
 #include <type_traits>
@@ -25,14 +30,28 @@ namespace scale {
     // special tag to differentiate decoding streams from others
     static constexpr auto is_decoder_stream = true;
 
-    explicit ScaleDecoderStream(ConstSpanOfBytes data)
-        : span_{data}, current_index_{0} {}
+    explicit ScaleDecoderStream(ConstSpanOfBytes data) : span_{data} {}
+
+#ifdef CUSTOM_CONFIG_ENABLED
+    template <typename ConfigT>
+      requires(std::is_class_v<ConfigT> and not std::is_union_v<ConfigT>)
+    ScaleDecoderStream(ConstSpanOfBytes data, const ConfigT &config)
+        : span_{data}, config_(std::cref(config)) {}
+#else
+    template <typename ConfigT>
+      requires(std::is_class_v<ConfigT> and not std::is_union_v<ConfigT>)
+    [[deprecated("Scale has compiled without custom config support")]]  //
+    ScaleDecoderStream(ConstSpanOfBytes data, const ConfigT &config) = delete;
+#endif
 
     template <typename T>
     T decodeCompact() {
-      // TODO(turuslan): don't allocate cpp_int
-      scale::CompactInteger big;
-      *this >> big;
+      scale::CompactInteger big =
+#ifdef JAM_COMPATIBILITY_ENABLED
+          detail::decodeJamCompactInteger<CompactInteger>(*this);
+#else
+          detail::decodeCompactInteger<CompactInteger>(*this);
+#endif
       if (not big.is_zero() and msb(big) >= std::numeric_limits<T>::digits) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
@@ -345,6 +364,25 @@ namespace scale {
       return current_index_;
     }
 
+#ifdef CUSTOM_CONFIG_ENABLED
+    template <typename T>
+    const T &getConfig() const {
+      if (not config_.has_value()) {
+        throw std::runtime_error("Stream created without any custom config");
+      }
+      if (config_.type().hash_code()
+          != typeid(std::reference_wrapper<const T>).hash_code()) {
+        throw std::runtime_error("Stream created with other custom config");
+      }
+      return std::any_cast<std::reference_wrapper<const T>>(config_).get();
+    }
+#else
+    template <typename T>
+    [[deprecated("Scale has compiled without custom config support")]]  //
+    const T &
+    getConfig_() const = delete;
+#endif
+
    private:
     bool decodeBool();
     /**
@@ -378,7 +416,12 @@ namespace scale {
     }
 
     ByteSpan span_;
-    SizeType current_index_;
+
+#ifdef CUSTOM_CONFIG_ENABLED
+    const std::any config_{};
+#endif
+
+    SizeType current_index_{0};
   };
 
 }  // namespace scale

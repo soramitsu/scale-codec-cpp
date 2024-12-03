@@ -16,11 +16,16 @@ using scale::ScaleEncoderStream;
  * @when specified string is encoded by ScaleEncoderStream
  * @then encoded value meets expectations
  */
-TEST(Scale, RawStringEncodeSuccess) {
-  auto *v = "asdadad";
+TEST(StringTest, RawStringEncodeSuccess) {
+  auto *v = "abcdef";
   ScaleEncoderStream s{};
   ASSERT_NO_THROW((s << v));
-  ASSERT_EQ(s.to_vector(), (ByteArray{28, 'a', 's', 'd', 'a', 'd', 'a', 'd'}));
+  auto buff = s.to_vector();
+
+  auto actual = std::span(buff).last(buff.size() - 1);
+  auto expected = ByteArray{'a', 'b', 'c', 'd', 'e', 'f'};
+
+  ASSERT_TRUE(std::ranges::equal(actual, expected));
 }
 
 /**
@@ -28,11 +33,16 @@ TEST(Scale, RawStringEncodeSuccess) {
  * @when specified string is encoded by ScaleEncoderStream
  * @then encoded value meets expectations
  */
-TEST(Scale, StdStringEncodeSuccess) {
-  std::string v = "asdadad";
+TEST(StringTest, StdStringEncodeSuccess) {
+  std::string v = "abcdef";
   ScaleEncoderStream s;
   ASSERT_NO_THROW((s << v));
-  ASSERT_EQ(s.to_vector(), (ByteArray{28, 'a', 's', 'd', 'a', 'd', 'a', 'd'}));
+  auto buff = s.to_vector();
+
+  auto actual = std::span(buff).last(buff.size() - 1);
+  auto expected = ByteArray{'a', 'b', 'c', 'd', 'e', 'f'};
+
+  ASSERT_TRUE(std::ranges::equal(actual, expected));
 }
 
 /**
@@ -40,10 +50,15 @@ TEST(Scale, StdStringEncodeSuccess) {
  * @when string is decoded using ScaleDecoderStream
  * @then decoded string matches expectations
  */
-TEST(Scale, StringDecodeSuccess) {
-  auto bytes = ByteArray{28, 'a', 's', 'd', 'a', 'd', 'a', 'd'};
-  ScaleDecoderStream s(bytes);
-  std::string v;
-  ASSERT_NO_THROW(s >> v);
-  ASSERT_EQ(v, "asdadad");
+TEST(StringTest, StringDecodeSuccess) {
+  std::string i = "abcdef";
+  ScaleEncoderStream es;
+  ASSERT_NO_THROW((es << i));
+  auto encoded = es.to_vector();
+
+  ScaleDecoderStream ds(encoded);
+  std::string o;
+  ds >> o;
+
+  ASSERT_TRUE(std::ranges::equal(i, o));
 }

@@ -36,8 +36,8 @@ class CompactTest
  */
 TEST_P(CompactTest, EncodeSuccess) {
   const auto &[value, match] = GetParam();
-  ASSERT_NO_THROW(s << value);
-  ASSERT_EQ(s.to_vector(), match);
+  ASSERT_NO_THROW(s << value) << "Exception while encoding";
+  ASSERT_EQ(s.to_vector(), match) << "Encoding fail";
 }
 
 /**
@@ -49,9 +49,48 @@ TEST_P(CompactTest, DecodeSuccess) {
   const auto &[value_match, bytes] = GetParam();
   ScaleDecoderStream s(bytes);
   CompactInteger v{};
-  ASSERT_NO_THROW(s >> v);
-  ASSERT_EQ(v, value_match);
+  ASSERT_NO_THROW(s >> v) << "Exception while decoding";
+  ASSERT_EQ(v, value_match) << "Decoding fail";
 }
+
+#ifdef JAM_COMPATIBILITY_ENABLED
+
+#define BIGGEST_INT_FOR_COMPACT_REPRESENTATION \
+  ((CompactInteger(1) << (sizeof(size_t) * CHAR_WIDTH)) - 1)
+INSTANTIATE_TEST_SUITE_P(
+    CompactTestCases,
+    CompactTest,
+    ::testing::Values(
+        // clang-format off
+
+        // Lowest values for each number of bytes
+  /*  0 */ CompactTest::pair(                                                               0b00000000, {0b00000000}),
+  /*  1 */ CompactTest::pair(                                                               0b10000000, {0b10000000, 0b10000000}),
+  /*  2 */ CompactTest::pair(                                                      0b01000000'00000000, {0b11000000, 0b00000000, 0b01000000}),
+  /*  3 */ CompactTest::pair(                                             0b00100000'00000000'00000000, {0b11100000, 0b00000000, 0b00000000, 0b00100000}),
+  /*  4 */ CompactTest::pair(                                    0b00010000'00000000'00000000'00000000, {0b11110000, 0b00000000, 0b00000000, 0b00000000, 0b00010000}),
+  /*  5 */ CompactTest::pair(                           0b00001000'00000000'00000000'00000000'00000000, {0b11111000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00001000}),
+  /*  6 */ CompactTest::pair(                   0b0000100'00000000'00000000'00000000'00000000'00000000, {0b11111100, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000100}),
+  /*  7 */ CompactTest::pair(          0b0000010'00000000'00000000'00000000'00000000'00000000'00000000, {0b11111110, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000010}),
+  /*  8 */ CompactTest::pair(0b00000001'00000000'00000000'00000000'00000000'00000000'00000000'00000000, {0b11111111, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000001}),
+
+        // Biggest values for each number of bytes
+  /*  9 */ CompactTest::pair(                                                               0b01111111, {0b01111111}),
+  /* 10 */ CompactTest::pair(                                                      0b00111111'11111111, {0b10111111, 0b11111111}),
+  /* 11 */ CompactTest::pair(                                             0b00011111'11111111'11111111, {0b11011111, 0b11111111, 0b11111111}),
+  /* 12 */ CompactTest::pair(                                    0b00001111'11111111'11111111'11111111, {0b11101111, 0b11111111, 0b11111111, 0b11111111}),
+  /* 13 */ CompactTest::pair(                           0b00000111'11111111'11111111'11111111'11111111, {0b11110111, 0b11111111, 0b11111111, 0b11111111, 0b11111111}),
+  /* 14 */ CompactTest::pair(                  0b00000011'11111111'11111111'11111111'11111111'11111111, {0b11111011, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111}),
+  /* 15 */ CompactTest::pair(         0b00000001'11111111'11111111'11111111'11111111'11111111'11111111, {0b11111101, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111}),
+  /* 16 */ CompactTest::pair(0b00000000'11111111'11111111'11111111'11111111'11111111'11111111'11111111, {0b11111110, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111}),
+  /* 17 */ CompactTest::pair(0b11111111'11111111'11111111'11111111'11111111'11111111'11111111'11111111, {0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111})
+        // clang-format on
+        ));
+
+#else
+
+#define BIGGEST_INT_FOR_COMPACT_REPRESENTATION \
+  (CompactInteger(1) << (67 * CHAR_WIDTH)) - 1
 
 INSTANTIATE_TEST_SUITE_P(
     CompactTestCases,
@@ -100,13 +139,11 @@ INSTANTIATE_TEST_SUITE_P(
              3}),
         // min multibyte integer
         CompactTest::pair(1073741824, {3, 0, 0, 0, 64}),
-        // max multibyte integer
-        CompactTest::pair(
-            CompactInteger(
-                "224945689727159819140526925384299092943484855915095831"
-                "655037778630591879033574393515952034305194542857496045"
-                "531676044756160413302774714984450425759043258192756735"),
-            std::vector<uint8_t>(68, 0xFF))));
+        // max multibyte integer:  2^536 - 1
+        CompactTest::pair(BIGGEST_INT_FOR_COMPACT_REPRESENTATION,
+                          std::vector<uint8_t>(68, 0xFF))));
+
+#endif
 
 /**
  * Negative tests
@@ -131,16 +168,13 @@ TEST(ScaleCompactTest, EncodeNegativeIntegerFails) {
  * @then obtain kValueIsTooBig error
  */
 TEST(ScaleCompactTest, EncodeOutOfRangeBigIntegerFails) {
-  // try to encode out of range big integer value MAX_BIGINT + 1 == 2^536
+  // try to encode out of range big integer value MAX_BIGINT + 1
   // too big value, even for big integer case
   // we are going to have kValueIsTooBig error
-  CompactInteger v(
-      "224945689727159819140526925384299092943484855915095831"
-      "655037778630591879033574393515952034305194542857496045"
-      "531676044756160413302774714984450425759043258192756736");  // 2^536
+  CompactInteger v = BIGGEST_INT_FOR_COMPACT_REPRESENTATION + 1;
 
   ScaleEncoderStream out;
-  ASSERT_ANY_THROW((out << v));          // value is too big, it is not encoded
+  ASSERT_ANY_THROW((out << v));          // value is too big, it isn't encoded
   ASSERT_EQ(out.to_vector().size(), 0);  // nothing was written to buffer
 }
 
@@ -164,6 +198,35 @@ TEST_P(RedundantCompactTest, DecodeError) {
   EXPECT_EC(scale::decode<CompactInteger>(GetParam()),
             scale::DecodeError::REDUNDANT_COMPACT_ENCODING);
 }
+
+#ifdef JAM_COMPATIBILITY_ENABLED
+
+INSTANTIATE_TEST_SUITE_P(
+    RedundantCompactTestCases,
+    RedundantCompactTest,
+    ::testing::Values(
+        // clang-format off
+  /*  1 */ ByteArray{0b10000000, 0b00000000},
+  /*  2 */ ByteArray{0b10000000, 0b00111111},
+  /*  3 */ ByteArray{0b11000000, 0b00000000, 0b00000000},
+  /*  4 */ ByteArray{0b11000000, 0b11111111, 0b00011111},
+  /*  5 */ ByteArray{0b11100000, 0b00000000, 0b00000000, 0b00000000},
+  /*  6 */ ByteArray{0b11100000, 0b11111111, 0b11111111, 0b00001111},
+  /*  7 */ ByteArray{0b11110000, 0b00000000, 0b00000000, 0b00000000, 0b00000000},
+  /*  8 */ ByteArray{0b11110000, 0b11111111, 0b11111111, 0b11111111, 0b00000111},
+  /*  9 */ ByteArray{0b11111000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000},
+  /* 10 */ ByteArray{0b11111000, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b00000011},
+  /* 11 */ ByteArray{0b11111100, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000},
+  /* 12 */ ByteArray{0b11111100, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b00000001},
+  /* 13 */ ByteArray{0b11111110, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000},
+  /* 14 */ ByteArray{0b11111110, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b00000000},
+  /* 15 */ ByteArray{0b11111111, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000},
+  /* 16 */ ByteArray{0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b00000000}
+     // // clang-format on
+        ));
+
+#else
+
 INSTANTIATE_TEST_SUITE_P(
     RedundantCompactTestCases,
     RedundantCompactTest,
@@ -171,3 +234,6 @@ INSTANTIATE_TEST_SUITE_P(
                       ByteArray{0b000000'10, 0b10000000, 0, 0},
                       ByteArray{0b000000'11, 0, 0, 0, 0b00'100000},
                       ByteArray{0b000001'11, 0, 0, 0, 0b01'000000, 0}));
+
+#endif
+

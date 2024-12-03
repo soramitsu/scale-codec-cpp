@@ -11,6 +11,8 @@ OUTCOME_CPP_DEFINE_CATEGORY(scale, EncodeError, e) {
   switch (e) {
     case EncodeError::NEGATIVE_COMPACT_INTEGER:
       return "SCALE encode: compact integers cannot be negative";
+    case EncodeError::VALUE_TOO_BIG_FOR_COMPACT_REPRESENTATION:
+      return "SCALE decode: value too big for compact representation";
     case EncodeError::COMPACT_INTEGER_TOO_BIG:
       return "SCALE encode: compact integers too big";
     case EncodeError::DEREF_NULLPOINTER:
@@ -35,6 +37,8 @@ OUTCOME_CPP_DEFINE_CATEGORY(scale, DecodeError, e) {
       return "SCALE decode: decoded enum value does not belong to the enum";
     case DecodeError::REDUNDANT_COMPACT_ENCODING:
       return "SCALE decode: redundant bytes in compact encoding";
+    case DecodeError::DECODED_VALUE_OVERFLOWS_TARGET:
+      return "SCALE decode: encoded value overflows target type";
   }
   return "unknown SCALE DecodeError";
 }

@@ -151,3 +151,12 @@ addtest(scale_encode_counter_test
 target_link_libraries(scale_encode_counter_test
     scale
 )
+
+if (CUSTOM_CONFIG_SUPPORT)
+    addtest(scale_tune_test
+        scale_tune_test.cpp
+    )
+    target_link_libraries(scale_tune_test
+        scale
+    )
+endif ()

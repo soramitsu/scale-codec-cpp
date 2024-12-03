@@ -6,6 +6,9 @@
 
 #pragma once
 
+#ifdef CUSTOM_CONFIG_ENABLED
+#include <any>
+#endif
 #include <deque>
 #include <memory>
 #include <optional>
@@ -13,8 +16,11 @@
 #include <boost/variant.hpp>
 
 #include <scale/bitvec.hpp>
+#include <scale/detail/compact_integer.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
+#include <scale/detail/jam_compact_integer.hpp>
 #include <scale/scale_error.hpp>
+#include <scale/tune.hpp>
 #include <scale/types.hpp>
 
 namespace scale {
@@ -35,6 +41,28 @@ namespace scale {
      * omitting the data itself
      */
     explicit ScaleEncoderStream(bool drop_data);
+
+#ifdef CUSTOM_CONFIG_ENABLED
+    template <typename ConfigT>
+      requires(std::is_class_v<ConfigT> and not std::is_union_v<ConfigT>)
+    explicit ScaleEncoderStream(const ConfigT &config)
+        : config_(std::cref(config)) {}
+
+    template <typename ConfigT>
+      requires(std::is_class_v<ConfigT> and not std::is_union_v<ConfigT>)
+    ScaleEncoderStream(const ConfigT &config, bool drop_data)
+        : config_(std::cref(config)), drop_data_(drop_data) {}
+#else
+    template <typename ConfigT>
+      requires(std::is_class_v<ConfigT> and not std::is_union_v<ConfigT>)
+    [[deprecated("Scale has compiled without custom config support")]]  //
+    ScaleEncoderStream(const ConfigT &config) = delete;
+
+    template <typename ConfigT>
+      requires(std::is_class_v<ConfigT> and not std::is_union_v<ConfigT>)
+    [[deprecated("Scale has compiled without custom config support")]]  //
+    ScaleEncoderStream(const ConfigT &config, bool drop_data) = delete;
+#endif
 
     /**
      * @return vector of bytes containing encoded data
@@ -225,6 +253,25 @@ namespace scale {
      */
     ScaleEncoderStream &operator<<(const CompactInteger &v);
 
+#ifdef CUSTOM_CONFIG_ENABLED
+    template <typename T>
+    const T &getConfig() const {
+      if (not config_.has_value()) {
+        throw std::runtime_error("Stream created without any custom config");
+      }
+      if (config_.type().hash_code()
+          != typeid(std::reference_wrapper<const T>).hash_code()) {
+        throw std::runtime_error("Stream created with other custom config");
+      }
+      return std::any_cast<std::reference_wrapper<const T>>(config_).get();
+    }
+#else
+    template <typename T>
+    [[deprecated("Scale has compiled without custom config support")]]  //
+    const T &
+    getConfig_() const = delete;
+#endif
+
    protected:
     template <size_t I, class... Ts>
     void encodeElementOfTuple(const std::tuple<Ts...> &v) {
@@ -283,9 +330,13 @@ namespace scale {
    private:
     ScaleEncoderStream &encodeOptionalBool(const std::optional<bool> &v);
 
-    const bool drop_data_;
+#ifdef CUSTOM_CONFIG_ENABLED
+    const std::any config_{};
+#endif
+
+    const bool drop_data_ = false;
     std::deque<uint8_t> stream_;
-    size_t bytes_written_;
+    size_t bytes_written_ = 0;
   };
 
   /**
