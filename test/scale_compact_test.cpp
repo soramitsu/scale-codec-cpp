@@ -56,7 +56,7 @@ TEST_P(CompactTest, DecodeSuccess) {
 #ifdef JAM_COMPATIBILITY_ENABLED
 
 #define BIGGEST_INT_FOR_COMPACT_REPRESENTATION \
-  ((CompactInteger(1) << (sizeof(size_t) * CHAR_WIDTH)) - 1)
+  ((CompactInteger(1) << (8 * sizeof(size_t))) - 1)
 INSTANTIATE_TEST_SUITE_P(
     CompactTestCases,
     CompactTest,
@@ -90,7 +90,7 @@ INSTANTIATE_TEST_SUITE_P(
 #else
 
 #define BIGGEST_INT_FOR_COMPACT_REPRESENTATION \
-  (CompactInteger(1) << (67 * CHAR_WIDTH)) - 1
+  (CompactInteger(1) << (8 * 67)) - 1
 
 INSTANTIATE_TEST_SUITE_P(
     CompactTestCases,
