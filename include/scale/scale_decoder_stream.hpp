@@ -12,7 +12,9 @@
 #include <iterator>
 #include <memory>
 #include <optional>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <boost/variant.hpp>
 
@@ -23,12 +25,12 @@
 #else
 #include <scale/detail/compact_integer.hpp>
 #endif
+#include <scale/configurable.hpp>
 #include <scale/scale_error.hpp>
 #include <scale/types.hpp>
-#include <type_traits>
 
 namespace scale {
-  class ScaleDecoderStream {
+  class ScaleDecoderStream: public Configurable {
    public:
     // special tag to differentiate decoding streams from others
     static constexpr auto is_decoder_stream = true;
@@ -39,7 +41,7 @@ namespace scale {
     template <typename ConfigT>
       requires(std::is_class_v<ConfigT> and not std::is_union_v<ConfigT>)
     ScaleDecoderStream(ConstSpanOfBytes data, const ConfigT &config)
-        : span_{data}, config_(std::cref(config)) {}
+        : Configurable(config), span_{data} {}
 #else
     template <typename ConfigT>
       requires(std::is_class_v<ConfigT> and not std::is_union_v<ConfigT>)
@@ -367,25 +369,6 @@ namespace scale {
       return current_index_;
     }
 
-#ifdef CUSTOM_CONFIG_ENABLED
-    template <typename T>
-    const T &getConfig() const {
-      if (not config_.has_value()) {
-        throw std::runtime_error("Stream created without any custom config");
-      }
-      if (config_.type()
-          != typeid(std::reference_wrapper<const T>)) {
-        throw std::runtime_error("Stream created with other custom config");
-      }
-      return std::any_cast<std::reference_wrapper<const T>>(config_).get();
-    }
-#else
-    template <typename T>
-    [[deprecated("Scale has compiled without custom config support")]]  //
-    const T &
-    getConfig() const = delete;
-#endif
-
    private:
     bool decodeBool();
     /**
@@ -419,10 +402,6 @@ namespace scale {
     }
 
     ByteSpan span_;
-
-#ifdef CUSTOM_CONFIG_ENABLED
-    const std::any config_{};
-#endif
 
     SizeType current_index_{0};
   };
