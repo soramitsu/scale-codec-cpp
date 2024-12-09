@@ -16,9 +16,12 @@
 #include <boost/variant.hpp>
 
 #include <scale/bitvec.hpp>
-#include <scale/detail/compact_integer.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
+#ifdef JAM_COMPATIBILITY_ENABLED
 #include <scale/detail/jam_compact_integer.hpp>
+#else
+#include <scale/detail/compact_integer.hpp>
+#endif
 #include <scale/scale_error.hpp>
 #include <scale/tune.hpp>
 #include <scale/types.hpp>
@@ -259,8 +262,8 @@ namespace scale {
       if (not config_.has_value()) {
         throw std::runtime_error("Stream created without any custom config");
       }
-      if (config_.type().hash_code()
-          != typeid(std::reference_wrapper<const T>).hash_code()) {
+      if (config_.type()
+          != typeid(std::reference_wrapper<const T>)) {
         throw std::runtime_error("Stream created with other custom config");
       }
       return std::any_cast<std::reference_wrapper<const T>>(config_).get();

@@ -6,9 +6,6 @@
 
 #include <scale/scale_decoder_stream.hpp>
 
-#include <scale/detail/fixed_width_integer.hpp>
-#include <scale/detail/jam_compact_integer.hpp>
-
 namespace scale {
   size_t ScaleDecoderStream::decodeLength() {
 #ifdef JAM_COMPATIBILITY_ENABLED

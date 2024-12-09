@@ -6,9 +6,6 @@
 
 #include <scale/scale_encoder_stream.hpp>
 
-#include <scale/detail/fixed_width_integer.hpp>
-#include <scale/detail/jam_compact_integer.hpp>
-
 namespace scale {
   ScaleEncoderStream::ScaleEncoderStream()
       : drop_data_{false}, bytes_written_{0} {}
