@@ -46,24 +46,18 @@ namespace scale {
     explicit ScaleEncoderStream(bool drop_data);
 
 #ifdef CUSTOM_CONFIG_ENABLED
-    template <typename ConfigT>
-      requires(std::is_class_v<ConfigT> and not std::is_union_v<ConfigT>)
-    explicit ScaleEncoderStream(const ConfigT &config) : Configurable(config) {}
+    explicit ScaleEncoderStream(const MaybeCofing auto &...config)
+        : Configurable(config...) {}
 
-    template <typename ConfigT>
-      requires(std::is_class_v<ConfigT> and not std::is_union_v<ConfigT>)
-    ScaleEncoderStream(const ConfigT &config, bool drop_data)
-        : Configurable(config), drop_data_(drop_data) {}
+    ScaleEncoderStream(bool drop_data, const MaybeCofing auto &...config)
+        : Configurable(config...), drop_data_(drop_data) {}
 #else
-    template <typename ConfigT>
-      requires(std::is_class_v<ConfigT> and not std::is_union_v<ConfigT>)
     [[deprecated("Scale has compiled without custom config support")]]  //
-    ScaleEncoderStream(const ConfigT &config) = delete;
+    ScaleEncoderStream(const MaybeCofing auto &...config) = delete;
 
-    template <typename ConfigT>
-      requires(std::is_class_v<ConfigT> and not std::is_union_v<ConfigT>)
     [[deprecated("Scale has compiled without custom config support")]]  //
-    ScaleEncoderStream(const ConfigT &config, bool drop_data) = delete;
+    ScaleEncoderStream(bool drop_data,
+                       const MaybeCofing auto &...config) = delete;
 #endif
 
     /**

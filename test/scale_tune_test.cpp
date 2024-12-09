@@ -20,8 +20,11 @@ using scale::encode;
 using scale::ScaleDecoderStream;
 using scale::ScaleEncoderStream;
 
-struct CustomConfig {
+struct MulConfig {
   uint8_t multi;
+};
+struct AddConfig {
+  uint8_t add;
 };
 
 struct Object {
@@ -31,51 +34,55 @@ struct Object {
 
   friend ScaleEncoderStream &operator<<(ScaleEncoderStream &s,
                                         const Object &x) {
-    auto config = s.getConfig<CustomConfig>();
+    auto mul = s.getConfig<MulConfig>().multi;
+    auto add = s.getConfig<AddConfig>().add;
 
     s << CompactInteger{x.buff.size()};
     for (uint8_t i : x.buff) {
-      uint8_t x = i * config.multi;
+      uint8_t x = i * mul + add;
       s << x;
     }
     return s;
   }
 
   friend ScaleDecoderStream &operator>>(ScaleDecoderStream &s, Object &x) {
-    auto config = s.getConfig<CustomConfig>();
+    auto mul = s.getConfig<MulConfig>().multi;
+    auto add = s.getConfig<AddConfig>().add;
     CompactInteger size;
     s >> size;
     x.buff.resize(size.convert_to<size_t>());
     for (uint8_t &i : x.buff) {
       uint8_t x;
       s >> x;
-      i = x / config.multi;
+      i = (x - add) / mul;
     }
     return s;
   }
 };
 
 TEST(CustomConfig, SunnyDayScenario) {
-  CustomConfig two{2};
-  CustomConfig three{3};
+  MulConfig mul_two{2};
+  MulConfig mul_three{3};
+  AddConfig add_six{6};
+  AddConfig add_twelve{12};
 
   // Encoding
   Object object{.buff = {3, 6, 9}};
-  ScaleEncoderStream encoder(two);
-  encoder << object;
+  ScaleEncoderStream encoder(mul_two, add_twelve);
+  encoder << object;  // X * 2 + 12
   auto encoded = encoder.to_vector();
 
   // Check encoding
   ScaleDecoderStream s(encoded);
   std::vector<uint8_t> buff1;
   s >> buff1;
-  std::vector<uint8_t> buff2 = {6, 12, 18};
+  std::vector<uint8_t> buff2 = {18, 24, 30};
   ASSERT_EQ(buff1, buff2) << "Incorrect encoded";
 
   // Decode and check it
-  ScaleDecoderStream decoder(encoded, three);
+  ScaleDecoderStream decoder(encoded, mul_three, add_six);
   Object object1;
   decoder >> object1;
-  Object object2{.buff = {2, 4, 6}};
+  Object object2{.buff = {4, 6, 8}};
   ASSERT_EQ(object1, object2) << "Incorrect decoded";
 }

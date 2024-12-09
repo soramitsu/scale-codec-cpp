@@ -9,28 +9,39 @@
 #ifdef CUSTOM_CONFIG_ENABLED
 #include <any>
 #endif
+#include <unordered_map>
 
 namespace scale {
+
+  template <typename T>
+  concept MaybeCofing = std::is_class_v<T> and not std::is_union_v<T>;
 
   class Configurable {
    public:
     Configurable() = default;
     ~Configurable() = default;
 
-    template <typename T>
-    explicit Configurable(const T &config) : config_(std::cref(config)) {}
+#ifdef CUSTOM_CONFIG_ENABLED
+    template <typename... ConfigTs>
+      requires (MaybeCofing<ConfigTs> and ...)
+    explicit Configurable(const ConfigTs &...configs) {
+      (addConfig(configs), ...);
+    }
+#else
+    template <typename... ConfigTs>
+    explicit Configurable(const ConfigTs &config...) {}
+#endif
 
 #ifdef CUSTOM_CONFIG_ENABLED
     template <typename T>
+      requires MaybeCofing<T>
     const T &getConfig() const {
-      if (not config_.has_value()) {
-        throw std::runtime_error("Stream created without any custom config");
-      }
-      if (config_.type() != typeid(std::reference_wrapper<const T>)) {
+      const auto it = configs_.find(typeid(T).hash_code());
+      if (it == configs_.end()) {
         throw std::runtime_error(
-            "Stream created with other custom config type");
+            "Stream was not configured by such custom config type");
       }
-      return std::any_cast<std::reference_wrapper<const T>>(config_).get();
+      return std::any_cast<std::reference_wrapper<const T>>(it->second).get();
     }
 #else
     template <typename T>
@@ -40,7 +51,20 @@ namespace scale {
 #endif
 
 #ifdef CUSTOM_CONFIG_ENABLED
-    const std::any config_{};
+   private:
+    using typeid_hash = decltype(typeid(void).hash_code());
+
+    template <typename ConfigT>
+    void addConfig(const ConfigT &config) {
+      auto [_, added] =
+          configs_.emplace(typeid(ConfigT).hash_code(), std::cref(config));
+      if (not added) {
+        throw std::runtime_error(
+            "Stream can be configured by different custom config types only");
+      }
+    }
+
+    std::unordered_map<typeid_hash, std::any> configs_{};
 #endif
   };
 

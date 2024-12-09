@@ -6,9 +6,6 @@
 
 #pragma once
 
-#ifdef CUSTOM_CONFIG_ENABLED
-#include <any>
-#endif
 #include <iterator>
 #include <memory>
 #include <optional>
@@ -30,7 +27,7 @@
 #include <scale/types.hpp>
 
 namespace scale {
-  class ScaleDecoderStream: public Configurable {
+  class ScaleDecoderStream : public Configurable {
    public:
     // special tag to differentiate decoding streams from others
     static constexpr auto is_decoder_stream = true;
@@ -38,15 +35,13 @@ namespace scale {
     explicit ScaleDecoderStream(ConstSpanOfBytes data) : span_{data} {}
 
 #ifdef CUSTOM_CONFIG_ENABLED
-    template <typename ConfigT>
-      requires(std::is_class_v<ConfigT> and not std::is_union_v<ConfigT>)
-    ScaleDecoderStream(ConstSpanOfBytes data, const ConfigT &config)
-        : Configurable(config), span_{data} {}
+    explicit ScaleDecoderStream(ConstSpanOfBytes data,
+                                const MaybeCofing auto &...config)
+        : Configurable(config...), span_{data} {}
 #else
-    template <typename ConfigT>
-      requires(std::is_class_v<ConfigT> and not std::is_union_v<ConfigT>)
     [[deprecated("Scale has compiled without custom config support")]]  //
-    ScaleDecoderStream(ConstSpanOfBytes data, const ConfigT &config) = delete;
+    ScaleDecoderStream(ConstSpanOfBytes data,
+                       const MaybeCofing auto &...config) = delete;
 #endif
 
     template <typename T>
