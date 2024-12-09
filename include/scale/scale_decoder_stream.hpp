@@ -36,12 +36,12 @@ namespace scale {
 
 #ifdef CUSTOM_CONFIG_ENABLED
     explicit ScaleDecoderStream(ConstSpanOfBytes data,
-                                const MaybeCofing auto &...config)
-        : Configurable(config...), span_{data} {}
+                                const MaybeCofing auto &...configs)
+        : Configurable(configs...), span_{data} {}
 #else
     [[deprecated("Scale has compiled without custom config support")]]  //
     ScaleDecoderStream(ConstSpanOfBytes data,
-                       const MaybeCofing auto &...config) = delete;
+                       const MaybeCofing auto &...configs) = delete;
 #endif
 
     template <typename T>

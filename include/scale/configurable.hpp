@@ -29,7 +29,8 @@ namespace scale {
     }
 #else
     template <typename... ConfigTs>
-    explicit Configurable(const ConfigTs &config...) {}
+      requires (MaybeCofing<ConfigTs> and ...)
+    explicit Configurable(const ConfigTs &...configs) {}
 #endif
 
 #ifdef CUSTOM_CONFIG_ENABLED
