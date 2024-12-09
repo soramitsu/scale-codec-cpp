@@ -41,7 +41,7 @@ namespace scale {
 #else
     [[deprecated("Scale has compiled without custom config support")]]  //
     ScaleDecoderStream(ConstSpanOfBytes data,
-                       const MaybeCofing auto &...configs) = delete;
+                       const MaybeConfig auto &...configs) = delete;
 #endif
 
     template <typename T>

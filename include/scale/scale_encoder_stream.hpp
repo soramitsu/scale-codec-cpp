@@ -54,11 +54,11 @@ namespace scale {
         : Configurable(configs...), drop_data_(drop_data) {}
 #else
     [[deprecated("Scale has compiled without custom config support")]]  //
-    ScaleEncoderStream(const MaybeCofing auto &...configs) = delete;
+    explicit ScaleEncoderStream(const MaybeConfig auto &...configs) = delete;
 
     [[deprecated("Scale has compiled without custom config support")]]  //
-    ScaleEncoderStream(bool drop_data,
-                       const MaybeCofing auto &...configs) = delete;
+    explicit ScaleEncoderStream(bool drop_data,
+                                const MaybeConfig auto &...configs) = delete;
 #endif
 
     /**

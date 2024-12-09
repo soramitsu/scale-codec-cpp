@@ -10,6 +10,7 @@
 #include <any>
 #endif
 #include <unordered_map>
+#include <type_traits>
 
 namespace scale {
 
@@ -29,7 +30,7 @@ namespace scale {
     }
 #else
     template <typename... ConfigTs>
-      requires (MaybeCofing<ConfigTs> and ...)
+      requires (MaybeConfig<ConfigTs> and ...)
     explicit Configurable(const ConfigTs &...configs) {}
 #endif
 
