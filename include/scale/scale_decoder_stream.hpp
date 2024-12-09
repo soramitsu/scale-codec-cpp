@@ -36,7 +36,7 @@ namespace scale {
 
 #ifdef CUSTOM_CONFIG_ENABLED
     explicit ScaleDecoderStream(ConstSpanOfBytes data,
-                                const MaybeCofing auto &...configs)
+                                const MaybeConfig auto &...configs)
         : Configurable(configs...), span_{data} {}
 #else
     [[deprecated("Scale has compiled without custom config support")]]  //

@@ -46,11 +46,11 @@ namespace scale {
     explicit ScaleEncoderStream(bool drop_data);
 
 #ifdef CUSTOM_CONFIG_ENABLED
-    explicit ScaleEncoderStream(const MaybeCofing auto &...configs)
+    explicit ScaleEncoderStream(const MaybeConfig auto &...configs)
         : Configurable(configs...) {}
 
     explicit ScaleEncoderStream(bool drop_data,
-                                const MaybeCofing auto &...configs)
+                                const MaybeConfig auto &...configs)
         : Configurable(configs...), drop_data_(drop_data) {}
 #else
     [[deprecated("Scale has compiled without custom config support")]]  //

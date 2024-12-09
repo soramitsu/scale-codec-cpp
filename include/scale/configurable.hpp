@@ -14,7 +14,7 @@
 namespace scale {
 
   template <typename T>
-  concept MaybeCofing = std::is_class_v<T> and not std::is_union_v<T>;
+  concept MaybeConfig = std::is_class_v<T> and not std::is_union_v<T>;
 
   class Configurable {
    public:
@@ -23,7 +23,7 @@ namespace scale {
 
 #ifdef CUSTOM_CONFIG_ENABLED
     template <typename... ConfigTs>
-      requires (MaybeCofing<ConfigTs> and ...)
+      requires (MaybeConfig<ConfigTs> and ...)
     explicit Configurable(const ConfigTs &...configs) {
       (addConfig(configs), ...);
     }
@@ -35,7 +35,7 @@ namespace scale {
 
 #ifdef CUSTOM_CONFIG_ENABLED
     template <typename T>
-      requires MaybeCofing<T>
+      requires MaybeConfig<T>
     const T &getConfig() const {
       const auto it = configs_.find(typeid(T).hash_code());
       if (it == configs_.end()) {
