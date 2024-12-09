@@ -7,7 +7,8 @@
 #include <scale/encode_append.hpp>
 #include <scale/scale.hpp>
 
-#include "compact_len_utils.hpp"
+#include <scale/detail/compact_integer.hpp>
+#include <scale/detail/jam_compact_integer.hpp>
 
 namespace scale {
 
@@ -24,8 +25,8 @@ namespace scale {
       const std::vector<uint8_t> &data) {
     OUTCOME_TRY(len, scale::decode<CompactInteger>(data));
     auto new_len = (len + 1).convert_to<uint32_t>();
-    auto encoded_len = compact::compactLen(len.convert_to<uint32_t>());
-    auto encoded_new_len = compact::compactLen(new_len);
+    auto encoded_len = detail::compactLen(len.convert_to<uint32_t>());
+    auto encoded_new_len = detail::compactLen(new_len);
     return std::make_tuple(new_len, encoded_len, encoded_new_len);
   }
 

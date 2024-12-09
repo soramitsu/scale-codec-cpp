@@ -13,8 +13,8 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/HunterGate.cmake)
 
 HunterGate(
-    URL  https://github.com/qdrvm/hunter/archive/refs/tags/v0.25.3-qdrvm21.zip
-    SHA1 5b52ab9a309771f172ca609a46e26dde60a8edd7
+    URL  https://github.com/qdrvm/hunter/archive/refs/tags/v0.25.3-qdrvm25.tar.gz
+    SHA1 bf5742041306c4b2c8b65b9c2d2af712a36ac3f9
 )
 
 project(Scale LANGUAGES CXX VERSION 1.1.0)
@@ -25,6 +25,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(JAM_COMPATIBLE "Build compatible with JAM-codec" OFF)
+option(CUSTOM_CONFIG_SUPPORT "Support custom config of streams" OFF)
+
 option(BUILD_TESTS "Whether to include the test suite in build" OFF)
 
 hunter_add_package(Boost)
@@ -32,6 +35,13 @@ find_package(Boost CONFIG REQUIRED)
 
 hunter_add_package(qtils)
 find_package(qtils CONFIG REQUIRED)
+
+if (JAM_COMPATIBLE)
+    add_compile_definitions(JAM_COMPATIBILITY_ENABLED)
+endif ()
+if (CUSTOM_CONFIG_SUPPORT)
+    add_compile_definitions(CUSTOM_CONFIG_ENABLED)
+endif ()
 
 add_subdirectory(src)
 

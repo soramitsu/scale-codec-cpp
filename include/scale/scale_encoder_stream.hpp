@@ -9,11 +9,20 @@
 #include <deque>
 #include <memory>
 #include <optional>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <boost/variant.hpp>
 
 #include <scale/bitvec.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
+#ifdef JAM_COMPATIBILITY_ENABLED
+#include <scale/detail/jam_compact_integer.hpp>
+#else
+#include <scale/detail/compact_integer.hpp>
+#endif
+#include <scale/configurable.hpp>
 #include <scale/scale_error.hpp>
 #include <scale/types.hpp>
 
@@ -22,7 +31,7 @@ namespace scale {
   /**
    * @class ScaleEncoderStream designed to scale-encode data to stream
    */
-  class ScaleEncoderStream {
+  class ScaleEncoderStream : public Configurable {
    public:
     // special tag to differentiate encoding streams from others
     static constexpr auto is_encoder_stream = true;
@@ -35,6 +44,22 @@ namespace scale {
      * omitting the data itself
      */
     explicit ScaleEncoderStream(bool drop_data);
+
+#ifdef CUSTOM_CONFIG_ENABLED
+    explicit ScaleEncoderStream(const MaybeConfig auto &...configs)
+        : Configurable(configs...) {}
+
+    explicit ScaleEncoderStream(bool drop_data,
+                                const MaybeConfig auto &...configs)
+        : Configurable(configs...), drop_data_(drop_data) {}
+#else
+    [[deprecated("Scale has compiled without custom config support")]]  //
+    explicit ScaleEncoderStream(const MaybeConfig auto &...configs) = delete;
+
+    [[deprecated("Scale has compiled without custom config support")]]  //
+    explicit ScaleEncoderStream(bool drop_data,
+                                const MaybeConfig auto &...configs) = delete;
+#endif
 
     /**
      * @return vector of bytes containing encoded data
@@ -283,9 +308,9 @@ namespace scale {
    private:
     ScaleEncoderStream &encodeOptionalBool(const std::optional<bool> &v);
 
-    const bool drop_data_;
+    const bool drop_data_ = false;
     std::deque<uint8_t> stream_;
-    size_t bytes_written_;
+    size_t bytes_written_ = 0;
   };
 
   /**

@@ -17,6 +17,7 @@ namespace scale {
     COMPACT_INTEGER_TOO_BIG = 1,  ///< compact integer can't be more than 2**536
     NEGATIVE_COMPACT_INTEGER,     ///< cannot compact-encode negative integers
     DEREF_NULLPOINTER,            ///< dereferencing a null pointer
+    VALUE_TOO_BIG_FOR_COMPACT_REPRESENTATION,  ///< value too bit for compact representation
   };
 
   /**
@@ -28,7 +29,8 @@ namespace scale {
     TOO_MANY_ITEMS,       ///< too many items, cannot address them in memory
     WRONG_TYPE_INDEX,     ///< wrong type index, cannot decode variant
     INVALID_ENUM_VALUE,   ///< enum value which doesn't belong to the enum
-    REDUNDANT_COMPACT_ENCODING,  ///< redundant bytes in compact encoding
+    REDUNDANT_COMPACT_ENCODING,      ///< redundant bytes in compact encoding
+    DECODED_VALUE_OVERFLOWS_TARGET,  ///< encoded value overflows target type
   };
 
 }  // namespace scale

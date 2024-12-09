@@ -9,30 +9,49 @@
 #include <iterator>
 #include <memory>
 #include <optional>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <boost/variant.hpp>
 
 #include <scale/bitvec.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
+#ifdef JAM_COMPATIBILITY_ENABLED
+#include <scale/detail/jam_compact_integer.hpp>
+#else
+#include <scale/detail/compact_integer.hpp>
+#endif
+#include <scale/configurable.hpp>
 #include <scale/scale_error.hpp>
 #include <scale/types.hpp>
-#include <type_traits>
 
 namespace scale {
-  class ScaleDecoderStream {
+  class ScaleDecoderStream : public Configurable {
    public:
     // special tag to differentiate decoding streams from others
     static constexpr auto is_decoder_stream = true;
 
-    explicit ScaleDecoderStream(ConstSpanOfBytes data)
-        : span_{data}, current_index_{0} {}
+    explicit ScaleDecoderStream(ConstSpanOfBytes data) : span_{data} {}
+
+#ifdef CUSTOM_CONFIG_ENABLED
+    explicit ScaleDecoderStream(ConstSpanOfBytes data,
+                                const MaybeConfig auto &...configs)
+        : Configurable(configs...), span_{data} {}
+#else
+    [[deprecated("Scale has compiled without custom config support")]]  //
+    ScaleDecoderStream(ConstSpanOfBytes data,
+                       const MaybeConfig auto &...configs) = delete;
+#endif
 
     template <typename T>
     T decodeCompact() {
-      // TODO(turuslan): don't allocate cpp_int
-      scale::CompactInteger big;
-      *this >> big;
+      scale::CompactInteger big =
+#ifdef JAM_COMPATIBILITY_ENABLED
+          detail::decodeJamCompactInteger<CompactInteger>(*this);
+#else
+          detail::decodeCompactInteger<CompactInteger>(*this);
+#endif
       if (not big.is_zero() and msb(big) >= std::numeric_limits<T>::digits) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
@@ -378,7 +397,8 @@ namespace scale {
     }
 
     ByteSpan span_;
-    SizeType current_index_;
+
+    SizeType current_index_{0};
   };
 
 }  // namespace scale
