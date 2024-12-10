@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <scale/definitions.hpp>
 #ifdef CUSTOM_CONFIG_ENABLED
 #include <any>
 #endif

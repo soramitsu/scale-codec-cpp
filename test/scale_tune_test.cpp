@@ -4,14 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <gtest/gtest.h>
+#include <scale/scale.hpp>
+
 #ifndef CUSTOM_CONFIG_ENABLED
 #error \
-    "This file should not be compiled, because custom config support is not enabed"
+"This file should not be compiled, because custom config support is not enabed"
 #endif
-
-#include <gtest/gtest.h>
-
-#include <scale/scale.hpp>
 
 using scale::ByteArray;
 using scale::CompactInteger;
