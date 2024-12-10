@@ -16,6 +16,7 @@
 #include <boost/variant.hpp>
 
 #include <scale/bitvec.hpp>
+#include <scale/definitions.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
 #ifdef JAM_COMPATIBILITY_ENABLED
 #include <scale/detail/jam_compact_integer.hpp>

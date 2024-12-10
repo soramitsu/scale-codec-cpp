@@ -4,3 +4,6 @@
 **/build-*/
 **/cmake-build-*/
 Testing
+
+# Auto generated files
+/include/scale/definitions.hpp
