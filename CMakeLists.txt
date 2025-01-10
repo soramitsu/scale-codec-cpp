@@ -41,7 +41,7 @@ endif ()
 
 if(BUILD_TESTS)
     if (PACKAGE_MANAGER STREQUAL "vcpkg")
-        list(APPEND VCPKG_MANIFEST_FEATURES test)
+        list(APPEND VCPKG_MANIFEST_FEATURES scale-tests)
     endif()
 endif()
 
@@ -52,11 +52,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-option(JAM_COMPATIBLE "Build compatible with JAM-codec" OFF)
-option(CUSTOM_CONFIG_SUPPORT "Support custom config of streams" OFF)
-
-option(BUILD_TESTS "Whether to include the test suite in build" OFF)
 
 if (PACKAGE_MANAGER STREQUAL "hunter")
     hunter_add_package(Boost)

@@ -9,8 +9,8 @@
     "fmt"
   ],
   "features": {
-    "test": {
-      "description": "Test",
+    "qtils-tests": {
+      "description": "Test compilable of qtils",
       "dependencies": [
         "gtest"
       ]
