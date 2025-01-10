@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.12)
 option(JAM_COMPATIBLE "Build compatible with JAM-codec" OFF)
 option(CUSTOM_CONFIG_SUPPORT "Support custom config of streams" OFF)
 
-option(BUILD_TESTS "Whether to include the test suite in build" ON)
+option(BUILD_TESTS "Whether to include the test suite in build" OFF)
 
 if (PACKAGE_MANAGER)
     if(PACKAGE_MANAGER NOT MATCHES "^(hunter|vcpkg)$")
