@@ -8,7 +8,6 @@ cmake_minimum_required(VERSION 3.12)
 
 option(JAM_COMPATIBLE "Build compatible with JAM-codec" OFF)
 option(CUSTOM_CONFIG_SUPPORT "Support custom config of streams" OFF)
-option(BOOST_VARIANT_SUPPORT "Support boost::variant encoding" ON)
 
 option(BUILD_TESTS "Whether to include the test suite in build" ON)
 
@@ -45,11 +44,6 @@ if(BUILD_TESTS)
         list(APPEND VCPKG_MANIFEST_FEATURES test)
     endif()
 endif()
-if (BOOST_VARIANT_SUPPORT)
-    if (PACKAGE_MANAGER STREQUAL "vcpkg")
-        list(APPEND VCPKG_MANIFEST_FEATURES boost-variant)
-    endif()
-endif()
 
 project(Scale LANGUAGES CXX VERSION 1.1.0)
 
@@ -68,9 +62,6 @@ if (PACKAGE_MANAGER STREQUAL "hunter")
     hunter_add_package(Boost)
 endif ()
 find_package(Boost CONFIG REQUIRED COMPONENTS endian multiprecision)
-if (BOOST_VARIANT_SUPPORT)
-    find_package(Boost CONFIG REQUIRED COMPONENTS variant)
-endif ()
 
 if (PACKAGE_MANAGER STREQUAL "hunter")
     hunter_add_package(qtils)

@@ -12,12 +12,6 @@
       "dependencies": [
         "gtest"
       ]
-    },
-    "boost-variant": {
-      "description": "boost::variant encoding support",
-      "dependencies": [
-        "boost-variant"
-      ]
     }
   }
 }
