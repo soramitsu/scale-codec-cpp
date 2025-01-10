@@ -11,9 +11,15 @@
 #include <optional>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
+#ifdef __has_include
+#if __has_include(<boost/variant.hpp>)
 #include <boost/variant.hpp>
+#define USE_BOOST_VARIANT
+#endif
+#endif
 
 #include <scale/bitvec.hpp>
 #include <scale/definitions.hpp>
@@ -91,7 +97,29 @@ namespace scale {
 
     /**
      * @brief scale-decoding of variant
-     * @tparam T enumeration of various types
+     * @tparam Ts enumeration of various types
+     * @param v reference to variant
+     * @return reference to stream
+     */
+    template <class... Ts>
+    ScaleDecoderStream &operator>>(std::variant<Ts...> &v) {
+      // first byte means type index
+      uint8_t type_index = 0u;
+      *this >> type_index;  // decode type index
+
+      // ensure that index is in [0, types_count)
+      if (type_index >= sizeof...(Ts)) {
+        raise(DecodeError::WRONG_TYPE_INDEX);
+      }
+
+      tryDecodeAsOneOfVariant<0>(v, type_index);
+      return *this;
+    }
+
+#ifdef USE_BOOST_VARIANT
+    /**
+     * @brief scale-decoding of variant
+     * @tparam Ts enumeration of various types
      * @param v reference to variant
      * @return reference to stream
      */
@@ -109,6 +137,7 @@ namespace scale {
       tryDecodeAsOneOfVariant<0>(v, type_index);
       return *this;
     }
+#endif  // USE_BOOST_VARIANT
 
     /**
      * @brief scale-decodes shared_ptr value
@@ -383,6 +412,22 @@ namespace scale {
     }
 
     template <size_t I, class... Ts>
+    void tryDecodeAsOneOfVariant(std::variant<Ts...> &v, size_t i) {
+      using T = std::remove_const_t<std::tuple_element_t<I, std::tuple<Ts...>>>;
+      static_assert(std::is_default_constructible_v<T>);
+      if (I == i) {
+        T val;
+        *this >> val;
+        v = std::forward<T>(val);
+        return;
+      }
+      if constexpr (sizeof...(Ts) > I + 1) {
+        tryDecodeAsOneOfVariant<I + 1>(v, i);
+      }
+    }
+
+#ifdef USE_BOOST_VARIANT
+    template <size_t I, class... Ts>
     void tryDecodeAsOneOfVariant(boost::variant<Ts...> &v, size_t i) {
       using T = std::remove_const_t<std::tuple_element_t<I, std::tuple<Ts...>>>;
       static_assert(std::is_default_constructible_v<T>);
@@ -396,6 +441,7 @@ namespace scale {
         tryDecodeAsOneOfVariant<I + 1>(v, i);
       }
     }
+#endif  // USE_BOOST_VARIANT
 
     ByteSpan span_;
 

@@ -9,7 +9,9 @@ if (POLICY CMP0076)
   cmake_policy(SET CMP0076 NEW)
 endif ()
 
-hunter_add_package(GTest)
+if (PACKAGE_MANAGER STREQUAL "hunter")
+    hunter_add_package(GTest)
+endif ()
 find_package(GTest CONFIG REQUIRED)
 
 function(disable_clang_tidy target)
@@ -104,7 +106,8 @@ target_link_libraries(scale_collection_test
 )
 
 addtest(scale_variant_test
-    scale_variant_test.cpp
+    scale_std_variant_test.cpp
+    scale_boost_variant_test.cpp
 )
 target_link_libraries(scale_variant_test
     scale
