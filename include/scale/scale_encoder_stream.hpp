@@ -11,9 +11,15 @@
 #include <optional>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
+#ifdef __has_include
+#if __has_include(<boost/variant.hpp>)
 #include <boost/variant.hpp>
+#define USE_BOOST_VARIANT
+#endif
+#endif
 
 #include <scale/bitvec.hpp>
 #include <scale/definitions.hpp>
@@ -124,10 +130,24 @@ namespace scale {
      * @return reference to stream
      */
     template <class... T>
+    ScaleEncoderStream &operator<<(const std::variant<T...> &v) {
+      tryEncodeAsOneOfVariant<0>(v);
+      return *this;
+    }
+
+#ifdef USE_BOOST_VARIANT
+    /**
+     * @brief scale-encodes variant value
+     * @tparam T type list
+     * @param v value to encode
+     * @return reference to stream
+     */
+    template <class... T>
     ScaleEncoderStream &operator<<(const boost::variant<T...> &v) {
       tryEncodeAsOneOfVariant<0>(v);
       return *this;
     }
+#endif  // USE_BOOST_VARIANT
 
     /**
      * @brief scale-encodes sharead_ptr value
@@ -261,6 +281,19 @@ namespace scale {
     }
 
     template <uint8_t I, class... Ts>
+    void tryEncodeAsOneOfVariant(const std::variant<Ts...> &v) {
+      using T = std::tuple_element_t<I, std::tuple<Ts...>>;
+      if (v.index() == I) {
+        *this << I << std::get<T>(v);
+        return;
+      }
+      if constexpr (sizeof...(Ts) > I + 1) {
+        tryEncodeAsOneOfVariant<I + 1>(v);
+      }
+    }
+
+#ifdef USE_BOOST_VARIANT
+    template <uint8_t I, class... Ts>
     void tryEncodeAsOneOfVariant(const boost::variant<Ts...> &v) {
       using T = std::tuple_element_t<I, std::tuple<Ts...>>;
       if (v.type() == typeid(T)) {
@@ -271,6 +304,7 @@ namespace scale {
         tryEncodeAsOneOfVariant<I + 1>(v);
       }
     }
+#endif  // USE_BOOST_VARIANT
 
     /**
      * @brief scale-encodes any dynamic collection

@@ -6,16 +6,50 @@
 
 cmake_minimum_required(VERSION 3.12)
 
+option(JAM_COMPATIBLE "Build compatible with JAM-codec" OFF)
+option(CUSTOM_CONFIG_SUPPORT "Support custom config of streams" OFF)
+option(BOOST_VARIANT_SUPPORT "Support boost::variant encoding" ON)
+
+option(BUILD_TESTS "Whether to include the test suite in build" ON)
+
+if (PACKAGE_MANAGER)
+    if(PACKAGE_MANAGER NOT MATCHES "^(hunter|vcpkg)$")
+        message(FATAL_ERROR "PACKAGE_MANAGER must be set to 'hunter', 'vcpkg' or isn't set")
+    endif ()
+else ()
+    set(PACKAGE_MANAGER "hunter")
+    if (CMAKE_TOOLCHAIN_FILE)
+        get_filename_component(ACTUAL_NAME ${CMAKE_TOOLCHAIN_FILE} NAME)
+        if(ACTUAL_NAME STREQUAL "vcpkg.cmake")
+            message(STATUS "vcpkg will be used because vcpkg.cmake has found")
+            set(PACKAGE_MANAGER "vcpkg")
+        endif ()
+    endif ()
+endif ()
+message(STATUS "Selected package manager: ${PACKAGE_MANAGER}")
+
 if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.27")
     cmake_policy(SET CMP0144 NEW)
 endif ()
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/HunterGate.cmake)
+if (PACKAGE_MANAGER STREQUAL "hunter")
+    include(cmake/HunterGate.cmake)
+    HunterGate(
+        URL  https://github.com/qdrvm/hunter/archive/refs/tags/v0.25.3-qdrvm26.zip
+        SHA1 21e8e29f562962e97fc8bcd35a4ad5244794c7fc
+    )
+endif ()
 
-HunterGate(
-    URL  https://github.com/qdrvm/hunter/archive/refs/tags/v0.25.3-qdrvm25.tar.gz
-    SHA1 bf5742041306c4b2c8b65b9c2d2af712a36ac3f9
-)
+if(BUILD_TESTS)
+    if (PACKAGE_MANAGER STREQUAL "vcpkg")
+        list(APPEND VCPKG_MANIFEST_FEATURES test)
+    endif()
+endif()
+if (BOOST_VARIANT_SUPPORT)
+    if (PACKAGE_MANAGER STREQUAL "vcpkg")
+        list(APPEND VCPKG_MANIFEST_FEATURES boost-variant)
+    endif()
+endif()
 
 project(Scale LANGUAGES CXX VERSION 1.1.0)
 
@@ -30,10 +64,17 @@ option(CUSTOM_CONFIG_SUPPORT "Support custom config of streams" OFF)
 
 option(BUILD_TESTS "Whether to include the test suite in build" OFF)
 
-hunter_add_package(Boost)
-find_package(Boost CONFIG REQUIRED)
+if (PACKAGE_MANAGER STREQUAL "hunter")
+    hunter_add_package(Boost)
+endif ()
+find_package(Boost CONFIG REQUIRED COMPONENTS endian multiprecision)
+if (BOOST_VARIANT_SUPPORT)
+    find_package(Boost CONFIG REQUIRED COMPONENTS variant)
+endif ()
 
-hunter_add_package(qtils)
+if (PACKAGE_MANAGER STREQUAL "hunter")
+    hunter_add_package(qtils)
+endif ()
 find_package(qtils CONFIG REQUIRED)
 
 set(DEFINITION_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/scale/definitions.hpp")

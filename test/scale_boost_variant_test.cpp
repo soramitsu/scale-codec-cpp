@@ -7,13 +7,15 @@
 #include <gtest/gtest.h>
 #include <scale/scale.hpp>
 
+#ifdef USE_BOOST_VARIANT
+
 using scale::ByteArray;
 using scale::decode;
 using scale::encode;
 using scale::ScaleDecoderStream;
 using scale::ScaleEncoderStream;
 
-class VariantFixture
+class BoostVariantFixture
     : public testing::TestWithParam<
           std::pair<boost::variant<uint8_t, uint32_t>, ByteArray>> {
  protected:
@@ -32,14 +34,14 @@ namespace {
  * @when value is scale-encoded
  * @then encoded bytes match predefined byte array
  */
-TEST_P(VariantFixture, EncodeSuccessTest) {
+TEST_P(BoostVariantFixture, EncodeSuccessTest) {
   const auto &[value, match] = GetParam();
   ASSERT_NO_THROW(s << value);
   ASSERT_EQ(s.to_vector(), match);
 }
 
 INSTANTIATE_TEST_SUITE_P(CompactTestCases,
-                         VariantFixture,
+                         BoostVariantFixture,
                          ::testing::Values(make_pair(uint8_t(1), {0, 1}),
                                            make_pair(uint32_t(2),
                                                      {1, 2, 0, 0, 0})));
@@ -51,7 +53,7 @@ INSTANTIATE_TEST_SUITE_P(CompactTestCases,
  * @then obtained varian has alternative type uint8_t and is equal to encoded
  * uint8_t value
  */
-TEST(ScaleVariant, DecodeU8Success) {
+TEST(ScaleBoostVariant, DecodeU8Success) {
   ByteArray match = {0, 1};  // uint8_t{1}
   ScaleDecoderStream s(match);
   boost::variant<uint8_t, uint32_t> val{};
@@ -66,10 +68,12 @@ TEST(ScaleVariant, DecodeU8Success) {
  * @then obtained varian has alternative type uint32_t and is equal to encoded
  * uint32_t value
  */
-TEST(ScaleVariant, DecodeU32Success) {
+TEST(ScaleBoostVariant, DecodeU32Success) {
   ByteArray match = {1, 1, 0, 0, 0};  // uint32_t{1}
   ScaleDecoderStream s(match);
   boost::variant<uint8_t, uint32_t> val{};
   ASSERT_NO_THROW(s >> val);
   ASSERT_EQ(boost::get<uint32_t>(val), 1);
 }
+
+#endif

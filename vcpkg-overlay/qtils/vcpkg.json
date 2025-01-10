@@ -1,0 +1,19 @@
+{
+  "name": "qtils",
+  "version": "0.0.3",
+  "dependencies": [
+    { "name": "vcpkg-cmake", "host": true },
+    { "name": "vcpkg-cmake-config", "host": true },
+    "boost-algorithm",
+    "boost-outcome",
+    "fmt"
+  ],
+  "features": {
+    "test": {
+      "description": "Test",
+      "dependencies": [
+        "gtest"
+      ]
+    }
+  }
+}
