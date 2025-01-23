@@ -221,7 +221,7 @@ function(hunter_gate_download dir)
         hunter_gate_internal_error("Empty 'dir' argument")
     endif()
 
-    string(COMPARE EQUAL "${HUNTER_GATE_SHA1}" "" iCOMPs_bad)
+    string(COMPARE EQUAL "${HUNTER_GATE_SHA1}" "" is_bad)
     if(is_bad)
         hunter_gate_internal_error("HUNTER_GATE_SHA1 empty")
     endif()
