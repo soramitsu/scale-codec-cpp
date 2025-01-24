@@ -20,16 +20,6 @@ struct TestStruct {
   }
 };
 
-template <class Stream, typename = std::enable_if_t<Stream::is_encoder_stream>>
-Stream &operator<<(Stream &s, const TestStruct &test_struct) {
-  return s << test_struct.a << test_struct.b;
-}
-
-template <class Stream, typename = std::enable_if_t<Stream::is_decoder_stream>>
-Stream &operator>>(Stream &s, TestStruct &test_struct) {
-  return s >> test_struct.a >> test_struct.b;
-}
-
 /**
  * @given encoded TestStruct
  * @when it is decoded back
@@ -53,7 +43,7 @@ TEST(ScaleConvenienceFuncsTest, EncodeSeveralValidArgTest) {
   std::string expected_string = "some_string";
   int expected_int = 42;
 
-  auto encoded = EXPECT_OK(encode(expected_string, expected_int));
+  auto encoded = EXPECT_OK(encode(std::tie(expected_string, expected_int)));
   auto decoded = EXPECT_OK(decode<TestStruct>(encoded));
 
   ASSERT_EQ(decoded.a, expected_string);

@@ -23,6 +23,7 @@
 
 #include <scale/bitvec.hpp>
 #include <scale/definitions.hpp>
+#include <scale/detail/aggregate.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
 #ifdef JAM_COMPATIBILITY_ENABLED
 #include <scale/detail/jam_compact_integer.hpp>
@@ -66,6 +67,18 @@ namespace scale {
     }
 
     size_t decodeLength();
+
+    /**
+     * @brief scale-decodes aggregate
+     * @param v aggregate for decoding to
+     * @return reference to stream
+     */
+    ScaleDecoderStream &operator>>(SimpleCodeableAggregate auto &v) {
+      return detail::as_decomposed(v,
+                                   [&](auto &...args) -> ScaleDecoderStream & {
+                                     return (*this >> ... >> args);
+                                   });
+    }
 
     /**
      * @brief scale-decodes pair of values

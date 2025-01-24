@@ -22,11 +22,6 @@ struct TestStruct {
   std::string y;
 };
 
-template <class Stream, typename = std::enable_if_t<Stream::is_encoder_stream>>
-Stream &operator<<(Stream &s, const TestStruct &v) {
-  return s << v.x << v.y;
-}
-
 // helper for same kind checks
 #define SIZE(bytes) ASSERT_EQ(s.size(), bytes)
 

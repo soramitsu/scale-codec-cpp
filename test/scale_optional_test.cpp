@@ -160,11 +160,6 @@ struct FourOptBools {
   std::optional<bool> b4;
 };
 
-template <class Stream, typename = std::enable_if_t<Stream::is_decoder_stream>>
-Stream &operator>>(Stream &s, FourOptBools &v) {
-  return s >> v.b1 >> v.b2 >> v.b3 >> v.b4;
-}
-
 /**
  * @given byte array containing series of encoded optional bool values
  * where last byte is incorrect for optional bool type

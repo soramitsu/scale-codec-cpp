@@ -23,6 +23,7 @@
 
 #include <scale/bitvec.hpp>
 #include <scale/definitions.hpp>
+#include <scale/detail/aggregate.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
 #ifdef JAM_COMPATIBILITY_ENABLED
 #include <scale/detail/jam_compact_integer.hpp>
@@ -78,6 +79,18 @@ namespace scale {
      * @return size in bytes
      */
     size_t size() const;
+
+    /**
+     * @brief scale-encodes aggregate
+     * @param v aggregate to encode
+     * @return reference to stream
+     */
+    ScaleEncoderStream &operator<<(const SimpleCodeableAggregate auto &v) {
+      return detail::as_decomposed(
+          v, [&](const auto &...args) -> ScaleEncoderStream & {
+            return (*this << ... << args);
+          });
+    }
 
     /**
      * @brief scale-encodes range

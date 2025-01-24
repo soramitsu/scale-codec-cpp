@@ -34,25 +34,83 @@ namespace scale {
     OPT_FALSE = 2u,
   };
 
-  template <typename T>
-  struct __is_derived_of_span_impl {
-    template <typename V, size_t S>
-    static constexpr std::true_type test(const std::span<V, S> *);
-    static constexpr std::false_type test(...);
-    using type = decltype(test(std::declval<T *>()));
-  };
+  namespace detail {
+    template <typename T>
+    struct is_derived_of_span_impl {
+      template <typename V, size_t S>
+      static constexpr std::true_type test(const std::span<V, S> *);
+      static constexpr std::false_type test(...);
+      using type = decltype(test(std::declval<T *>()));
+    };
+
+    template <typename T>
+    using is_derived_of_span = typename is_derived_of_span_impl<T>::type;
+
+    struct ArgHelper {
+      template <typename T>
+      operator T() const {
+        return T{};
+      }
+    };
+
+    template <typename T, std::size_t... Indices>
+      requires std::is_aggregate_v<T>
+    constexpr bool is_constructible_with_n_def_args_impl(
+        std::index_sequence<Indices...>) {
+      return std::is_constructible_v<T,
+                                     decltype((void(Indices), ArgHelper{}))...>;
+    }
+
+    template <typename T, size_t N>
+    constexpr bool is_constructible_with_n_def_args_v =
+        is_constructible_with_n_def_args_impl<T>(std::make_index_sequence<N>{});
+
+    template <typename T, int N = -1>
+      requires std::is_aggregate_v<T>
+    struct field_number_of_impl
+        : std::integral_constant<
+              int,
+              std::conditional_t<
+                  std::is_empty_v<T>,
+                  std::integral_constant<int, 0>,
+                  std::conditional_t<
+                      is_constructible_with_n_def_args_v<T, N + 1>,
+                      field_number_of_impl<T, N + 1>,
+                      std::integral_constant<int, N>>>::value> {};
+
+    template <typename T>
+      requires std::is_aggregate_v<std::decay_t<T>>
+    constexpr size_t field_number_of =
+        field_number_of_impl<std::decay_t<T>>::value;
+
+    constexpr size_t MAX_FIELD_NUM = 20;
+
+    template <typename T>
+    concept is_std_array =
+        requires {
+          typename std::remove_cvref_t<T>::value_type;
+          std::tuple_size<T>::value;
+        }
+        and std::is_same_v<
+            T,
+            std::array<typename T::value_type, std::tuple_size<T>::value>>;
+  }  // namespace detail
 
   template <typename T>
-  using __is_derived_of_span = typename __is_derived_of_span_impl<T>::type;
+  concept SimpleCodeableAggregate =
+      std::is_aggregate_v<std::decay_t<T>>  //
+      and (not std::is_array_v<T>)          //
+      and (not detail::is_std_array<T>)     //
+      and (detail::field_number_of<T> <= detail::MAX_FIELD_NUM);
 
   template <typename T>
-  concept SomeSpan = __is_derived_of_span<T>::value  //
+  concept SomeSpan = detail::is_derived_of_span<T>::value  //
                      and requires(T) { T::extent; };
 
   template <class T>
-  concept HasSomeInsertMethod =
-      requires(T v) { v.insert(v.end(), *v.begin()); }
-      or requires(T v) { v.insert_after(v.end(), *v.begin()); };
+  concept HasSomeInsertMethod = requires(T v) {
+    v.insert(v.end(), *v.begin());
+  } or requires(T v) { v.insert_after(v.end(), *v.begin()); };
 
   template <class T>
   concept HasResizeMethod = requires(T v) { v.resize(v.size()); };

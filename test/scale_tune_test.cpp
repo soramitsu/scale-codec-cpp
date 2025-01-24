@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 #include <scale/scale.hpp>
+#include <scale/definitions.hpp>
 
 #ifndef CUSTOM_CONFIG_ENABLED
 #error \

@@ -136,7 +136,16 @@ TEST(CollectionTest, encodeCollectionUint16) {
   ASSERT_TRUE(std::ranges::equal(out, match));
 }
 
-struct TestStruct : std::vector<uint16_t> {};
+struct TestStruct : public std::vector<uint16_t> {
+  friend ScaleEncoderStream &operator<<(ScaleEncoderStream &s,
+                                        const TestStruct &test_struct) {
+    return s << static_cast<const std::vector<uint16_t> &>(test_struct);
+  }
+  friend ScaleDecoderStream &operator>>(ScaleDecoderStream &s,
+                                        TestStruct &test_struct) {
+    return s >> static_cast<std::vector<uint16_t> &>(test_struct);
+  }
+};
 
 /**
  * @given collection of items of type uint16_t, derived from std::vector
@@ -438,8 +447,13 @@ TEST(CollectionTest, encodeExplicitlyDefinedAsDynamic) {
       decoded.begin(), decoded.end(), collection.begin(), collection.end()));
 }
 
-struct ImplicitlyDefinedAsStatic : public std::array<int, 5> {
-  using Collection = std::array<int, 5>;
+struct ImplicitlyDefinedAsStatic : public std::vector<int> {
+  using Collection = std::vector<int>;
+  using Collection::Collection;
+
+ private:
+  using std::vector<int>::insert;
+  using std::vector<int>::emplace;
 };
 
 TEST(CollectionTest, encodeImplicitlyDefinedAsStatic) {

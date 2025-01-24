@@ -7,6 +7,7 @@
 #pragma once
 
 #include <qtils/outcome.hpp>
+#include <scale/scale_encoder_stream.hpp>
 #include <scale/types.hpp>
 
 namespace scale {
@@ -16,16 +17,15 @@ namespace scale {
    */
   struct EncodeOpaqueValue {
     ConstSpanOfBytes v;
-  };
 
-  template <class Stream,
-            typename = std::enable_if_t<Stream::is_encoder_stream>>
-  Stream &operator<<(Stream &s, const EncodeOpaqueValue &value) {
-    for (auto &&it = value.v.begin(), end = value.v.end(); it != end; ++it) {
-      s << *it;
+    friend ScaleEncoderStream &operator<<(ScaleEncoderStream &s,
+                                          const EncodeOpaqueValue &value) {
+      for (auto &item : value.v) {
+        s << item;
+      }
+      return s;
     }
-    return s;
-  }
+  };
 
   /**
    * Adds an EncodeOpaqueValue to a scale encoded vector of EncodeOpaqueValue's.
