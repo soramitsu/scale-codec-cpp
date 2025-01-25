@@ -25,7 +25,8 @@ namespace scale::detail {
    * @return byte array representation of value as jam-compact-integer
    */
   template <typename T, typename S>
-    requires(std::unsigned_integral<T> or std::is_same_v<T, CompactInteger>)
+    requires(std::unsigned_integral<std::decay_t<T>>
+             or std::is_same_v<std::decay_t<T>, CompactInteger>)
   void encodeJamCompactInteger(T integer, S &s) {
     size_t value;
 
@@ -100,7 +101,8 @@ namespace scale::detail {
       val_mask >>= 1;
       val_bits &= val_mask;
 
-      if ((len_bits & static_cast<uint8_t>(0x80)) == 0) {  // no more significant bytes
+      if ((len_bits & static_cast<uint8_t>(0x80))
+          == 0) {  // no more significant bytes
         value |= static_cast<size_t>(val_bits) << (8 * i);
         break;
       }

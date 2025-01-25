@@ -168,7 +168,7 @@ namespace scale {
      * @param v value to encode
      * @return reference to stream
      */
-    template <class T>
+    template <typename T>
     ScaleEncoderStream &operator<<(const std::shared_ptr<T> &v) {
       if (v == nullptr) {
         raise(EncodeError::DEREF_NULLPOINTER);
@@ -182,7 +182,7 @@ namespace scale {
      * @param v value to encode
      * @return reference to stream
      */
-    template <class T>
+    template <typename T>
     ScaleEncoderStream &operator<<(const std::unique_ptr<T> &v) {
       if (v == nullptr) {
         raise(EncodeError::DEREF_NULLPOINTER);
@@ -196,7 +196,7 @@ namespace scale {
      * @param v value to encode
      * @return reference to stream
      */
-    template <class T>
+    template <typename T>
     ScaleEncoderStream &operator<<(const std::optional<T> &v) {
       // optional bool is a special case of optional values
       // it should be encoded using one byte instead of two
@@ -225,7 +225,7 @@ namespace scale {
      * @param v value to encode
      * @return reference to stream;
      */
-    template <class T>
+    template <typename T>
     ScaleEncoderStream &operator<<(const std::reference_wrapper<T> &v) {
       return *this << static_cast<const T &>(v);
     }
@@ -258,10 +258,10 @@ namespace scale {
      * @param v value of integral type
      * @return reference to stream
      */
-    template <typename T,
-              typename I = std::decay_t<T>,
-              typename = std::enable_if_t<std::is_integral_v<I>>>
+    template <typename T>
+      requires std::is_integral_v<std::decay_t<T>>
     ScaleEncoderStream &operator<<(T &&v) {
+      using I = std::decay_t<T>;
       // encode bool
       if constexpr (std::is_same_v<I, bool>) {
         uint8_t byte = (v ? 1u : 0u);
@@ -369,12 +369,11 @@ namespace scale {
    * @param v value of the enum type
    * @return reference to stream
    */
-  template <typename S,
-            typename T,
-            typename E = std::decay_t<T>,
-            typename = std::enable_if_t<S::is_encoder_stream>,
-            typename = std::enable_if_t<std::is_enum_v<E>>>
+  template <typename S, typename T>
+    requires std::is_base_of_v<ScaleEncoderStream, S>
+             and std::is_enum_v<std::decay_t<T>>
   S &operator<<(S &s, const T &v) {
+    using E = std::decay_t<T>;
     return s << static_cast<std::underlying_type_t<E>>(v);
   }
 

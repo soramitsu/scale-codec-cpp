@@ -85,28 +85,3 @@ namespace scale::detail {
   }
 
 }  // namespace scale::detail
-
-// namespace scale {
-//
-//   class ScaleDecoderStream;
-//   class ScaleEncoderStream;
-//
-//   ScaleEncoderStream &operator<<(ScaleEncoderStream &s,
-//                                  const SimpleCodeableAggregate auto &v) {
-//     return detail::as_decomposed(  //
-//         v,
-//         [&](const auto &...args) -> ScaleEncoderStream & {
-//           return (s << ... << args);
-//         });
-//   }
-//
-//   ScaleDecoderStream &operator>>(ScaleDecoderStream &s,
-//                                  SimpleCodeableAggregate auto &v) {
-//     return detail::as_decomposed(  //
-//         v,
-//         [&](auto &...args) -> ScaleDecoderStream & {
-//           return (s >> ... >> args);
-//         });
-//   }
-//
-// }  // namespace scale

@@ -114,13 +114,13 @@ try {
 ## Convenience functions
 Convenience functions 
 ```c++
-template<class T> 
+template <typename T> 
 outcome::result<std::vector<uint8_t>> encode(T &&t);
 
-template <class T>
+template <typename T>
 outcome::result<T> decode(const RangeOfBytes auto& span)
 
-template <class T>
+template <typename T>
 outcome::result<T> decode(ScaleDecoderStream &s)  
 ```
 are wrappers over ```<<``` and ```>>``` operators described above.

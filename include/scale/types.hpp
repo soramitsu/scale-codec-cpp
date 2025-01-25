@@ -36,15 +36,10 @@ namespace scale {
 
   namespace detail {
     template <typename T>
-    struct is_derived_of_span_impl {
-      template <typename V, size_t S>
-      static constexpr std::true_type test(const std::span<V, S> *);
-      static constexpr std::false_type test(...);
-      using type = decltype(test(std::declval<T *>()));
-    };
+    struct is_derived_of_span : std::false_type {};
 
-    template <typename T>
-    using is_derived_of_span = typename is_derived_of_span_impl<T>::type;
+    template <typename V, size_t S>
+    struct is_derived_of_span<std::span<V, S>> : std::true_type {};
 
     struct ArgHelper {
       template <typename T>
@@ -65,23 +60,19 @@ namespace scale {
     constexpr bool is_constructible_with_n_def_args_v =
         is_constructible_with_n_def_args_impl<T>(std::make_index_sequence<N>{});
 
-    template <typename T, int N = -1>
-      requires std::is_aggregate_v<T>
-    struct field_number_of_impl
-        : std::integral_constant<
-              int,
-              std::conditional_t<
-                  std::is_empty_v<T>,
-                  std::integral_constant<int, 0>,
-                  std::conditional_t<
-                      is_constructible_with_n_def_args_v<T, N + 1>,
-                      field_number_of_impl<T, N + 1>,
-                      std::integral_constant<int, N>>>::value> {};
+    template <typename T, int N = 0>
+    constexpr int field_number_of_impl() {
+      if constexpr (std::is_empty_v<T>) {
+        return 0;
+      } else if constexpr (is_constructible_with_n_def_args_v<T, N + 1>) {
+        return field_number_of_impl<T, N + 1>();
+      } else {
+        return N;
+      }
+    }
 
     template <typename T>
-      requires std::is_aggregate_v<std::decay_t<T>>
-    constexpr size_t field_number_of =
-        field_number_of_impl<std::decay_t<T>>::value;
+    constexpr size_t field_number_of = field_number_of_impl<std::decay_t<T>>();
 
     constexpr size_t MAX_FIELD_NUM = 20;
 
@@ -107,28 +98,28 @@ namespace scale {
   concept SomeSpan = detail::is_derived_of_span<T>::value  //
                      and requires(T) { T::extent; };
 
-  template <class T>
+  template <typename T>
   concept HasSomeInsertMethod = requires(T v) {
     v.insert(v.end(), *v.begin());
   } or requires(T v) { v.insert_after(v.end(), *v.begin()); };
 
-  template <class T>
+  template <typename T>
   concept HasResizeMethod = requires(T v) { v.resize(v.size()); };
 
-  template <class T>
+  template <typename T>
   concept HasReserveMethod = requires(T v) { v.reserve(v.size()); };
 
-  template <class T>
+  template <typename T>
   concept HasEmplaceMethod = requires(T v) { v.emplace(*v.begin()); };
 
-  template <class T>
+  template <typename T>
   concept HasEmplaceBackMethod = requires(T v) { v.emplace_back(*v.begin()); };
 
-  template <class T>
+  template <typename T>
   concept ImplicitlyDefinedAsStatic = not(SomeSpan<T>) and  //
                                       not(HasSomeInsertMethod<T>);
 
-  template <class T>
+  template <typename T>
   concept ImplicitlyDefinedAsDynamic = not(SomeSpan<T>) and  //
                                        HasSomeInsertMethod<T>;
 
@@ -140,26 +131,26 @@ namespace scale {
   concept DynamicSpan = SomeSpan<T>  //
                         and (T::extent == std::dynamic_extent);
 
-  template <class T>
+  template <typename T>
   concept StaticCollection = std::ranges::range<T>
                              and (ImplicitlyDefinedAsStatic<T>  //
                                   or StaticSpan<T>);
 
-  template <class T>
+  template <typename T>
   concept DynamicCollection = std::ranges::sized_range<T>
                               and (ImplicitlyDefinedAsDynamic<T>  //
                                    or DynamicSpan<T>);
 
-  template <class T>
+  template <typename T>
   concept ResizeableCollection = DynamicCollection<T>  //
                                  and HasResizeMethod<T>;
 
-  template <class T>
+  template <typename T>
   concept ExtensibleBackCollection = DynamicCollection<T>         //
                                      and not(HasResizeMethod<T>)  //
                                      and HasEmplaceBackMethod<T>;
 
-  template <class T>
+  template <typename T>
   concept RandomExtensibleCollection = DynamicCollection<T>  //
                                        and HasEmplaceMethod<T>;
 

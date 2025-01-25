@@ -54,7 +54,7 @@ namespace scale {
    * @param span of bytes with encoded data
    * @return decoded T
    */
-  template <class T>
+  template <typename T>
   outcome::result<T> decode(ConstSpanOfBytes data) {
     ScaleDecoderStream s(data);
     return decode<T>(s);

@@ -27,7 +27,6 @@ function(addtest test_name)
       ${ARGN}
   )
   target_link_libraries(${test_name}
-      GTest::gtest
       GTest::gmock_main
   )
   target_include_directories(${test_name} PRIVATE

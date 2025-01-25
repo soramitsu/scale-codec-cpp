@@ -17,6 +17,11 @@
 #include <scale/outcome/outcome_throw.hpp>
 #include <scale/scale_error.hpp>
 #include <scale/types.hpp>
+#include <scale/unreachable.hpp>
+
+namespace scale {
+  class ScaleDecoderStream;
+}
 
 namespace scale::detail {
 
@@ -45,8 +50,10 @@ namespace scale::detail {
    * @return byte array representation of value as compact-integer
    */
   template <typename T, typename S>
-    requires(std::integral<T> or std::is_same_v<T, CompactInteger>)
-  void encodeCompactInteger(T integer, S &s) {
+    requires(std::unsigned_integral<std::decay_t<T>>
+             or std::is_same_v<std::decay_t<T>, CompactInteger>)
+            and std::is_base_of_v<ScaleEncoderStream, S>
+  void encodeCompactInteger(T integer, S &stream) {
     boost::multiprecision::cpp_int value{integer};
 
     // cannot encode negative numbers
@@ -57,19 +64,19 @@ namespace scale::detail {
 
     if (value < kMinUint16) {
       uint8_t v = (value.convert_to<uint8_t>() << 2u) | 0b00;
-      return encodeInteger(v, s);
+      return encodeInteger(v, stream);
     }
 
-    else if (value < kMinUint32) {
+    if (value < kMinUint32) {
       // only values from [kMinUint16, kMinUint32) can be put here
       uint16_t v = (value.convert_to<uint16_t>() << 2u) | 0b01;
-      return encodeInteger(v, s);
+      return encodeInteger(v, stream);
     }
 
-    else if (value < kMinBigInteger) {
+    if (value < kMinBigInteger) {
       // only values from [kMinUint32, kMinBigInteger) can be put here
       uint32_t v = (value.convert_to<uint32_t>() << 2u) | 0b10;
-      return encodeInteger(v, s);
+      return encodeInteger(v, stream);
     }
 
     // number of bytes required to represent value
@@ -91,20 +98,21 @@ namespace scale::detail {
     // to the result of the previous operations.
     uint8_t header = ((significant_bytes_n - 4) << 2u) | 0b11;
 
-    s << header;
+    stream << header;
 
     for (auto v = value; v != 0; v >>= 8) {
       // push back the least significant byte
-      s << static_cast<uint8_t>(v & 0xff);
+      stream << static_cast<uint8_t>(v & 0xff);
     }
   }
 
   template <typename T, typename S>
     requires std::is_same_v<T, CompactInteger>
+             and std::is_base_of_v<ScaleDecoderStream, S>
   T decodeCompactInteger(S &stream) {
     auto first_byte = stream.nextByte();
 
-    const uint8_t flag = (first_byte)&0b00000011u;
+    const uint8_t flag = (first_byte) & 0b00000011u;
 
     size_t number = 0u;
 
@@ -117,7 +125,7 @@ namespace scale::detail {
       case 0b01u: {
         auto second_byte = stream.nextByte();
 
-        number = (static_cast<size_t>((first_byte)&0b11111100u)
+        number = (static_cast<size_t>((first_byte) & 0b11111100u)
                   + static_cast<size_t>(second_byte) * 256u)
                  >> 2u;
         if ((number >> 6) == 0) {
@@ -186,14 +194,14 @@ namespace scale::detail {
    */
   template <typename T, typename S>
     requires std::unsigned_integral<T>
-  T decodeCompactInteger(S &s) {
-    auto integer = decodeCompactInteger<CompactInteger>(s);
+             and std::is_base_of_v<ScaleDecoderStream, S>
+  T decodeCompactInteger(S &stream) {
+    auto integer = decodeCompactInteger<CompactInteger>(stream);
     if (not integer.is_zero()
         and msb(integer) >= std::numeric_limits<T>::digits) {
       raise(DecodeError::DECODED_VALUE_OVERFLOWS_TARGET);
     }
     return static_cast<T>(integer);
   }
-
 
 }  // namespace scale::detail
