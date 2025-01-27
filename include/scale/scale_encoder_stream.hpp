@@ -72,13 +72,20 @@ namespace scale {
     /**
      * @return vector of bytes containing encoded data
      */
-    std::vector<uint8_t> to_vector() const;
+    [[nodiscard]] std::vector<uint8_t> to_vector() const;
 
     /**
      * Get amount of encoded data written to the stream
      * @return size in bytes
      */
-    size_t size() const;
+    [[nodiscard]] size_t size() const;
+
+    [[nodiscard]] auto begin() const {
+      return stream_.begin();
+    }
+    [[nodiscard]] auto end() const {
+      return stream_.end();
+    }
 
     /**
      * @brief scale-encodes aggregate

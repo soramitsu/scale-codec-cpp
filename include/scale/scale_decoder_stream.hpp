@@ -90,8 +90,8 @@ namespace scale {
     template <class F, class S>
       requires(not std::is_reference_v<F> and not std::is_reference_v<S>)
     ScaleDecoderStream &operator>>(std::pair<F, S> &p) {
-      using mutableF = std::remove_const_t<F>;
-      using mutableS = std::remove_const_t<S>;
+      using mutableF = std::remove_cvref_t<F>;
+      using mutableS = std::remove_cvref_t<S>;
       return *this                                 //
              >> const_cast<mutableF &>(p.first)    // NOLINT
              >> const_cast<mutableS &>(p.second);  // NOLINT
@@ -162,9 +162,9 @@ namespace scale {
      * @return reference to stream
      */
     template <typename T>
-      requires std::is_default_constructible_v<std::remove_const_t<T>>
+      requires std::is_default_constructible_v<std::decay_t<T>>
     ScaleDecoderStream &operator>>(std::shared_ptr<T> &v) {
-      using mutableT = std::remove_const_t<T>;
+      using mutableT = std::remove_cvref_t<T>;
       v = std::make_shared<mutableT>();
       return *this >> const_cast<mutableT &>(*v);  // NOLINT
     }
@@ -176,9 +176,9 @@ namespace scale {
      * @return reference to stream
      */
     template <typename T>
-      requires std::is_default_constructible_v<std::remove_const_t<T>>
+      requires std::is_default_constructible_v<std::decay_t<T>>
     ScaleDecoderStream &operator>>(std::unique_ptr<T> &v) {
-      using mutableT = std::remove_const_t<T>;
+      using mutableT = std::remove_cvref_t<T>;
       v = std::make_unique<mutableT>();
       return *this >> const_cast<mutableT &>(*v);  // NOLINT
     }
@@ -221,9 +221,9 @@ namespace scale {
      * @return reference to stream
      */
     template <typename T>
-      requires std::is_default_constructible_v<std::remove_const_t<T>>
+      requires std::is_default_constructible_v<std::decay_t<T>>
     ScaleDecoderStream &operator>>(std::optional<T> &v) {
-      using mutableT = std::remove_const_t<T>;
+      using mutableT = std::remove_cvref_t<T>;
 
       // Special case for `std::optional<bool>`
       if constexpr (std::is_same_v<mutableT, bool>) {
@@ -416,7 +416,7 @@ namespace scale {
 
     template <size_t I, class... Ts>
     void decodeElementOfTuple(std::tuple<Ts...> &v) {
-      using T = std::remove_const_t<std::tuple_element_t<I, std::tuple<Ts...>>>;
+      using T = std::remove_cvref_t<std::tuple_element_t<I, std::tuple<Ts...>>>;
       static_assert(std::is_default_constructible_v<T>,
                     "Type of each tuple member must be default constructible");
       *this >> const_cast<T &>(std::get<I>(v));  // NOLINT
@@ -428,7 +428,7 @@ namespace scale {
     template <size_t I, class... Ts>
       requires(I < sizeof...(Ts))
     void tryDecodeAsOneOfVariant(std::variant<Ts...> &v, size_t i) {
-      using T = std::remove_const_t<std::tuple_element_t<I, std::tuple<Ts...>>>;
+      using T = std::remove_cvref_t<std::tuple_element_t<I, std::tuple<Ts...>>>;
       static_assert(std::is_default_constructible_v<T>,
                     "All types of variant must be default constructible");
       if (I == i) {
@@ -445,7 +445,7 @@ namespace scale {
 #ifdef USE_BOOST_VARIANT
     template <size_t I, class... Ts>
     void tryDecodeAsOneOfVariant(boost::variant<Ts...> &v, size_t i) {
-      using T = std::remove_const_t<std::tuple_element_t<I, std::tuple<Ts...>>>;
+      using T = std::remove_cvref_t<std::tuple_element_t<I, std::tuple<Ts...>>>;
       static_assert(std::is_default_constructible_v<T>,
                     "All types of variant must be default constructible");
       if (I == i) {
