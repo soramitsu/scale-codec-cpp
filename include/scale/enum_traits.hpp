@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <type_traits>
 
 #include <scale/outcome/outcome_throw.hpp>
@@ -63,9 +64,7 @@ namespace scale {
             typename = decltype(E_traits::valid_values)>
   constexpr bool is_valid_enum_value(std::underlying_type_t<E> value) noexcept {
     const auto &valid_values = E_traits::valid_values;
-    return std::find(std::begin(valid_values),
-                     std::end(valid_values),
-                     static_cast<E>(value))
+    return std::ranges::find(valid_values, static_cast<E>(value))
            != std::end(valid_values);
   }
 
