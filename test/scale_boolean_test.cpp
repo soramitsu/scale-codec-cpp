@@ -47,7 +47,7 @@ struct ThreeBooleans {
  * @then it returns false, true and kUnexpectedValue error correspondingly,
  * and in the end no more bytes left in stream
  */
-TEST(Scale, fixedwidthDecodeBoolFail) {
+TEST(ScaleBoolTest, fixedwidthDecodeBoolFail) {
   auto bytes = ByteArray{0, 1, 2};
   EXPECT_EC(scale::decode<ThreeBooleans>(bytes), DecodeError::UNEXPECTED_VALUE);
 }
@@ -58,7 +58,7 @@ TEST(Scale, fixedwidthDecodeBoolFail) {
  * @then it returns false, true and kUnexpectedValue error correspondingly,
  * and in the end no more bytes left in stream
  */
-TEST(Scale, fixedwidthDecodeBoolSuccess) {
+TEST(ScaleBoolTest, fixedwidthDecodeBoolSuccess) {
   auto bytes = ByteArray{0, 1, 0};
   auto res = EXPECT_OK(scale::decode<ThreeBooleans>(bytes));
   ASSERT_EQ(res.b1, false);

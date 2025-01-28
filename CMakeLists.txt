@@ -32,11 +32,7 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.27")
 endif ()
 
 if (PACKAGE_MANAGER STREQUAL "hunter")
-    include(cmake/HunterGate.cmake)
-    HunterGate(
-        URL  https://github.com/qdrvm/hunter/archive/refs/tags/v0.25.3-qdrvm29.tar.gz
-        SHA1 025920fa980ba81a150deaa534a0248dde25fd54
-    )
+    include("cmake/Hunter/init.cmake")
 endif ()
 
 if(BUILD_TESTS)
@@ -56,7 +52,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if (PACKAGE_MANAGER STREQUAL "hunter")
     hunter_add_package(Boost)
     find_package(Boost)
-else() 
+else()
     find_package(Boost CONFIG REQUIRED COMPONENTS endian multiprecision)
 endif ()
 

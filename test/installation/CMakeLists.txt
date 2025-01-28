@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-include(../../cmake/HunterGate.cmake)
+include(../../cmake/Hunter/HunterGate.cmake)
 
 HunterGate(
     URL  https://github.com/qdrvm/hunter/archive/refs/tags/v0.23.257-qdrvm10.tar.gz
