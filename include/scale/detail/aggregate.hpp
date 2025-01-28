@@ -76,10 +76,12 @@ namespace scale::detail {
     } else if constexpr (N == 20) {
       auto &[v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20] = v;
       return f(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20);
-    } else if constexpr (N <= MAX_FIELD_NUM) {
-      static_assert(!"Inconsistent value of MAX_FIELD_NUM");
     } else {
-      static_assert(!"No code for cover aggregate with such big amount of fields");
+      if constexpr (N <= MAX_FIELD_NUM) {
+        static_assert(!"Inconsistent value of MAX_FIELD_NUM");
+      } else {
+        static_assert(!"No code for cover aggregate with such big amount of fields");
+      }
     }
     // clang-format on
   }
