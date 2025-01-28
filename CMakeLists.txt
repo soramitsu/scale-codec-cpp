@@ -34,8 +34,8 @@ endif ()
 if (PACKAGE_MANAGER STREQUAL "hunter")
     include(cmake/HunterGate.cmake)
     HunterGate(
-        URL  https://github.com/qdrvm/hunter/archive/refs/tags/v0.25.3-qdrvm28.tar.gz
-        SHA1 a4f1b0f42464e07790b7f90b783a822d71be6c6d
+        URL  https://github.com/qdrvm/hunter/archive/refs/tags/v0.25.3-qdrvm29.tar.gz
+        SHA1 025920fa980ba81a150deaa534a0248dde25fd54
     )
 endif ()
 
