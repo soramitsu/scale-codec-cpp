@@ -18,7 +18,7 @@ env:
 
 jobs:
   MacOS:
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
@@ -33,9 +33,9 @@ jobs:
       fail-fast: false
       matrix:
         options:
-          - name: "Linux: gcc-12"
-            run: ./scripts/build.sh -DCMAKE_CXX_COMPILER=g++-12
-          - name: "Linux: clang-14"
+          - name: "Linux: gcc"
+            run: ./scripts/build.sh -DCMAKE_CXX_COMPILER=g++
+          - name: "Linux: clang"
             run: ./scripts/build.sh -DCMAKE_CXX_COMPILER=clang++
     name: "${{ matrix.options.name }}"
     runs-on: ubuntu-latest
