@@ -49,7 +49,8 @@ struct ThreeBooleans {
  */
 TEST(ScaleBoolTest, fixedwidthDecodeBoolFail) {
   auto bytes = ByteArray{0, 1, 2};
-  EXPECT_EC(scale::decode<ThreeBooleans>(bytes), DecodeError::UNEXPECTED_VALUE);
+  ASSERT_OUTCOME_ERROR(scale::decode<ThreeBooleans>(bytes),
+                       DecodeError::UNEXPECTED_VALUE);
 }
 
 /**
@@ -60,7 +61,7 @@ TEST(ScaleBoolTest, fixedwidthDecodeBoolFail) {
  */
 TEST(ScaleBoolTest, fixedwidthDecodeBoolSuccess) {
   auto bytes = ByteArray{0, 1, 0};
-  auto res = EXPECT_OK(scale::decode<ThreeBooleans>(bytes));
+  ASSERT_OUTCOME_SUCCESS(res, scale::decode<ThreeBooleans>(bytes));
   ASSERT_EQ(res.b1, false);
   ASSERT_EQ(res.b2, true);
   ASSERT_EQ(res.b3, false);

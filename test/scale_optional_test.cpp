@@ -169,7 +169,8 @@ struct FourOptBools {
 TEST(Scale, DecodeOptionalBoolFail) {
   auto bytes = ByteArray{0, 1, 2, 3};
 
-  EXPECT_EC(decode<FourOptBools>(bytes), DecodeError::UNEXPECTED_VALUE);
+  ASSERT_OUTCOME_ERROR(decode<FourOptBools>(bytes),
+                       DecodeError::UNEXPECTED_VALUE);
 }
 
 /**
@@ -181,7 +182,7 @@ TEST(Scale, DecodeOptionalBoolSuccess) {
   auto bytes = ByteArray{0, 1, 2, 1};
   using optbool = std::optional<bool>;
 
-  auto res = EXPECT_OK(decode<FourOptBools>(bytes));
+  ASSERT_OUTCOME_SUCCESS(res, decode<FourOptBools>(bytes));
   ASSERT_EQ(res.b1, std::nullopt);
   ASSERT_EQ(res.b2, optbool(true));
   ASSERT_EQ(res.b3, optbool(false));
@@ -208,10 +209,10 @@ TEST(Scale, DecodeNullopt) {
   ByteArray encoded_nullopt{0};
 
   using OptionalInt = std::optional<int>;
-  auto int_opt = EXPECT_OK(decode<OptionalInt>(encoded_nullopt));
+  ASSERT_OUTCOME_SUCCESS(int_opt, decode<OptionalInt>(encoded_nullopt));
   EXPECT_EQ(int_opt, std::nullopt);
 
   using OptionalTuple = std::optional<std::tuple<int, int>>;
-  auto tuple_opt = EXPECT_OK(decode<OptionalTuple>(encoded_nullopt));
+  ASSERT_OUTCOME_SUCCESS(tuple_opt, decode<OptionalTuple>(encoded_nullopt));
   EXPECT_EQ(tuple_opt, std::nullopt);
 }

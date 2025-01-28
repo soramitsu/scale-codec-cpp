@@ -185,7 +185,8 @@ TEST(ScaleCompactTest, EncodeOutOfRangeBigIntegerFails) {
  */
 TEST(Scale, compactDecodeBigIntegerError) {
   auto bytes = ByteArray{255, 255, 255, 255};
-  EXPECT_EC(decode<CompactInteger>(bytes), scale::DecodeError::NOT_ENOUGH_DATA);
+  ASSERT_OUTCOME_ERROR(decode<CompactInteger>(bytes),
+                       scale::DecodeError::NOT_ENOUGH_DATA);
 }
 
 /**
@@ -195,8 +196,8 @@ TEST(Scale, compactDecodeBigIntegerError) {
  */
 struct RedundantCompactTest : ::testing::TestWithParam<ByteArray> {};
 TEST_P(RedundantCompactTest, DecodeError) {
-  EXPECT_EC(scale::decode<CompactInteger>(GetParam()),
-            scale::DecodeError::REDUNDANT_COMPACT_ENCODING);
+  ASSERT_OUTCOME_ERROR(scale::decode<CompactInteger>(GetParam()),
+                       scale::DecodeError::REDUNDANT_COMPACT_ENCODING);
 }
 
 #ifdef JAM_COMPATIBILITY_ENABLED
