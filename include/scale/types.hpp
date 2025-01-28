@@ -35,12 +35,6 @@ namespace scale {
   };
 
   namespace detail {
-    template <typename T>
-    struct is_derived_of_span : std::false_type {};
-
-    template <typename V, size_t S>
-    struct is_derived_of_span<std::span<V, S>> : std::true_type {};
-
     struct ArgHelper {
       template <typename T>
       operator T() const {
@@ -95,8 +89,8 @@ namespace scale {
       and (detail::field_number_of<T> <= detail::MAX_FIELD_NUM);
 
   template <typename T>
-  concept SomeSpan = detail::is_derived_of_span<T>::value  //
-                     and requires(T) { T::extent; };
+  concept SomeSpan =
+      std::is_base_of_v<std::span<typename T::element_type, T::extent>, T>;
 
   template <typename T>
   concept HasSomeInsertMethod = requires(T v) {
