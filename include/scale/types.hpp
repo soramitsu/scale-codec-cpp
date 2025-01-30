@@ -68,8 +68,6 @@ namespace scale {
     constexpr size_t field_number_of =
         field_number_of_impl<std::remove_cvref_t<T>>();
 
-    constexpr size_t MAX_FIELD_NUM = 20;
-
     template <typename T>
     concept is_std_array =
         requires { typename std::tuple_size<std::remove_cvref_t<T>>::type; }

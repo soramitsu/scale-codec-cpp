@@ -1,0 +1,17 @@
+/**
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#pragma once
+
+#include <cstdlib>
+
+#cmakedefine JAM_COMPATIBILITY_ENABLED
+#cmakedefine CUSTOM_CONFIG_ENABLED
+
+namespace scale::detail {
+  // clang-format off
+  constexpr static size_t MAX_FIELD_NUM = @MAX_AGGREGATE_FIELDS@;
+  // clang-format on
+}  // namespace scale::detail
