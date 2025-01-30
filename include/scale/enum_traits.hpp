@@ -84,10 +84,9 @@ namespace scale {
    * @param v value of enum type
    * @return reference to stream
    */
-  template <typename S, typename T>
-    requires std::is_base_of_v<ScaleDecoderStream, S>
-             and std::is_enum_v<std::decay_t<T>>
-  S &operator>>(S &s, T &v) {
+  template <typename T>
+    requires std::is_enum_v<std::remove_cvref_t<T>>
+  ScaleDecoderStream &operator>>(ScaleDecoderStream &s, T &v) {
     using E = std::decay_t<T>;
     std::underlying_type_t<E> value;
     s >> value;

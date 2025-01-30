@@ -50,11 +50,11 @@ namespace scale::detail {
    * @return byte array representation of value as compact-integer
    */
   template <typename T, typename S>
-    requires(std::unsigned_integral<std::decay_t<T>>
-             or std::is_same_v<std::decay_t<T>, CompactInteger>)
+    requires(std::unsigned_integral<std::remove_cvref_t<T>>
+             or std::is_same_v<std::remove_cvref_t<T>, CompactInteger>)
             and std::is_base_of_v<ScaleEncoderStream, S>
-  void encodeCompactInteger(T integer, S &stream) {
-    boost::multiprecision::cpp_int value{integer};
+  void encodeCompactInteger(T &&integer, S &stream) {
+    boost::multiprecision::cpp_int value{std::forward<T>(integer)};
 
     // cannot encode negative numbers
     // there is no description how to encode compact negative numbers

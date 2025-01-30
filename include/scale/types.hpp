@@ -73,34 +73,12 @@ namespace scale {
 
     template <typename T>
     concept is_std_array =
-        requires {
-          typename std::remove_cvref_t<T>::value_type;
-          std::tuple_size<T>::value;
-        }
-        and std::is_same_v<
-            T,
-            std::array<typename T::value_type, std::tuple_size<T>::value>>;
+        requires { typename std::tuple_size<std::remove_cvref_t<T>>::type; }
+        and std::same_as<
+            std::remove_cvref_t<T>,
+            std::array<typename std::remove_cvref_t<T>::value_type,
+                       std::tuple_size<std::remove_cvref_t<T>>::value>>;
   }  // namespace detail
-
-  template <typename T>
-  concept SimpleCodeableAggregate =
-      std::is_aggregate_v<std::remove_cvref_t<T>>  //
-      and (not std::is_array_v<T>)                 //
-      and (not detail::is_std_array<T>)            //
-      and (detail::field_number_of<T> <= detail::MAX_FIELD_NUM);
-
-  template <typename T, typename = void>
-  struct HasDecomposeAndApply : std::false_type {};
-
-  template <typename T>
-  struct HasDecomposeAndApply<T, std::void_t<decltype(
-      decompose_and_apply(std::declval<T>(), [](auto &&...) {  })
-  )>> : std::true_type {};
-
-  template <typename T>
-  concept CustomDecomposable =
-      not SimpleCodeableAggregate<T> and
-      HasDecomposeAndApply<T>::value;
 
   template <typename T>
   concept SomeSpan =
@@ -161,5 +139,27 @@ namespace scale {
   template <typename T>
   concept RandomExtensibleCollection = DynamicCollection<T>  //
                                        and HasEmplaceMethod<T>;
+
+  template <typename T>
+concept SimpleCodeableAggregate =
+    std::is_aggregate_v<std::remove_cvref_t<T>>  //
+    and (not DynamicCollection<T>)                 //
+    and (not std::is_array_v<T>)                 //
+    and (not detail::is_std_array<T>)            //
+    and (detail::field_number_of<T> <= detail::MAX_FIELD_NUM);
+
+  template <typename T, typename = void>
+  struct HasDecomposeAndApply : std::false_type {};
+
+  template <typename T>
+  struct HasDecomposeAndApply<T,
+                              std::void_t<decltype(decompose_and_apply(
+                                  std::declval<T>(), [](auto &&...) {}))>>
+      : std::true_type {};
+
+  template <typename T>
+  concept CustomDecomposable =
+      not SimpleCodeableAggregate<T> and HasDecomposeAndApply<T>::value;
+
 
 }  // namespace scale

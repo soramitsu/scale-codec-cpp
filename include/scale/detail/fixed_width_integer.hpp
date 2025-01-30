@@ -17,15 +17,13 @@ namespace scale::detail {
   /**
    * encodeInteger encodes any integer type to little-endian representation
    * @tparam T integer type
-   * @tparam S output stream type, derived from ScaleEncoderStream
    * @param value integer value
    * @param stream output stream
    */
-  template <typename T, typename S>
-    requires std::is_integral_v<std::decay_t<T>>
-             && std::is_base_of_v<ScaleEncoderStream, S>
-  void encodeInteger(T value, S &stream) {
-    using I = std::decay_t<T>;
+  template <typename T>
+    requires std::is_integral_v<std::remove_cvref_t<T>>
+  void encodeInteger(T value, ScaleEncoderStream &stream) {
+    using I = std::remove_cvref_t<T>;
     constexpr size_t size = sizeof(I);
     constexpr size_t bits = size * 8;
     boost::endian::endian_buffer<boost::endian::order::little, I, bits> buf{};

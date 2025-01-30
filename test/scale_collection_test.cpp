@@ -137,14 +137,14 @@ TEST(CollectionTest, encodeCollectionUint16) {
 }
 
 struct TestStruct : public std::vector<uint16_t> {
-  friend ScaleEncoderStream &operator<<(ScaleEncoderStream &s,
-                                        const TestStruct &test_struct) {
-    return s << static_cast<const std::vector<uint16_t> &>(test_struct);
-  }
-  friend ScaleDecoderStream &operator>>(ScaleDecoderStream &s,
-                                        TestStruct &test_struct) {
-    return s >> static_cast<std::vector<uint16_t> &>(test_struct);
-  }
+  // friend ScaleEncoderStream &operator<<(ScaleEncoderStream &s,
+  //                                       const TestStruct &test_struct) {
+  //   return s << static_cast<const std::vector<uint16_t> &>(test_struct);
+  // }
+  // friend ScaleDecoderStream &operator>>(ScaleDecoderStream &s,
+  //                                       TestStruct &test_struct) {
+  //   return s >> static_cast<std::vector<uint16_t> &>(test_struct);
+  // }
 };
 
 /**
