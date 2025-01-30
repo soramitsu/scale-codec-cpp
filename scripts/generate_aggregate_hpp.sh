@@ -18,6 +18,7 @@ fi
 PATH_HPP_IN="$1"
 N="$2"
 PATH_HPP_OUT="$3"
+mkdir -p $(dirname "$PATH_HPP_OUT")
 
 if [ ! -f "$PATH_HPP_IN" ]; then
     echo "Error: File '$PATH_HPP_IN' not found."
