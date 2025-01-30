@@ -2,25 +2,25 @@
 
 # This script modifies a specified C++ source file by replacing a generated section.
 # It reads the file, finds the markers '-BEGIN-GENERATED-SECTION-' and '-END-GENERATED-SECTION-',
-# generates C++ code based on a given integer N, and writes the modified content to the output file.
-# If the markers are not found, the script exits with an error.
-# If output file contents matches generated file contents, it won't be modified.
-# Usage: ./generate_aggregate_hpp.sh <PATH_HPP_IN> <N> <PATH_HPP_OUT>
-# Where <PATH_HPP_IN> is the path to the template C++ source file, <N> is an integer between 0 and 1000,
-# and <PATH_HPP_OUT> is a path to the output file.
+# generates C++ code based on a given integer N, and writes the modified content back to the file.
+# If the markers are not found, the script exits with an error without modifying the file.
+# If the file is modified, the specified stamp file is updated (if provided).
+# Usage: ./generate_aggregate_hpp.sh <filename> <N> [stampfile]
+# Where <filename> is the path to the C++ source file, <N> is an integer between 0 and 1000,
+# and [stampfile] is an optional path to the stamp file to be updated.
 
 # Validate input
 if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
-    echo "Usage: $0 <PATH_HPP_IN> <N> <PATH_HPP_OUT>"
+    echo "Usage: $0 <filename> <N> [stampfile]"
     exit 1
 fi
 
-PATH_HPP_IN="$1"
+FILENAME="$1"
 N="$2"
-PATH_HPP_OUT="$3"
+STAMPFILE="$3"
 
-if [ ! -f "$PATH_HPP_IN" ]; then
-    echo "Error: File '$PATH_HPP_IN' not found."
+if [ ! -f "$FILENAME" ]; then
+    echo "Error: File '$FILENAME' not found."
     exit 1
 fi
 
@@ -30,8 +30,8 @@ if echo "$N" | grep -q "[^0-9]" || [ "$N" -lt 0 ] || [ "$N" -gt 1000 ]; then
 fi
 
 # Find the section markers
-BEGIN_LINE=$(awk '/-BEGIN-GENERATED-SECTION-/ {print NR; exit}' "$PATH_HPP_IN")
-END_LINE=$(awk '/-END-GENERATED-SECTION-/ {print NR; exit}' "$PATH_HPP_IN")
+BEGIN_LINE=$(awk '/-BEGIN-GENERATED-SECTION-/ {print NR; exit}' "$FILENAME")
+END_LINE=$(awk '/-END-GENERATED-SECTION-/ {print NR; exit}' "$FILENAME")
 
 if [ -z "$BEGIN_LINE" ] || [ -z "$END_LINE" ]; then
     echo "Error: Required markers not found in the file."
@@ -74,12 +74,17 @@ BEGIN { in_generated_section = 0; }
     if (!in_generated_section) {
         print;
     }
-}' "$PATH_HPP_IN" > "$tempfile" || { echo "Error processing file"; exit 1; }
+}' "$FILENAME" > "$tempfile" || { echo "Error processing file"; exit 1; }
 
 # Check if the file has changed before overwriting
-if ! cmp -s "$tempfile" "$PATH_HPP_OUT"; then
-    mv "$tempfile" "$PATH_HPP_OUT"
-    echo "File '$PATH_HPP_OUT' successfully updated."
+if ! cmp -s "$tempfile" "$FILENAME"; then
+    mv "$tempfile" "$FILENAME"
+    if [ -n "$STAMPFILE" ]; then
+        touch "$STAMPFILE"
+        echo "File '$FILENAME' successfully updated. Stamp file '$STAMPFILE' modified."
+    else
+        echo "File '$FILENAME' successfully updated."
+    fi
 else
     rm -f "$tempfile"
     echo "No changes detected."

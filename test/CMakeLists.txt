@@ -30,7 +30,7 @@ function(addtest test_name)
       GTest::gmock_main
   )
   target_include_directories(${test_name} PRIVATE
-      ${CMAKE_SOURCE_DIR}/include
+      ${PROJECT_SOURCE_DIR}/include
   )
   set(xml_output "--gtest_output=xml:${CMAKE_BINARY_DIR}/xunit/xunit-${test_name}.xml")
   add_test(
