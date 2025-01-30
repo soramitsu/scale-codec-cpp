@@ -46,8 +46,7 @@ namespace scale {
       requires std::is_aggregate_v<T>
     constexpr bool is_constructible_with_n_def_args_impl(
         std::index_sequence<Indices...>) {
-      return std::is_constructible_v<T,
-                                     decltype((void(Indices), ArgHelper{}))...>;
+      return requires { T{(void(Indices), ArgHelper{})...}; };
     }
 
     template <typename T, size_t N>
@@ -141,12 +140,12 @@ namespace scale {
                                        and HasEmplaceMethod<T>;
 
   template <typename T>
-concept SimpleCodeableAggregate =
-    std::is_aggregate_v<std::remove_cvref_t<T>>  //
-    and (not DynamicCollection<T>)                 //
-    and (not std::is_array_v<T>)                 //
-    and (not detail::is_std_array<T>)            //
-    and (detail::field_number_of<T> <= detail::MAX_FIELD_NUM);
+  concept SimpleCodeableAggregate =
+      std::is_aggregate_v<std::remove_cvref_t<T>>  //
+      and (not DynamicCollection<T>)               //
+      and (not std::is_array_v<T>)                 //
+      and (not detail::is_std_array<T>)            //
+      and (detail::field_number_of<T> <= detail::MAX_FIELD_NUM);
 
   template <typename T, typename = void>
   struct HasDecomposeAndApply : std::false_type {};
@@ -160,6 +159,5 @@ concept SimpleCodeableAggregate =
   template <typename T>
   concept CustomDecomposable =
       not SimpleCodeableAggregate<T> and HasDecomposeAndApply<T>::value;
-
 
 }  // namespace scale
