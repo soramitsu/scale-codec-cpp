@@ -66,7 +66,8 @@ namespace scale {
     }
 
     template <typename T>
-    constexpr size_t field_number_of = field_number_of_impl<std::decay_t<T>>();
+    constexpr size_t field_number_of =
+        field_number_of_impl<std::remove_cvref_t<T>>();
 
     constexpr size_t MAX_FIELD_NUM = 20;
 
@@ -83,9 +84,9 @@ namespace scale {
 
   template <typename T>
   concept SimpleCodeableAggregate =
-      std::is_aggregate_v<std::decay_t<T>>  //
-      and (not std::is_array_v<T>)          //
-      and (not detail::is_std_array<T>)     //
+      std::is_aggregate_v<std::remove_cvref_t<T>>  //
+      and (not std::is_array_v<T>)                 //
+      and (not detail::is_std_array<T>)            //
       and (detail::field_number_of<T> <= detail::MAX_FIELD_NUM);
 
   template <typename T>

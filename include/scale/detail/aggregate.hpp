@@ -9,9 +9,10 @@
 
 namespace scale::detail {
 
-  template <SimpleCodeableAggregate T, typename F>
-  decltype(auto) decompose_and_apply(T &&v, const F &f) {
-    constexpr auto N = field_number_of<T>;
+  template <typename F>
+  decltype(auto) decompose_and_apply(SimpleCodeableAggregate auto &&v,
+                                     const F &f) {
+    constexpr auto N = field_number_of<decltype(v)>;
     // clang-format off
     if constexpr (N == 0) {
       return f();

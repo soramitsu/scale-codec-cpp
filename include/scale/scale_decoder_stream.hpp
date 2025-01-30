@@ -162,7 +162,7 @@ namespace scale {
      * @return reference to stream
      */
     template <typename T>
-      requires std::is_default_constructible_v<std::decay_t<T>>
+      requires std::is_default_constructible_v<std::remove_cvref_t<T>>
     ScaleDecoderStream &operator>>(std::shared_ptr<T> &v) {
       using mutableT = std::remove_cvref_t<T>;
       v = std::make_shared<mutableT>();
@@ -176,7 +176,7 @@ namespace scale {
      * @return reference to stream
      */
     template <typename T>
-      requires std::is_default_constructible_v<std::decay_t<T>>
+      requires std::is_default_constructible_v<std::remove_cvref_t<T>>
     ScaleDecoderStream &operator>>(std::unique_ptr<T> &v) {
       using mutableT = std::remove_cvref_t<T>;
       v = std::make_unique<mutableT>();
@@ -221,7 +221,7 @@ namespace scale {
      * @return reference to stream
      */
     template <typename T>
-      requires std::is_default_constructible_v<std::decay_t<T>>
+      requires std::is_default_constructible_v<std::remove_cvref_t<T>>
     ScaleDecoderStream &operator>>(std::optional<T> &v) {
       using mutableT = std::remove_cvref_t<T>;
 
