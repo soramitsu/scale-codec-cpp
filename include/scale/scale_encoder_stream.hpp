@@ -93,7 +93,7 @@ namespace scale {
      * @return reference to stream
      */
     ScaleEncoderStream &operator<<(const SimpleCodeableAggregate auto &v) {
-      return detail::as_decomposed(
+      return detail::decompose_and_apply(
           v, [&](const auto &...args) -> ScaleEncoderStream & {
             return (*this << ... << args);
           });

@@ -9,9 +9,8 @@
 
 namespace scale::detail {
 
-  template <typename T, typename F>
-    requires SimpleCodeableAggregate<T>
-  auto &as_decomposed(T &&v, const F &f) {
+  template <SimpleCodeableAggregate T, typename F>
+  decltype(auto) decompose_and_apply(T &&v, const F &f) {
     constexpr auto N = field_number_of<T>;
     // clang-format off
     if constexpr (N == 0) {
@@ -30,7 +29,7 @@ namespace scale::detail {
       return f(v1, v2, v3, v4);
     } else if constexpr (N == 5) {
       auto &[v1, v2, v3, v4, v5] = v;
-     return f(v1, v2, v3, v4, v5);
+      return f(v1, v2, v3, v4, v5);
     } else if constexpr (N == 6) {
       auto &[v1, v2, v3, v4, v5, v6] = v;
       return f(v1, v2, v3, v4, v5, v6);

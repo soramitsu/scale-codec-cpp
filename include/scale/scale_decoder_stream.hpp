@@ -74,10 +74,10 @@ namespace scale {
      * @return reference to stream
      */
     ScaleDecoderStream &operator>>(SimpleCodeableAggregate auto &v) {
-      return detail::as_decomposed(v,
-                                   [&](auto &...args) -> ScaleDecoderStream & {
-                                     return (*this >> ... >> args);
-                                   });
+      return detail::decompose_and_apply(
+          v, [&](auto &...args) -> ScaleDecoderStream & {
+            return (*this >> ... >> args);
+          });
     }
 
     /**
