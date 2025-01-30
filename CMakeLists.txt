@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION 3.12)
 
 option(JAM_COMPATIBLE "Build compatible with JAM-codec" OFF)
 option(CUSTOM_CONFIG_SUPPORT "Support custom config of streams" OFF)
+set(MAX_AGGREGATE_FIELDS 20 CACHE STRING "Max number of aggregates fields (1..1000); for generation")
 
 option(BUILD_TESTS "Whether to include the test suite in build" OFF)
 
