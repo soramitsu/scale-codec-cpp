@@ -104,6 +104,11 @@ install(TARGETS scale EXPORT scaleConfig
 install(
     DIRECTORY ${CMAKE_SOURCE_DIR}/include/scale
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILES_MATCHING PATTERN "*.hpp"
+)
+install(
+    DIRECTORY ${CMAKE_BINARY_DIR}/include/scale
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 include(CMakePackageConfigHelpers)
