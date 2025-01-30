@@ -100,6 +100,18 @@ namespace scale {
     }
 
     /**
+     * @brief scale-encodes custom decomposable object
+     * @param v object to encode
+     * @return reference to stream
+     */
+    ScaleEncoderStream &operator<<(const CustomDecomposable auto &v) {
+      return decompose_and_apply(
+          v, [&](const auto &...args) -> ScaleEncoderStream & {
+            return (*this << ... << args);
+          });
+    }
+
+    /**
      * @brief scale-encodes range
      * @param collection range to encode
      * @return reference to stream

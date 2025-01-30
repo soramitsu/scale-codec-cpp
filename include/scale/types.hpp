@@ -89,6 +89,19 @@ namespace scale {
       and (not detail::is_std_array<T>)            //
       and (detail::field_number_of<T> <= detail::MAX_FIELD_NUM);
 
+  template <typename T, typename = void>
+  struct HasDecomposeAndApply : std::false_type {};
+
+  template <typename T>
+  struct HasDecomposeAndApply<T, std::void_t<decltype(
+      decompose_and_apply(std::declval<T>(), [](auto &&...) {  })
+  )>> : std::true_type {};
+
+  template <typename T>
+  concept CustomDecomposable =
+      not SimpleCodeableAggregate<T> and
+      HasDecomposeAndApply<T>::value;
+
   template <typename T>
   concept SomeSpan =
       std::is_base_of_v<std::span<typename T::element_type, T::extent>, T>;

@@ -154,6 +154,13 @@ target_link_libraries(scale_encode_counter_test
     scale
 )
 
+addtest(scale_custom_decomposing_test
+    scale_custom_decomposing_test.cpp
+)
+target_link_libraries(scale_custom_decomposing_test
+    scale
+)
+
 if (CUSTOM_CONFIG_SUPPORT)
     addtest(scale_tune_test
         scale_tune_test.cpp

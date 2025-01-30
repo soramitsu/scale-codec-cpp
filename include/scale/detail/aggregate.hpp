@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <scale/detail/custom_decomposing.hpp>
 #include <scale/types.hpp>
 
 namespace scale::detail {

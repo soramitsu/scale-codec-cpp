@@ -81,6 +81,18 @@ namespace scale {
     }
 
     /**
+     * @brief scale-decodes custom decomposable object
+     * @param v object for decoding to
+     * @return reference to stream
+     */
+    ScaleDecoderStream &operator>>(CustomDecomposable auto &v) {
+      return decompose_and_apply(
+          v, [&](auto &...args) -> ScaleDecoderStream & {
+            return (*this >> ... >> args);
+          });
+    }
+
+    /**
      * @brief scale-decodes pair of values
      * @tparam F first value type
      * @tparam S second value type
