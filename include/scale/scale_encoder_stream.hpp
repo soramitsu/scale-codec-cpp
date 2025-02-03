@@ -14,6 +14,8 @@
 #include <variant>
 #include <vector>
 
+#include <qtils/tagged.hpp>
+
 #ifdef __has_include
 #if __has_include(<boost/variant.hpp>)
 #include <boost/variant.hpp>
@@ -92,7 +94,9 @@ namespace scale {
      * @param v aggregate to encode
      * @return reference to stream
      */
-    ScaleEncoderStream &operator<<(const SimpleCodeableAggregate auto &v) {
+    ScaleEncoderStream &operator<<(const SimpleCodeableAggregate auto &v)
+      requires(not qtils::is_tagged_v<decltype(v)>)
+    {
       return detail::decompose_and_apply(
           v, [&](const auto &...args) -> ScaleEncoderStream & {
             return (*this << ... << args);
@@ -104,7 +108,9 @@ namespace scale {
      * @param v object to encode
      * @return reference to stream
      */
-    ScaleEncoderStream &operator<<(const CustomDecomposable auto &v) {
+    ScaleEncoderStream &operator<<(const CustomDecomposable auto &v)
+      requires(not qtils::is_tagged_v<decltype(v)>)
+    {
       return decompose_and_apply(
           v, [&](const auto &...args) -> ScaleEncoderStream & {
             return (*this << ... << args);
@@ -116,11 +122,15 @@ namespace scale {
      * @param collection range to encode
      * @return reference to stream
      */
-    ScaleEncoderStream &operator<<(const DynamicCollection auto &collection) {
+    ScaleEncoderStream &operator<<(const DynamicCollection auto &collection)
+      requires(not qtils::is_tagged_v<decltype(collection)>)
+    {
       return encodeDynamicCollection(collection);
     }
 
-    ScaleEncoderStream &operator<<(const StaticCollection auto &collection) {
+    ScaleEncoderStream &operator<<(const StaticCollection auto &collection)
+      requires(not qtils::is_tagged_v<decltype(collection)>)
+    {
       return encodeStaticCollection(collection);
     }
 
@@ -279,7 +289,9 @@ namespace scale {
      */
     template <typename T>
       requires std::is_integral_v<std::decay_t<T>>
-    ScaleEncoderStream &operator<<(T &&v) {
+    ScaleEncoderStream &operator<<(T &&v)
+      requires(not qtils::is_tagged_v<decltype(v)>)
+    {
       using I = std::decay_t<T>;
       // encode bool
       if constexpr (std::is_same_v<I, bool>) {

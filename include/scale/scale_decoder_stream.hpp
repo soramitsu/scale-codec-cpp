@@ -14,6 +14,8 @@
 #include <variant>
 #include <vector>
 
+#include <qtils/tagged.hpp>
+
 #ifdef __has_include
 #if __has_include(<boost/variant.hpp>)
 #include <boost/variant.hpp>
@@ -73,7 +75,9 @@ namespace scale {
      * @param v aggregate for decoding to
      * @return reference to stream
      */
-    ScaleDecoderStream &operator>>(SimpleCodeableAggregate auto &v) {
+    ScaleDecoderStream &operator>>(SimpleCodeableAggregate auto &v)
+      requires(not qtils::is_tagged_v<decltype(v)>)
+    {
       return detail::decompose_and_apply(
           v, [&](auto &...args) -> ScaleDecoderStream & {
             return (*this >> ... >> args);
@@ -85,11 +89,12 @@ namespace scale {
      * @param v object for decoding to
      * @return reference to stream
      */
-    ScaleDecoderStream &operator>>(CustomDecomposable auto &v) {
-      return decompose_and_apply(
-          v, [&](auto &...args) -> ScaleDecoderStream & {
-            return (*this >> ... >> args);
-          });
+    ScaleDecoderStream &operator>>(CustomDecomposable auto &v)
+      requires(not qtils::is_tagged_v<decltype(v)>)
+    {
+      return decompose_and_apply(v, [&](auto &...args) -> ScaleDecoderStream & {
+        return (*this >> ... >> args);
+      });
     }
 
     /**
@@ -269,8 +274,10 @@ namespace scale {
      * @param collection decoding collection to
      * @return reference to stream
      */
-    ScaleDecoderStream &operator>>(StaticCollection auto &container) {
-      for (auto &item : container) {
+    ScaleDecoderStream &operator>>(StaticCollection auto &collection)
+      requires(not qtils::is_tagged_v<decltype(collection)>)
+    {
+      for (auto &item : collection) {
         *this >> item;
       }
       return *this;
@@ -282,7 +289,9 @@ namespace scale {
      * @param collection decoding collection to
      * @return reference to stream
      */
-    ScaleDecoderStream &operator>>(ResizeableCollection auto &collection) {
+    ScaleDecoderStream &operator>>(ResizeableCollection auto &collection)
+      requires(not qtils::is_tagged_v<decltype(collection)>)
+    {
       auto item_count = decodeLength();
       if (item_count > collection.max_size()) {
         raise(DecodeError::TOO_MANY_ITEMS);
@@ -340,7 +349,9 @@ namespace scale {
      * space first and push element by element back while decoding)
      * @return reference to stream
      */
-    ScaleDecoderStream &operator>>(ExtensibleBackCollection auto &collection) {
+    ScaleDecoderStream &operator>>(ExtensibleBackCollection auto &collection)
+      requires(not qtils::is_tagged_v<decltype(collection)>)
+    {
       using size_type = typename std::decay_t<decltype(collection)>::size_type;
 
       auto item_count = decodeLength();
@@ -368,8 +379,9 @@ namespace scale {
      * decoding)
      * @return reference to stream
      */
-    ScaleDecoderStream &operator>>(
-        RandomExtensibleCollection auto &collection) {
+    ScaleDecoderStream &operator>>(RandomExtensibleCollection auto &collection)
+      requires(not qtils::is_tagged_v<decltype(collection)>)
+    {
       using size_type = typename std::decay_t<decltype(collection)>::size_type;
       using value_type =
           typename std::decay_t<decltype(collection)>::value_type;
