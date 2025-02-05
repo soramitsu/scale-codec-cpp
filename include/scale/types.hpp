@@ -14,7 +14,12 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <qtils/tagged.hpp>
 
+#include <scale/definitions.hpp>
+
 namespace scale {
+
+  class ScaleEncoderStream;
+  class ScaleDecoderStream;
 
   using uint128_t = boost::multiprecision::uint128_t;
   using uint256_t = boost::multiprecision::uint256_t;
@@ -64,6 +69,63 @@ namespace scale {
       detail::is_compact_integer<std::remove_cvref_t<T>>::value;
 
   using Length = Compact<size_t>;
+
+  template <typename T>
+  inline T convert_to(const CompactCompatible auto &&value) {
+    constexpr auto is_integral =
+        std::unsigned_integral<std::remove_cvref_t<decltype(value)>>;
+    if constexpr (is_integral) {
+      return static_cast<T>(value);
+    } else {
+      return value.template convert_to<T>();
+    }
+  }
+
+  template <typename T>
+    requires CompactCompatible<std::remove_cvref_t<T>>
+  struct CompactReflection {
+   private:
+    template <typename U>
+    explicit CompactReflection(U &&value)
+        : temp_storage(
+              std::is_lvalue_reference_v<U>
+                  ? std::nullopt
+                  : std::optional<std::decay_t<U>>(std::forward<U>(value))),
+          ref(temp_storage ? *temp_storage : value) {}
+
+    template <typename U>
+      requires CompactCompatible<std::remove_cvref_t<U>>
+    friend decltype(auto) as_compact(U &&value);
+
+   public:
+    CompactReflection(const CompactReflection &) = delete;
+    CompactReflection &operator=(const CompactReflection &) = delete;
+    CompactReflection(CompactReflection &&) = delete;
+    CompactReflection &operator=(CompactReflection &&) = delete;
+
+    friend ScaleEncoderStream &operator<<(ScaleEncoderStream &stream,
+                                          const CompactReflection &value) {
+      return stream << Compact<std::remove_cvref_t<T>>(value.ref);
+    }
+    friend ScaleDecoderStream &operator>>(ScaleDecoderStream &stream,
+                                          const CompactReflection &value) {
+      Compact<std::remove_cvref_t<T>> tmp;
+      stream >> tmp;
+      value.ref = untagged(tmp);
+      return stream;
+    }
+
+   private:
+    std::optional<std::decay_t<T>> temp_storage;
+    T &ref;
+  };
+
+  template <typename T>
+    requires CompactCompatible<std::remove_cvref_t<T>>
+  decltype(auto) as_compact(T &&value) {
+    return CompactReflection<decltype(value)>(
+        std::forward<decltype(value)>(value));
+  }
 
   /// @brief OptionalBool is internal extended bool type
   enum class OptionalBool : uint8_t {
