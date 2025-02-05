@@ -274,7 +274,7 @@ namespace scale {
      * @return reference to stream
      */
     ScaleEncoderStream &operator<<(const std::vector<bool> &v) {
-      *this << CompactInteger{v.size()};
+      *this << Length(v.size());
       for (bool el : v) {
         *this << el;
       }
@@ -288,7 +288,7 @@ namespace scale {
      * @return reference to stream
      */
     template <typename T>
-      requires std::is_integral_v<std::decay_t<T>>
+      requires std::is_integral_v<std::remove_cvref_t<T>>
     ScaleEncoderStream &operator<<(T &&v)
       requires(not qtils::is_tagged_v<decltype(v)>)
     {
@@ -304,7 +304,21 @@ namespace scale {
         return putByte(static_cast<uint8_t>(v));
       }
       // encode any other integer
-      detail::encodeInteger<I>(v, *this);
+      encodeInteger(v, *this);
+      return *this;
+    }
+
+    /**
+     * @brief scale-encodes any fixed-width integer type
+     * @param v value of integral type
+     * @return reference to stream
+     */
+    ScaleEncoderStream &operator<<(const BigFixedWidthInteger auto &v) {
+      constexpr auto bits =
+          FixedWidthIntegerTraits<std::remove_cvref_t<decltype(v)>>::bits;
+      for (size_t i = 0; i < bits; i += 8) {
+        putByte(detail::convert_to<uint8_t>((v >> i) & 0xFFu));
+      }
       return *this;
     }
 
@@ -313,7 +327,15 @@ namespace scale {
      * @param v value to encode
      * @return reference to stream
      */
-    ScaleEncoderStream &operator<<(const CompactInteger &v);
+    ScaleEncoderStream &operator<<(CompactInteger auto &&v) {
+      auto &&val = untagged(v);
+#ifdef JAM_COMPATIBILITY_ENABLED
+      detail::encodeJamCompactInteger(std::forward<decltype(val)>(val), *this);
+#else
+      detail::encodeCompactInteger(std::forward<decltype(val)>(val), *this);
+#endif
+      return *this;
+    }
 
    protected:
     template <size_t I, class... Ts>
@@ -357,7 +379,7 @@ namespace scale {
      */
     ScaleEncoderStream &encodeDynamicCollection(
         const std::ranges::sized_range auto &collection) {
-      *this << CompactInteger{collection.size()};
+      *this << Length(collection.size());
       for (const auto &item : collection) {
         *this << item;
       }

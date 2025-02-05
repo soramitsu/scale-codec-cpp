@@ -7,8 +7,11 @@
 #include <scale/encode_append.hpp>
 #include <scale/scale.hpp>
 
-#include <scale/detail/compact_integer.hpp>
+#ifdef JAM_COMPATIBILITY_ENABLED
 #include <scale/detail/jam_compact_integer.hpp>
+#else
+#include <scale/detail/compact_integer.hpp>
+#endif
 
 namespace scale {
 
@@ -23,10 +26,15 @@ namespace scale {
    */
   outcome::result<std::tuple<uint32_t, uint32_t, uint32_t>> extract_length_data(
       const std::vector<uint8_t> &data) {
-    OUTCOME_TRY(len, scale::decode<CompactInteger>(data));
-    auto new_len = (len + 1).convert_to<uint32_t>();
-    auto encoded_len = detail::compactLen(len.convert_to<uint32_t>());
-    auto encoded_new_len = detail::compactLen(new_len);
+    OUTCOME_TRY(len, scale::decode<Compact<uint32_t>>(data));
+    auto new_len = len + 1;
+#ifdef JAM_COMPATIBILITY_ENABLED
+    auto encoded_len = detail::lengthOfEncodedJamCompactInteger(untagged(len));
+    auto encoded_new_len = detail::lengthOfEncodedJamCompactInteger(new_len);
+#else
+    auto encoded_len = detail::lengthOfEncodedCompactInteger(untagged(len));
+    auto encoded_new_len = detail::lengthOfEncodedCompactInteger(new_len);
+#endif
     return std::make_tuple(new_len, encoded_len, encoded_new_len);
   }
 
@@ -45,7 +53,7 @@ namespace scale {
     const auto &[new_len, encoded_len, encoded_new_len] = extract_tuple;
 
     auto replace_len = [new_len = new_len](std::vector<uint8_t> &dest) {
-      auto e = scale::encode(CompactInteger{new_len}).value();
+      auto e = scale::encode(Length(new_len)).value();
       std::move(e.begin(), e.end(), dest.begin());
     };
 

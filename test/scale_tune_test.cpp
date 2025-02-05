@@ -5,18 +5,19 @@
  */
 
 #include <gtest/gtest.h>
-#include <scale/scale.hpp>
 #include <scale/definitions.hpp>
+#include <scale/scale.hpp>
 
 #ifndef CUSTOM_CONFIG_ENABLED
 #error \
-"This file should not be compiled, because custom config support is not enabed"
+    "This file should not be compiled, because custom config support is not enabed"
 #endif
 
 using scale::ByteArray;
-using scale::CompactInteger;
+using scale::Compact;
 using scale::decode;
 using scale::encode;
+using scale::Length;
 using scale::ScaleDecoderStream;
 using scale::ScaleEncoderStream;
 
@@ -37,7 +38,7 @@ struct Object {
     auto mul = s.getConfig<MulConfig>().multi;
     auto add = s.getConfig<AddConfig>().add;
 
-    s << CompactInteger{x.buff.size()};
+    s << Length(x.buff.size());
     for (uint8_t i : x.buff) {
       uint8_t x = i * mul + add;
       s << x;
@@ -48,9 +49,9 @@ struct Object {
   friend ScaleDecoderStream &operator>>(ScaleDecoderStream &s, Object &x) {
     auto mul = s.getConfig<MulConfig>().multi;
     auto add = s.getConfig<AddConfig>().add;
-    CompactInteger size;
+    Length size;
     s >> size;
-    x.buff.resize(size.convert_to<size_t>());
+    x.buff.resize(untagged(size));
     for (uint8_t &i : x.buff) {
       uint8_t x;
       s >> x;

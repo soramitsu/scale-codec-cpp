@@ -9,12 +9,12 @@
 #include <boost/system/system_error.hpp>
 #include <boost/throw_exception.hpp>
 
-#include <scale/enum_traits.hpp>
 #include <qtils/outcome.hpp>
+#include <scale/configurable.hpp>
+#include <scale/definitions.hpp>
+#include <scale/enum_traits.hpp>
 #include <scale/scale_decoder_stream.hpp>
 #include <scale/scale_encoder_stream.hpp>
-#include <scale/definitions.hpp>
-#include <scale/configurable.hpp>
 
 namespace scale {
   template <typename F>
@@ -72,7 +72,7 @@ namespace scale {
 
 #ifdef CUSTOM_CONFIG_ENABLED
   template <typename T>
-    requires(not std::is_base_of_v<std::remove_cvref_t<T>, ScaleEncoderStream>)
+    requires(not std::derived_from<std::remove_cvref_t<T>, ScaleEncoderStream>)
   outcome::result<ByteArray> encode(const T &v, const auto &config) {
     ScaleEncoderStream s(config);
     OUTCOME_TRY(encode(s, v));
@@ -80,7 +80,7 @@ namespace scale {
   }
 
   template <typename T>
-    requires(not std::is_base_of_v<std::decay<T>, ScaleDecoderStream>)
+    requires(not std::derived_from<std::remove_cvref_t<T>, ScaleEncoderStream>)
   outcome::result<T> decode(ConstSpanOfBytes bytes, const auto &config) {
     ScaleDecoderStream s(bytes, config);
     T t;

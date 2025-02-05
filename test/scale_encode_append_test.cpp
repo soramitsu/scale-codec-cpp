@@ -5,27 +5,32 @@
  */
 
 #include <gtest/gtest.h>
+
+#include <qtils/test/outcome.hpp>
+
 #include <scale/encode_append.hpp>
 #include <scale/scale.hpp>
 
-namespace scale {
-  using Values = std::vector<int>;
+using scale::append_or_new_vec;
+using scale::ByteArray;
 
-  TEST(EncodeAppend, Empty) {
-    auto value = 1;
-    ByteArray out;
-    EXPECT_FALSE(
-        append_or_new_vec(out, scale::encode(value).value()).has_error());
-    EXPECT_EQ(out, scale::encode(Values{value}).value());
-  }
+using Values = std::vector<uint16_t>;
 
-  TEST(EncodeAppend, Append) {
-    Values values{0, 1, 2, 3, 4};
-    auto value = 5;
-    auto out = scale::encode(values).value();
-    values.emplace_back(value);
-    EXPECT_FALSE(
-        append_or_new_vec(out, scale::encode(value).value()).has_error());
-    EXPECT_EQ(out, scale::encode(values).value());
+TEST(EncodeAppend, Expend_from0_to1024) {
+  Values values;
+
+  auto expandable = scale::encode(values).value();
+
+  uint16_t value = 0;
+  for ([[maybe_unused]] auto i : std::views::iota(0, 1024)) {
+    values.emplace_back(++value);
+
+    auto expending = scale::encode(value).value();
+    ASSERT_OUTCOME_SUCCESS(append_or_new_vec(expandable, expending));
+
+    auto direct_encoded = scale::encode(values).value();
+
+    ASSERT_EQ(expandable.size(), direct_encoded.size());
+    EXPECT_EQ(expandable, direct_encoded);
   }
-}  // namespace scale
+}

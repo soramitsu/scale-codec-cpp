@@ -28,7 +28,7 @@ namespace scale {
   }
 
   ScaleEncoderStream &ScaleEncoderStream::operator<<(const BitVec &v) {
-    *this << CompactInteger{v.bits.size()};
+    *this << Length(v.bits.size());
     size_t i = 0;
     uint8_t byte = 0;
     for (auto bit : v.bits) {
@@ -54,18 +54,6 @@ namespace scale {
     }
     return *this;
   }
-
-#ifdef JAM_COMPATIBILITY_ENABLED
-  ScaleEncoderStream &ScaleEncoderStream::operator<<(const CompactInteger &v) {
-    detail::encodeJamCompactInteger(v, *this);
-    return *this;
-  }
-#else
-  ScaleEncoderStream &ScaleEncoderStream::operator<<(const CompactInteger &v) {
-    detail::encodeCompactInteger(v, *this);
-    return *this;
-  }
-#endif
 
   ScaleEncoderStream &ScaleEncoderStream::encodeOptionalBool(
       const std::optional<bool> &v) {

@@ -12,8 +12,14 @@
 #include <vector>
 
 #include <boost/multiprecision/cpp_int.hpp>
+#include <qtils/tagged.hpp>
 
 namespace scale {
+
+  using uint128_t = boost::multiprecision::uint128_t;
+  using uint256_t = boost::multiprecision::uint256_t;
+  using uint512_t = boost::multiprecision::uint512_t;
+  using uint1024_t = boost::multiprecision::uint1024_t;
 
   /// @brief convenience alias for arrays of bytes
   using ByteArray = std::vector<uint8_t>;
@@ -24,8 +30,40 @@ namespace scale {
   /// @brief convenience alias for mutable span of bytes
   using MutSpanOfBytes = std::span<uint8_t>;
 
-  /// @brief represents compact integer value
-  using CompactInteger = boost::multiprecision::cpp_int;
+  namespace detail {
+    struct CompactIntegerTag;
+
+    template <typename Backend>
+    constexpr bool is_unsigned_backend = not Backend().sign();
+
+    template <typename T>
+    concept unsigned_multiprecision_integer =
+        boost::multiprecision::is_unsigned_number<T>::value;
+
+    template <typename T>
+    struct is_compact_integer : std::false_type {};
+
+    template <typename T>
+    struct is_compact_integer<qtils::Tagged<T, CompactIntegerTag>>
+        : std::true_type {};
+  }  // namespace detail
+
+  /// @brief Concept defining a valid Compact type
+  template <typename T>
+  concept CompactCompatible =
+      std::unsigned_integral<T> or detail::unsigned_multiprecision_integer<T>;
+
+  /// @brief Represents a compact integer value
+  template <typename T>
+    requires CompactCompatible<T>
+  using Compact = qtils::Tagged<T, detail::CompactIntegerTag>;
+
+  /// @brief Concept that checks if a type is a Compact integer
+  template <typename T>
+  concept CompactInteger =
+      detail::is_compact_integer<std::remove_cvref_t<T>>::value;
+
+  using Length = Compact<size_t>;
 
   /// @brief OptionalBool is internal extended bool type
   enum class OptionalBool : uint8_t {
@@ -79,7 +117,7 @@ namespace scale {
 
   template <typename T>
   concept SomeSpan =
-      std::is_base_of_v<std::span<typename T::element_type, T::extent>, T>;
+      std::derived_from<T, std::span<typename T::element_type, T::extent>>;
 
   template <typename T>
   concept HasSomeInsertMethod = requires(T v) {

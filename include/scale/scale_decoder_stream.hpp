@@ -14,6 +14,8 @@
 #include <variant>
 #include <vector>
 
+#include <boost/endian/buffers.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
 #include <qtils/tagged.hpp>
 
 #ifdef __has_include
@@ -55,20 +57,22 @@ namespace scale {
 #endif
 
     template <typename T>
+      requires CompactCompatible<T>
     T decodeCompact() {
-      scale::CompactInteger big =
+      auto integer =
 #ifdef JAM_COMPATIBILITY_ENABLED
-          detail::decodeJamCompactInteger<CompactInteger>(*this);
+          detail::decodeJamCompactInteger(*this);
 #else
-          detail::decodeCompactInteger<CompactInteger>(*this);
+          detail::decodeCompactInteger(*this);
 #endif
-      if (not big.is_zero() and msb(big) >= std::numeric_limits<T>::digits) {
-        raise(DecodeError::TOO_MANY_ITEMS);
+      if constexpr (std::is_integral_v<T>) {
+        if (not integer.is_zero()
+            and msb(integer) >= std::numeric_limits<T>::digits) {
+          raise(DecodeError::DECODED_VALUE_OVERFLOWS_TARGET);
+        }
       }
-      return static_cast<T>(big);
+      return static_cast<T>(integer);
     }
-
-    size_t decodeLength();
 
     /**
      * @brief scale-decodes aggregate
@@ -207,7 +211,7 @@ namespace scale {
      * @return reference to stream
      */
     template <typename T>
-      requires std::is_integral_v<std::decay_t<T>>
+      requires std::is_integral_v<std::remove_cvref_t<T>>
     ScaleDecoderStream &operator>>(T &v) {
       using I = std::decay_t<T>;
       // check bool
@@ -228,6 +232,17 @@ namespace scale {
           endian_load<T, sizeof(T), boost::endian::order::little>(
               &span_[current_index_]);
       current_index_ += sizeof(T);
+      return *this;
+    }
+
+    /**
+     * @brief scale-decodes any integral type including bool
+     * @tparam T integral type
+     * @param v value of integral type
+     * @return reference to stream
+     */
+    ScaleDecoderStream &operator>>(BigFixedWidthInteger auto &v) {
+      decodeInteger(v, *this);
       return *this;
     }
 
@@ -267,7 +282,10 @@ namespace scale {
      * @param v compact integer reference
      * @return
      */
-    ScaleDecoderStream &operator>>(CompactInteger &v);
+    ScaleDecoderStream &operator>>(CompactInteger auto &v) {
+      v = decodeCompact<qtils::untagged_t<decltype(v)>>();
+      return *this;
+    }
 
     /**
      * @brief scale-decodes to any static (fixed-size) collection
@@ -292,7 +310,7 @@ namespace scale {
     ScaleDecoderStream &operator>>(ResizeableCollection auto &collection)
       requires(not qtils::is_tagged_v<decltype(collection)>)
     {
-      auto item_count = decodeLength();
+      auto item_count = decodeCompact<size_t>();
       if (item_count > collection.max_size()) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
@@ -315,7 +333,7 @@ namespace scale {
      * @return reference to stream
      */
     ScaleDecoderStream &operator>>(std::vector<bool> &collection) {
-      auto item_count = decodeLength();
+      auto item_count = decodeCompact<size_t>();
       if (item_count > collection.max_size()) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
@@ -354,7 +372,7 @@ namespace scale {
     {
       using size_type = typename std::decay_t<decltype(collection)>::size_type;
 
-      auto item_count = decodeLength();
+      auto item_count = decodeCompact<size_t>();
       if (item_count > collection.max_size()) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }
@@ -386,7 +404,7 @@ namespace scale {
       using value_type =
           typename std::decay_t<decltype(collection)>::value_type;
 
-      auto item_count = decodeLength();
+      auto item_count = decodeCompact<size_t>();
       if (item_count > collection.max_size()) {
         raise(DecodeError::TOO_MANY_ITEMS);
       }

@@ -13,6 +13,7 @@ using scale::CompactInteger;
 using scale::decode;
 using scale::DecodeError;
 using scale::encode;
+using scale::Length;
 using scale::ScaleDecoderStream;
 using scale::ScaleEncoderStream;
 
@@ -33,7 +34,7 @@ auto encodeLen = [](size_t i) {
  */
 TEST(CollectionTest, encodeCollectionOf80) {
   for (size_t length = 60; length <= 130; ++length) {
-    ByteArray collection(length);
+    ByteArray collection;
     collection.reserve(length);
     for (auto i = 0; i < length; ++i) {
       collection.push_back(i % 256);
@@ -291,7 +292,7 @@ TEST(CollectionTest, encodeLongCollectionUint16) {
   auto &&out = s.to_vector();
 
   auto stream = ScaleDecoderStream(out);
-  CompactInteger res{};
+  Length res{};
   ASSERT_NO_THROW(stream >> res);
   ASSERT_EQ(res, length);
 
@@ -333,7 +334,7 @@ TEST(CollectionTest, encodeVeryLongCollectionUint8) {
   auto &&out = s.to_vector();
 
   auto stream = ScaleDecoderStream(out);
-  CompactInteger bi{};
+  Length bi{};
   ASSERT_NO_THROW(stream >> bi);
   ASSERT_EQ(bi, 1048576);
 
