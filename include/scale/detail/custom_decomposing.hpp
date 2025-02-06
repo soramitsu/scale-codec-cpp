@@ -17,11 +17,11 @@
  * struct Point {
  *   int x, y;
  *
- *   SCALE_CUSTOM_DECOMPOSING(Point, x, y);
+ *   SCALE_CUSTOM_DECOMPOSITION(Point, x, y);
  * };
  * @endcode
  */
-#define SCALE_CUSTOM_DECOMPOSING(Self, ...)                                    \
+#define SCALE_CUSTOM_DECOMPOSITION(Self, ...)                                    \
  private:                                                                      \
   decltype(auto) _custom_decompose_and_apply(auto &&f) {                       \
     return std::forward<decltype(f)>(f)(__VA_ARGS__);                          \

@@ -25,7 +25,7 @@ struct CustomDecomposableObject {
 
   bool operator==(const CustomDecomposableObject &other) const = default;
 
-  SCALE_CUSTOM_DECOMPOSING(CustomDecomposableObject, b, c, d);
+  SCALE_CUSTOM_DECOMPOSITION(CustomDecomposableObject, b, c, d);
 };
 
 TEST(CustomDecomposable, encode) {
