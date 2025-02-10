@@ -33,7 +33,6 @@
 #include <scale/backend/from_bytes.hpp>
 #include <scale/configurable.hpp>
 #include <scale/detail/decompose_and_apply.hpp>
-#include <scale/enum_traits.hpp>
 #include <scale/scale_error.hpp>
 
 namespace scale {
@@ -258,18 +257,6 @@ namespace scale {
     }
   }
 
-  void decode(IsEnum auto &v, ScaleDecoder auto &decoder)
-    requires NoTagged<decltype(v)>
-  {
-    using E = std::decay_t<decltype(v)>;
-    std::underlying_type_t<E> value;
-    decoder >> value;
-    if (is_valid_enum_value<E>(value)) {
-      v = static_cast<E>(value);
-      return;
-    }
-    raise(DecodeError::INVALID_ENUM_VALUE);
-  }
 
   using detail::decompose_and_apply;
 

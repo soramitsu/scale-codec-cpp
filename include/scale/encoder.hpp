@@ -72,13 +72,6 @@ namespace scale {
   };
 
 
-  void encode(const IsEnum auto &enumeration, ScaleEncoder auto &encoder)
-    requires NoTagged<decltype(enumeration)>
-  {
-    using T =
-        std::underlying_type_t<std::remove_cvref_t<decltype(enumeration)>>;
-    encode(static_cast<T>(enumeration), encoder);
-  }
 
   template <typename T>
   void encode(const std::shared_ptr<T> &sptr, ScaleEncoder auto &encoder)

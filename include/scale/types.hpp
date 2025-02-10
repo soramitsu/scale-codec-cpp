@@ -24,9 +24,6 @@ namespace scale {
   template <typename T>
   concept NoTagged = not qtils::is_tagged_v<T>;
 
-  template <typename T>
-  concept IsEnum = std::is_enum_v<std::remove_cvref_t<T>>;
-
   // Encoding components
 
   class EncoderBackend;

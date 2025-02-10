@@ -16,7 +16,7 @@
 #include <scale/detail/compact_integer.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
 #include <scale/detail/optional.hpp>
-#include <scale/enum_traits.hpp>
+#include <scale/detail/enum.hpp>
 
 #include <scale/decoder.hpp>
 #include <scale/encoder.hpp>
@@ -24,8 +24,6 @@
 #include <scale/backend/for_count.hpp>
 #include <scale/backend/from_bytes.hpp>
 #include <scale/backend/to_bytes.hpp>
-
-
 
 namespace scale {
 
