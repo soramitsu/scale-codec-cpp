@@ -71,40 +71,6 @@ namespace scale {
     EncoderBackendT backend_;
   };
 
-
-
-  template <typename T>
-  void encode(const std::shared_ptr<T> &sptr, ScaleEncoder auto &encoder)
-    requires NoTagged<decltype(sptr)>
-  {
-    if (sptr) {
-      return encode(*sptr, encoder);
-    }
-    raise(EncodeError::DEREF_NULLPOINTER);
-  }
-
-  template <typename T>
-  void encode(const std::unique_ptr<T> &uptr, ScaleEncoder auto &encoder)
-    requires NoTagged<decltype(uptr)>
-  {
-    if (uptr) {
-      return encode(*uptr, encoder);
-    }
-    raise(EncodeError::DEREF_NULLPOINTER);
-  }
-
-  /**
-   * @brief scale-encodes std::reference_wrapper of a type
-   * @return reference to stream;
-   */
-  template <typename T>
-  void encode(const std::reference_wrapper<T> &reference,
-              ScaleEncoder auto &encoder)
-    requires NoTagged<decltype(reference)>
-  {
-    encode(reference.get(), encoder);
-  }
-
   using detail::decompose_and_apply;
 
   void encode(Decomposable auto &&decomposable, ScaleEncoder auto &encoder)

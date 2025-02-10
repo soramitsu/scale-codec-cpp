@@ -116,19 +116,6 @@ namespace scale {
     BackendType backend_;
   };
 
-  template <typename T>
-    requires std::is_default_constructible_v<std::remove_const_t<T>>
-  void decode(std::shared_ptr<T> &v, ScaleDecoder auto &decoder) {
-    v = std::make_shared<std::remove_const_t<T>>();
-    decode(const_cast<std::remove_const_t<T> &>(*v), decoder);
-  }
-
-  template <typename T>
-    requires std::is_default_constructible_v<std::remove_const_t<T>>
-  void decode(std::unique_ptr<T> &v, ScaleDecoder auto &decoder) {
-    v = std::make_unique<std::remove_const_t<T>>();
-    decode(const_cast<std::remove_const_t<T> &>(*v), decoder);
-  }
 
   void decode(std::vector<bool> &collection, ScaleDecoder auto &decoder) {
     size_t item_count;
