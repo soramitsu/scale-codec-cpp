@@ -282,26 +282,6 @@ namespace scale {
     });
   }
 
-  void decode(CompactInteger auto &v, ScaleDecoder auto &decoder) {
-    using Integer = qtils::untagged_t<std::remove_cvref_t<decltype(v)>>;
-    auto &&integer =
-#ifdef JAM_COMPATIBILITY_ENABLED
-        detail::decodeJamCompactInteger(decoder);
-#else
-        detail::decodeCompactInteger(decoder);
-#endif
-    if constexpr (std::is_integral_v<Integer>) {
-      if (integer > std::numeric_limits<Integer>::max()) {
-        raise(DecodeError::DECODED_VALUE_OVERFLOWS_TARGET);
-      }
-    } else {
-      if (not integer.is_zero()
-          and msb(integer) >= std::numeric_limits<Integer>::digits) {
-        raise(DecodeError::DECODED_VALUE_OVERFLOWS_TARGET);
-      }
-    }
-    v = convert_to<Integer>(integer);
-  }
 
   void decode(qtils::is_tagged_v auto &tagged, ScaleDecoder auto &decoder)
     requires(not CompactInteger<decltype(tagged)>)

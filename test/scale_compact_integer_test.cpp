@@ -202,4 +202,3 @@ INSTANTIATE_TEST_SUITE_P(
                       ByteArray{0b000001'11, 0, 0, 0, 0b01'000000, 0}));
 
 #endif
-

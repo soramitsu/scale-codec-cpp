@@ -9,8 +9,8 @@
 OUTCOME_CPP_DEFINE_CATEGORY(scale, EncodeError, e) {
   using scale::EncodeError;
   switch (e) {
-    case EncodeError::NEGATIVE_COMPACT_INTEGER:
-      return "SCALE encode: compact integers cannot be negative";
+    case EncodeError::NEGATIVE_INTEGER:
+      return "SCALE encode: negative integers is not supported";
     case EncodeError::VALUE_TOO_BIG_FOR_COMPACT_REPRESENTATION:
       return "SCALE decode: value too big for compact representation";
     case EncodeError::DEREF_NULLPOINTER:

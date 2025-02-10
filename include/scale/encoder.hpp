@@ -17,14 +17,9 @@
 
 #include <scale/bitvec.hpp>
 // ReSharper disable once CppUnusedIncludeDirective
-#include <scale/definitions.hpp>
 #include <scale/detail/decompose_and_apply.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
-#ifdef JAM_COMPATIBILITY_ENABLED
-#include <scale/detail/jam_compact_integer.hpp>
-#else
 #include <scale/detail/compact_integer.hpp>
-#endif
 
 #include <qtils/outcome.hpp>
 
@@ -124,16 +119,6 @@ namespace scale {
   {
     decompose_and_apply(std::forward<decltype(decomposable)>(decomposable),
                         [&](auto &...args) { (encode(args, encoder), ...); });
-  }
-
-
-  void encode(CompactInteger auto &&integer, ScaleEncoder auto &encoder) {
-    auto &&val = std::forward<decltype(untagged(integer))>(untagged(integer));
-#ifdef JAM_COMPATIBILITY_ENABLED
-    detail::encodeJamCompactInteger(val, encoder);
-#else
-    detail::encodeCompactInteger(val, encoder);
-#endif
   }
 
   void encode(const std::string_view view, ScaleEncoder auto &encoder)

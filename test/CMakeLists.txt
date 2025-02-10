@@ -62,10 +62,10 @@ target_link_libraries(scale_encode_append_test
     scale
 )
 
-addtest(scale_compact_test
-    scale_compact_test.cpp
+addtest(scale_compact_integer_test
+    scale_compact_integer_test.cpp
 )
-target_link_libraries(scale_compact_test
+target_link_libraries(scale_compact_integer_test
     scale
 )
 

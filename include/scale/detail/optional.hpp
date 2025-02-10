@@ -1,14 +1,15 @@
 /**
- * @file
+ * Copyright Quadrivium LLC
+ * All Rights Reserved
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/**
  * @brief Provides encoding and decoding functions for optional types in SCALE codec.
  *
  * This file defines utilities for handling both `std::optional` and `boost::optional`
  * in SCALE encoding and decoding processes. Special handling is provided for `optional<bool>`
  * to optimize encoding space.
- *
- * Copyright Quadrivium LLC
- * All Rights Reserved
- * SPDX-License-Identifier: Apache-2.0
  */
 
 #pragma once

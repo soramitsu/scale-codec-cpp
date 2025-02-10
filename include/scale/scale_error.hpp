@@ -14,9 +14,12 @@ namespace scale {
    * @brief EncodeError enum provides error codes for Encode methods
    */
   enum class EncodeError {
-    NEGATIVE_COMPACT_INTEGER,     ///< cannot compact-encode negative integers
-    DEREF_NULLPOINTER,            ///< dereferencing a null pointer
-    VALUE_TOO_BIG_FOR_COMPACT_REPRESENTATION,  ///< value too bit for compact representation
+    /// negative integers is not supported
+    NEGATIVE_INTEGER,
+    /// dereferencing a null pointer
+    DEREF_NULLPOINTER,
+    /// value too bit for compact representation
+    VALUE_TOO_BIG_FOR_COMPACT_REPRESENTATION,
   };
 
   /**

@@ -29,13 +29,8 @@ namespace scale {
     OUTCOME_TRY(len, scale::decode<Compact<uint32_t>>(data));
     auto old_len = untagged(len);
     auto new_len = old_len + 1;
-#ifdef JAM_COMPATIBILITY_ENABLED
-    auto encoded_len = detail::lengthOfEncodedJamCompactInteger(old_len);
-    auto encoded_new_len = detail::lengthOfEncodedJamCompactInteger(new_len);
-#else
-    auto encoded_len = detail::lengthOfEncodedCompactInteger(old_len);
-    auto encoded_new_len = detail::lengthOfEncodedCompactInteger(new_len);
-#endif
+    auto encoded_len = lengthOfEncodedCompactInteger(old_len);
+    auto encoded_new_len = lengthOfEncodedCompactInteger(new_len);
     return std::make_tuple(new_len, encoded_len, encoded_new_len);
   }
 
