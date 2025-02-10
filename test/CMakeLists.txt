@@ -76,10 +76,10 @@ target_link_libraries(scale_enum_test
     scale
 )
 
-addtest(scale_fixed_test
-    scale_fixed_test.cpp
+addtest(scale_fixed_integer_test
+    scale_fixed_integer_test.cpp
 )
-target_link_libraries(scale_fixed_test
+target_link_libraries(scale_fixed_integer_test
     scale
 )
 

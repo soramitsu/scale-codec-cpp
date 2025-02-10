@@ -59,10 +59,6 @@ namespace scale {
 
   // Types
 
-  using uint128_t = boost::multiprecision::uint128_t;
-  using uint256_t = boost::multiprecision::uint256_t;
-  using uint512_t = boost::multiprecision::uint512_t;
-  using uint1024_t = boost::multiprecision::uint1024_t;
 
   /// @brief convenience alias for arrays of bytes
   using ByteArray = std::vector<uint8_t>;
@@ -163,12 +159,6 @@ namespace scale {
         std::forward<decltype(value)>(value));
   }
 
-  /// @brief OptionalBool is internal extended bool type
-  enum class OptionalBoolEnum : uint8_t {
-    NONE = 0u,
-    OPT_TRUE = 1u,
-    OPT_FALSE = 2u,
-  };
 
   namespace detail {
     struct ArgHelper {
@@ -295,17 +285,6 @@ namespace scale {
       DynamicCollection<std::remove_cvref_t<T>>
       and HasEmplaceMethod<std::remove_cvref_t<T>>;
 
-  template <typename T>
-  concept OptionalBool =
-      std::same_as<std::remove_cvref_t<T>, std::optional<bool>>;
-
-  template <typename T>
-  concept Optional =
-      requires { typename std::remove_cvref_t<T>::value_type; }
-      and (std::is_same_v<
-           std::remove_cvref_t<T>,
-           std::optional<typename std::remove_cvref_t<T>::value_type>>)
-      and (not OptionalBool<T>);
 
 
 

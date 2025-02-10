@@ -8,7 +8,6 @@
 
 #include <deque>
 #include <memory>
-#include <optional>
 #include <string>
 #include <utility>
 #include <variant>
@@ -77,25 +76,6 @@ namespace scale {
     EncoderBackendT backend_;
   };
 
-  template <typename T>
-    requires std::is_integral_v<std::remove_cvref_t<T>>
-  void encode(T &&v, ScaleEncoder auto &encoder)
-    requires NoTagged<T>
-  {
-    using I = std::remove_cvref_t<T>;
-    // encode bool
-    if constexpr (std::is_same_v<I, bool>) {
-      const uint8_t byte = (v ? 1u : 0u);
-      return encoder.put(byte);
-    }
-    // put byte
-    if constexpr (sizeof(T) == 1u) {
-      // to avoid infinite recursion
-      return encoder.put(static_cast<uint8_t>(v));
-    }
-    // encode any other integer
-    encodeInteger(v, encoder);
-  }
 
   void encode(const IsEnum auto &enumeration, ScaleEncoder auto &encoder)
     requires NoTagged<decltype(enumeration)>
@@ -146,16 +126,6 @@ namespace scale {
                         [&](auto &...args) { (encode(args, encoder), ...); });
   }
 
-  void encode(FixedInteger auto &&integer, ScaleEncoder auto &encoder)
-    requires NoTagged<decltype(integer)>
-  {
-    constexpr auto size =
-        (FixedWidthIntegerTraits<decltype(integer)>::bits + 1) / 8;
-    auto *bytes = new std::uint8_t[size];  // avoid useless initialization
-    export_bits(integer, bytes, sizeof(uint64_t), false);
-    encoder.write(std::span(bytes, size));
-    delete[] bytes;
-  }
 
   void encode(CompactInteger auto &&integer, ScaleEncoder auto &encoder) {
     auto &&val = std::forward<decltype(untagged(integer))>(untagged(integer));
@@ -177,32 +147,6 @@ namespace scale {
 
   void encode(const std::nullopt_t &, ScaleEncoder auto &encoder) {
     encoder.put(0);
-  }
-
-  void encode(OptionalBool auto &&opt_bool, ScaleEncoder auto &encoder)
-    requires NoTagged<decltype(opt_bool)>
-  {
-    // optional bool is a special case of optional values
-    // it should be encoded using one byte instead of two
-    // as described in specification
-    if (opt_bool.has_value()) {
-      encoder.put(static_cast<uint8_t>(opt_bool.value()
-                                           ? OptionalBoolEnum::OPT_TRUE
-                                           : OptionalBoolEnum::OPT_FALSE));
-    } else {
-      encoder.put(static_cast<uint8_t>(OptionalBoolEnum::NONE));
-    }
-  }
-
-  void encode(Optional auto &&optional, ScaleEncoder auto &encoder)
-    requires NoTagged<decltype(optional)>
-  {
-    if (not optional.has_value()) {
-      encoder.put(0);
-    } else {
-      encoder.put(1);
-      encode(optional.value(), encoder);
-    }
   }
 
   void encode(DynamicCollection auto &&collection, ScaleEncoder auto &encoder)

@@ -13,6 +13,9 @@
 #include <scale/configurable.hpp>
 #include <scale/definitions.hpp>
 #include <scale/detail/variant.hpp>
+#include <scale/detail/compact_integer.hpp>
+#include <scale/detail/fixed_width_integer.hpp>
+#include <scale/detail/optional.hpp>
 #include <scale/enum_traits.hpp>
 
 #include <scale/decoder.hpp>
