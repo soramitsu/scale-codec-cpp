@@ -27,11 +27,10 @@ function(addtest test_name)
       ${ARGN}
   )
   target_link_libraries(${test_name}
-      GTest::gtest
       GTest::gmock_main
   )
   target_include_directories(${test_name} PRIVATE
-      ${PROJECT_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/include
   )
   set(xml_output "--gtest_output=xml:${CMAKE_BINARY_DIR}/xunit/xunit-${test_name}.xml")
   add_test(
@@ -152,6 +151,13 @@ addtest(scale_encode_counter_test
     scale_encode_counter_test.cpp
 )
 target_link_libraries(scale_encode_counter_test
+    scale
+)
+
+addtest(scale_custom_decomposing_test
+    scale_custom_decomposing_test.cpp
+)
+target_link_libraries(scale_custom_decomposing_test
     scale
 )
 

@@ -314,3 +314,50 @@ INSTANTIATE_TEST_SUITE_P(Uint64TestCases,
                          Uint64Test,
                          ::testing::Values(Uint64Test::make_pair(
                              578437695752307201ull, {1, 2, 3, 4, 5, 6, 7, 8})));
+
+/**
+ * @brief class for testing uint128_t encode and decode
+ */
+class Uint128Test : public IntegerTest<scale::uint128_t> {};
+
+/**
+ * @given a number and match buffer
+ * @when given number being encoded by ScaleEncoderStream
+ * @then resulting buffer matches predefined one
+ */
+TEST_P(Uint128Test, EncodeSuccess) {
+  auto [value, match] = GetParam();
+  ScaleEncoderStream s;
+  ASSERT_NO_THROW((s << value));
+  ASSERT_EQ(s.to_vector(), match);
+}
+
+/**
+ * @given encoded sequence and match number
+ * @when a number is decoded from given bytes by ScaleDecoderStream
+ * @then resulting number matches predefined one
+ */
+TEST_P(Uint128Test, DecodeSuccess) {
+  auto [value, match] = GetParam();
+  ScaleDecoderStream s(match);
+  value_type v{0};
+  ASSERT_NO_THROW((s >> v));
+  ASSERT_EQ(v, value);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    Uint128TestCases,
+    Uint128Test,
+    ::testing::Values(
+        // clang-format off
+        Uint128Test::make_pair(
+            scale::uint128_t("1"), // 1
+            {0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}),
+        Uint128Test::make_pair(
+            scale::uint128_t("18446744073709551616"), // 2^64
+            {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}),
+        Uint128Test::make_pair( // 2^128-1 (uint128 max)
+            scale::uint128_t("340282366920938463463374607431768211455"),
+            {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff})
+        // clang-format on
+        ));

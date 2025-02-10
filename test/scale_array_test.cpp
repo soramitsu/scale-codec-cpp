@@ -27,8 +27,8 @@ void testArray() {
     Array testee;
     std::fill(testee.begin(), testee.end(), value);
 
-    auto data = EXPECT_OK(encode(testee));
-    auto result = EXPECT_OK(decode<Array>(data));
+    ASSERT_OUTCOME_SUCCESS(data, encode(testee));
+    ASSERT_OUTCOME_SUCCESS(result, decode<Array>(data));
 
     EXPECT_EQ(testee, result);
   }

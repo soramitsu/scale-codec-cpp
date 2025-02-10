@@ -56,7 +56,7 @@ TEST(Scale, EncodeDecodeTupleSuccess) {
   tuple_type_t tuple =
       std::make_tuple(uint8_t(1), uint16_t(3), uint8_t(2), uint32_t(4));
 
-  auto actual_bytes = EXPECT_OK(scale::encode(tuple));
-  auto decoded = EXPECT_OK(scale::decode<tuple_type_t>(actual_bytes));
+  ASSERT_OUTCOME_SUCCESS(actual_bytes, scale::encode(tuple));
+  ASSERT_OUTCOME_SUCCESS(decoded, scale::decode<tuple_type_t>(actual_bytes));
   ASSERT_EQ(decoded, tuple);
 }

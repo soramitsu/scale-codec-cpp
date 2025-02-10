@@ -14,6 +14,8 @@
 #include <variant>
 #include <vector>
 
+#include <qtils/tagged.hpp>
+
 #ifdef __has_include
 #if __has_include(<boost/variant.hpp>)
 #include <boost/variant.hpp>
@@ -23,6 +25,7 @@
 
 #include <scale/bitvec.hpp>
 #include <scale/definitions.hpp>
+#include <scale/detail/aggregate.hpp>
 #include <scale/detail/fixed_width_integer.hpp>
 #ifdef JAM_COMPATIBILITY_ENABLED
 #include <scale/detail/jam_compact_integer.hpp>
@@ -71,24 +74,63 @@ namespace scale {
     /**
      * @return vector of bytes containing encoded data
      */
-    std::vector<uint8_t> to_vector() const;
+    [[nodiscard]] std::vector<uint8_t> to_vector() const;
 
     /**
      * Get amount of encoded data written to the stream
      * @return size in bytes
      */
-    size_t size() const;
+    [[nodiscard]] size_t size() const;
+
+    [[nodiscard]] auto begin() const {
+      return stream_.begin();
+    }
+    [[nodiscard]] auto end() const {
+      return stream_.end();
+    }
+
+    /**
+     * @brief scale-encodes aggregate
+     * @param v aggregate to encode
+     * @return reference to stream
+     */
+    ScaleEncoderStream &operator<<(const SimpleCodeableAggregate auto &v)
+      requires(not qtils::is_tagged_v<decltype(v)>)
+    {
+      return detail::decompose_and_apply(
+          v, [&](const auto &...args) -> ScaleEncoderStream & {
+            return (*this << ... << args);
+          });
+    }
+
+    /**
+     * @brief scale-encodes custom decomposable object
+     * @param v object to encode
+     * @return reference to stream
+     */
+    ScaleEncoderStream &operator<<(const CustomDecomposable auto &v)
+      requires(not qtils::is_tagged_v<decltype(v)>)
+    {
+      return decompose_and_apply(
+          v, [&](const auto &...args) -> ScaleEncoderStream & {
+            return (*this << ... << args);
+          });
+    }
 
     /**
      * @brief scale-encodes range
      * @param collection range to encode
      * @return reference to stream
      */
-    ScaleEncoderStream &operator<<(const DynamicCollection auto &collection) {
+    ScaleEncoderStream &operator<<(const DynamicCollection auto &collection)
+      requires(not qtils::is_tagged_v<decltype(collection)>)
+    {
       return encodeDynamicCollection(collection);
     }
 
-    ScaleEncoderStream &operator<<(const StaticCollection auto &collection) {
+    ScaleEncoderStream &operator<<(const StaticCollection auto &collection)
+      requires(not qtils::is_tagged_v<decltype(collection)>)
+    {
       return encodeStaticCollection(collection);
     }
 
@@ -155,7 +197,7 @@ namespace scale {
      * @param v value to encode
      * @return reference to stream
      */
-    template <class T>
+    template <typename T>
     ScaleEncoderStream &operator<<(const std::shared_ptr<T> &v) {
       if (v == nullptr) {
         raise(EncodeError::DEREF_NULLPOINTER);
@@ -169,7 +211,7 @@ namespace scale {
      * @param v value to encode
      * @return reference to stream
      */
-    template <class T>
+    template <typename T>
     ScaleEncoderStream &operator<<(const std::unique_ptr<T> &v) {
       if (v == nullptr) {
         raise(EncodeError::DEREF_NULLPOINTER);
@@ -183,7 +225,7 @@ namespace scale {
      * @param v value to encode
      * @return reference to stream
      */
-    template <class T>
+    template <typename T>
     ScaleEncoderStream &operator<<(const std::optional<T> &v) {
       // optional bool is a special case of optional values
       // it should be encoded using one byte instead of two
@@ -212,7 +254,7 @@ namespace scale {
      * @param v value to encode
      * @return reference to stream;
      */
-    template <class T>
+    template <typename T>
     ScaleEncoderStream &operator<<(const std::reference_wrapper<T> &v) {
       return *this << static_cast<const T &>(v);
     }
@@ -232,7 +274,7 @@ namespace scale {
      * @return reference to stream
      */
     ScaleEncoderStream &operator<<(const std::vector<bool> &v) {
-      *this << CompactInteger{v.size()};
+      *this << Length(v.size());
       for (bool el : v) {
         *this << el;
       }
@@ -245,10 +287,12 @@ namespace scale {
      * @param v value of integral type
      * @return reference to stream
      */
-    template <typename T,
-              typename I = std::decay_t<T>,
-              typename = std::enable_if_t<std::is_integral_v<I>>>
-    ScaleEncoderStream &operator<<(T &&v) {
+    template <typename T>
+      requires std::is_integral_v<std::remove_cvref_t<T>>
+    ScaleEncoderStream &operator<<(T &&v)
+      requires(not qtils::is_tagged_v<decltype(v)>)
+    {
+      using I = std::decay_t<T>;
       // encode bool
       if constexpr (std::is_same_v<I, bool>) {
         uint8_t byte = (v ? 1u : 0u);
@@ -260,7 +304,21 @@ namespace scale {
         return putByte(static_cast<uint8_t>(v));
       }
       // encode any other integer
-      detail::encodeInteger<I>(v, *this);
+      encodeInteger(v, *this);
+      return *this;
+    }
+
+    /**
+     * @brief scale-encodes any fixed-width integer type
+     * @param v value of integral type
+     * @return reference to stream
+     */
+    ScaleEncoderStream &operator<<(const BigFixedWidthInteger auto &v) {
+      constexpr auto bits =
+          FixedWidthIntegerTraits<std::remove_cvref_t<decltype(v)>>::bits;
+      for (size_t i = 0; i < bits; i += 8) {
+        putByte(detail::convert_to<uint8_t>((v >> i) & 0xFFu));
+      }
       return *this;
     }
 
@@ -269,7 +327,15 @@ namespace scale {
      * @param v value to encode
      * @return reference to stream
      */
-    ScaleEncoderStream &operator<<(const CompactInteger &v);
+    ScaleEncoderStream &operator<<(CompactInteger auto &&v) {
+      auto &&val = untagged(v);
+#ifdef JAM_COMPATIBILITY_ENABLED
+      detail::encodeJamCompactInteger(std::forward<decltype(val)>(val), *this);
+#else
+      detail::encodeCompactInteger(std::forward<decltype(val)>(val), *this);
+#endif
+      return *this;
+    }
 
    protected:
     template <size_t I, class... Ts>
@@ -313,7 +379,7 @@ namespace scale {
      */
     ScaleEncoderStream &encodeDynamicCollection(
         const std::ranges::sized_range auto &collection) {
-      *this << CompactInteger{collection.size()};
+      *this << Length(collection.size());
       for (const auto &item : collection) {
         *this << item;
       }
@@ -356,12 +422,10 @@ namespace scale {
    * @param v value of the enum type
    * @return reference to stream
    */
-  template <typename S,
-            typename T,
-            typename E = std::decay_t<T>,
-            typename = std::enable_if_t<S::is_encoder_stream>,
-            typename = std::enable_if_t<std::is_enum_v<E>>>
-  S &operator<<(S &s, const T &v) {
+  template <typename T>
+    requires std::is_enum_v<std::remove_cvref_t<T>>
+  ScaleEncoderStream &operator<<(ScaleEncoderStream &s, const T &v) {
+    using E = std::decay_t<T>;
     return s << static_cast<std::underlying_type_t<E>>(v);
   }
 

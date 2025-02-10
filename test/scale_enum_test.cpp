@@ -13,7 +13,6 @@ using scale::ScaleEncoderStream;
 
 template <typename T>
 class EnumTest : public ::testing::Test {
- public:
  protected:
   const static std::string enum_name;
   const static std::vector<T> values;
@@ -71,7 +70,6 @@ TYPED_TEST(EnumTest, CorrectEncoding) {
 
 template <typename T>
 class InvalidEnumTest : public ::testing::Test {
- public:
  protected:
   const static std::string enum_name;
   const static std::vector<std::underlying_type_t<T>> invalid_values;

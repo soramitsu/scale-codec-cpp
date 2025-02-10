@@ -14,6 +14,8 @@
 
 namespace scale {
 
+  class ScaleDecoderStream;
+
   /**
    * Description of an enum type
    * Two specialization choices:
@@ -24,12 +26,11 @@ namespace scale {
    * @tparam E the enum type
    */
   template <typename E>
+    requires std::is_enum_v<E>
   struct [[deprecated(
-      "Check the doc comment to see the specialization options")]] enum_traits
-      final {
-    static_assert(std::is_enum_v<E>);
-
-    // to easily detect an unspecialized enum_traits
+      "Check the doc comment to see the specialization options")]]  //
+  enum_traits final {
+    // Used to easily detect an unspecialized enum_traits
     static constexpr bool is_default = true;
   };
 
@@ -63,19 +64,17 @@ namespace scale {
             typename = decltype(E_traits::valid_values)>
   constexpr bool is_valid_enum_value(std::underlying_type_t<E> value) noexcept {
     const auto &valid_values = E_traits::valid_values;
-    return std::find(std::begin(valid_values),
-                     std::end(valid_values),
-                     static_cast<E>(value))
+    return std::ranges::find(valid_values, static_cast<E>(value))
            != std::end(valid_values);
   }
 
-  template <typename T,
-            typename E = std::decay_t<T>,
-            typename = std::enable_if_t<enum_traits<E>::is_default>>
+  template <typename T>
+    requires enum_traits<std::decay_t<T>>::is_default
   [[deprecated(
       "Please specialize scale::enum_traits for your enum so it can be "
-      "validated during decoding")]] constexpr bool
-  is_valid_enum_value(std::underlying_type_t<E> value) noexcept {
+      "validated during decoding")]]
+  constexpr bool is_valid_enum_value(
+      std::underlying_type_t<std::decay_t<T>> value) noexcept {
     return true;
   }
 
@@ -85,12 +84,10 @@ namespace scale {
    * @param v value of enum type
    * @return reference to stream
    */
-  template <typename T,
-            typename S,
-            typename E = std::decay_t<T>,
-            typename = std::enable_if_t<S::is_decoder_stream>,
-            typename = std::enable_if_t<std::is_enum_v<E>>>
-  S &operator>>(S &s, T &v) {
+  template <typename T>
+    requires std::is_enum_v<std::remove_cvref_t<T>>
+  ScaleDecoderStream &operator>>(ScaleDecoderStream &s, T &v) {
+    using E = std::decay_t<T>;
     std::underlying_type_t<E> value;
     s >> value;
     if (is_valid_enum_value<E>(value)) {

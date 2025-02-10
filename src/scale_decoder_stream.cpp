@@ -7,18 +7,6 @@
 #include <scale/scale_decoder_stream.hpp>
 
 namespace scale {
-  size_t ScaleDecoderStream::decodeLength() {
-#ifdef JAM_COMPATIBILITY_ENABLED
-    size_t size = detail::decodeJamCompactInteger<size_t>(*this);
-#else
-    size_t size = detail::decodeCompactInteger<size_t>(*this);
-#endif
-    if (not hasMore(size)) {
-      raise(DecodeError::NOT_ENOUGH_DATA);
-    }
-    return size;
-  }
-
   std::optional<bool> ScaleDecoderStream::decodeOptionalBool() {
     auto byte = nextByte();
     switch (static_cast<OptionalBool>(byte)) {
@@ -42,11 +30,6 @@ namespace scale {
       default:
         raise(DecodeError::UNEXPECTED_VALUE);
     }
-  }
-
-  ScaleDecoderStream &ScaleDecoderStream::operator>>(CompactInteger &v) {
-    v = decodeCompact<CompactInteger>();
-    return *this;
   }
 
   ScaleDecoderStream &ScaleDecoderStream::operator>>(BitVec &v) {

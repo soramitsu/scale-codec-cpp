@@ -17,6 +17,15 @@
 
 namespace scale::detail {
 
+  /// Returns the compact encoded length for the given value.
+  size_t lengthOfEncodedJamCompactInteger(CompactCompatible auto value) {
+    if constexpr (std::unsigned_integral<decltype(value)>) {
+      return 1 + (std::bit_width(value) - 1) / 7;
+    } else {
+      return 1 + msb(value - 1) / 7;
+    }
+  }
+
   /**
    * Encodes any integer type to jam-compact-integer representation
    * @tparam T integer type
@@ -25,11 +34,16 @@ namespace scale::detail {
    * @return byte array representation of value as jam-compact-integer
    */
   template <typename T, typename S>
-    requires(std::unsigned_integral<T> or std::is_same_v<T, CompactInteger>)
-  void encodeJamCompactInteger(T integer, S &s) {
+    requires CompactCompatible<std::remove_cvref_t<T>>
+             and std::derived_from<std::remove_cvref_t<S>, ScaleEncoderStream>
+  void encodeJamCompactInteger(T &&integer, S &stream) {
+    constexpr auto is_integral = std::unsigned_integral<std::remove_cvref_t<T>>;
+
     size_t value;
 
-    if constexpr (std::is_same_v<T, CompactInteger>) {
+    if constexpr (is_integral) {
+      value = static_cast<size_t>(integer);
+    } else {
       // cannot encode negative numbers
       // there is no description how to encode compact negative numbers
       if (integer < 0) {
@@ -43,12 +57,10 @@ namespace scale::detail {
         }
         value = integer.template convert_to<size_t>();
       }
-    } else {
-      value = static_cast<size_t>(integer);
     }
 
     if (value < 0x80) {
-      s << static_cast<uint8_t>(value);
+      stream << static_cast<uint8_t>(value);
       return;
     }
 
@@ -67,7 +79,7 @@ namespace scale::detail {
     }
 
     for (auto byte : bytes) {
-      s << byte;
+      stream << byte;
       if (--len == 0) break;
     }
   }
@@ -79,12 +91,12 @@ namespace scale::detail {
    * @param value integer value
    * @return value according jam-compact-integer representation
    */
-  template <typename T>
-    requires std::unsigned_integral<T> or std::is_same_v<T, CompactInteger>
-  T decodeJamCompactInteger(auto &s) {
+  template <typename S>
+    requires std::derived_from<std::remove_cvref_t<S>, ScaleDecoderStream>
+  boost::multiprecision::uint128_t decodeJamCompactInteger(S &stream) {
     uint8_t byte;
 
-    s >> byte;
+    stream >> byte;
 
     if (byte == 0) {
       return 0;
@@ -100,27 +112,20 @@ namespace scale::detail {
       val_mask >>= 1;
       val_bits &= val_mask;
 
-      if ((len_bits & static_cast<uint8_t>(0x80)) == 0) {  // no more significant bytes
+      if ((len_bits & static_cast<uint8_t>(0x80))
+          == 0) {  // no more significant bytes
         value |= static_cast<size_t>(val_bits) << (8 * i);
         break;
       }
       len_bits <<= 1;
 
-      s >> byte;
+      stream >> byte;
       value |= static_cast<size_t>(byte) << (8 * i);
     }
     if (val_bits == 0 and (byte & ~val_mask) == 0) {
       raise(DecodeError::REDUNDANT_COMPACT_ENCODING);
     }
-
-    if constexpr (not std::is_same_v<T, size_t>
-                  and not std::is_same_v<T, CompactInteger>) {
-      if (value > std::numeric_limits<T>::max()) {
-        raise(DecodeError::DECODED_VALUE_OVERFLOWS_TARGET);
-      }
-    }
-
-    return static_cast<T>(value);
+    return value;
   }
 
 }  // namespace scale::detail

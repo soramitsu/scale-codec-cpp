@@ -9,28 +9,12 @@
 #include <boost/system/system_error.hpp>
 #include <boost/throw_exception.hpp>
 
-#include <scale/enum_traits.hpp>
 #include <qtils/outcome.hpp>
+#include <scale/configurable.hpp>
+#include <scale/definitions.hpp>
+#include <scale/enum_traits.hpp>
 #include <scale/scale_decoder_stream.hpp>
 #include <scale/scale_encoder_stream.hpp>
-
-#define SCALE_EMPTY_DECODER(TargetType)                             \
-  template <typename Stream,                                        \
-            typename = std::enable_if_t<Stream::is_decoder_stream>> \
-  Stream &operator>>(Stream &s, TargetType &) {                     \
-    return s;                                                       \
-  }
-
-#define SCALE_EMPTY_ENCODER(TargetType)                             \
-  template <typename Stream,                                        \
-            typename = std::enable_if_t<Stream::is_encoder_stream>> \
-  Stream &operator<<(Stream &s, const TargetType &) {               \
-    return s;                                                       \
-  }
-
-#define SCALE_EMPTY_CODER(TargetType) \
-  SCALE_EMPTY_ENCODER(TargetType)     \
-  SCALE_EMPTY_DECODER(TargetType)
 
 namespace scale {
   template <typename F>
@@ -53,10 +37,10 @@ namespace scale {
    * @param args data to encode
    * @return encoded data
    */
-  template <typename... Args>
-  outcome::result<std::vector<uint8_t>> encode(Args &&...args) {
+  template <typename T>
+  outcome::result<std::vector<uint8_t>> encode(T &&v) {
     ScaleEncoderStream s{};
-    OUTCOME_TRY(encode(s, std::forward<Args>(args)...));
+    OUTCOME_TRY(encode(s, std::forward<T>(v)));
     return s.to_vector();
   }
   template <typename... Args>
@@ -70,7 +54,7 @@ namespace scale {
    * @param span of bytes with encoded data
    * @return decoded T
    */
-  template <class T>
+  template <typename T>
   outcome::result<T> decode(ConstSpanOfBytes data) {
     ScaleDecoderStream s(data);
     return decode<T>(s);
@@ -85,4 +69,24 @@ namespace scale {
   outcome::result<void> decode(ScaleDecoderStream &s, T &t) {
     return outcomeCatch([&] { s >> t; });
   }
+
+#ifdef CUSTOM_CONFIG_ENABLED
+  template <typename T>
+    requires(not std::derived_from<std::remove_cvref_t<T>, ScaleEncoderStream>)
+  outcome::result<ByteArray> encode(const T &v, const auto &config) {
+    ScaleEncoderStream s(config);
+    OUTCOME_TRY(encode(s, v));
+    return outcome::success(s.to_vector());
+  }
+
+  template <typename T>
+    requires(not std::derived_from<std::remove_cvref_t<T>, ScaleEncoderStream>)
+  outcome::result<T> decode(ConstSpanOfBytes bytes, const auto &config) {
+    ScaleDecoderStream s(bytes, config);
+    T t;
+    OUTCOME_TRY(decode<T>(s, t));
+    return outcome::success(std::move(t));
+  }
+#endif
+
 }  // namespace scale
