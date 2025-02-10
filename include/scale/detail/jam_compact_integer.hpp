@@ -4,21 +4,48 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * @brief Implements encoding and decoding of compact integers using JAM
+ * encoding.
+ *
+ * The JAM encoding scheme represents integers in a variable-length format.
+ * It uses a prefix byte to store the least significant bits of the value and
+ * encodes the remaining bits in subsequent bytes. The first bit of each byte
+ * determines whether more bytes are required: if set, additional bytes follow;
+ * otherwise, decoding stops.
+ *
+ * This allows efficient encoding of small numbers while also supporting large
+ * integers with minimal overhead.
+ */
+
 #pragma once
+
+#ifdef COMPACT_INTEGER_TYPE
+static_assert(
+    !"Already activated another type of CompactInteger: " COMPACT_INTEGER_TYPE);
+#endif
+#define COMPACT_INTEGER_TYPE "JAM"
 
 #include <array>
 #include <cstddef>
 #include <cstdint>
 
+#include <scale/detail/compact_integer.hpp>
 #include <scale/outcome/outcome_throw.hpp>
 #include <scale/scale_error.hpp>
 #include <scale/types.hpp>
 
-namespace scale::detail {
+namespace scale {
 
-  /// Returns the compact encoded length for the given value.
-  size_t lengthOfEncodedJamCompactInteger(CompactCompatible auto value) {
-    if constexpr (std::unsigned_integral<decltype(value)>) {
+  /**
+   * @brief Computes the length of the encoded compact integer.
+   * @param value The integer to analyze.
+   * @return The number of bytes required for encoding.
+   */
+  size_t lengthOfEncodedCompactInteger(CompactCompatible auto &&value) {
+    using underlying_type =
+        qtils::untagged_t<std::remove_cvref_t<decltype(value)>>;
+    if constexpr (std::unsigned_integral<underlying_type>) {
       return 1 + (std::bit_width(value) - 1) / 7;
     } else {
       return 1 + msb(value - 1) / 7;
@@ -26,25 +53,20 @@ namespace scale::detail {
   }
 
   /**
-   * Encodes any integer type to jam-compact-integer representation
-   * @tparam T integer type
-   * @return byte array representation of value as jam-compact-integer
+   * @brief Encodes an integer to JAM compact representation using SCALE
+   * encoding.
+   * @param integer Integer value to encode.
+   * @param encoder SCALE encoder.
    */
-  template <typename T>
-    requires CompactCompatible<std::remove_cvref_t<T>>
-  void encodeJamCompactInteger(T &&integer, ScaleEncoder auto &encoder) {
-    constexpr auto is_integral = std::unsigned_integral<std::remove_cvref_t<T>>;
+  void encode(CompactInteger auto &&integer, ScaleEncoder auto &encoder) {
+    using underlying_type =
+        qtils::untagged_t<std::remove_cvref_t<decltype(integer)>>;
 
     size_t value;
 
-    if constexpr (is_integral) {
+    if constexpr (std::unsigned_integral<underlying_type>) {
       value = static_cast<size_t>(integer);
     } else {
-      // cannot encode negative numbers
-      // there is no description how to encode compact negative numbers
-      if (integer < 0) {
-        raise(EncodeError::NEGATIVE_COMPACT_INTEGER);
-      }
       if (integer.is_zero()) {
         value = 0;
       } else {
@@ -75,24 +97,23 @@ namespace scale::detail {
       bytes[len++] = static_cast<uint8_t>(i & 0xff);
     }
 
-    for (auto byte : bytes) {
-      encoder.put(byte);
-      if (--len == 0) break;
-    }
+    encoder.write({bytes.data(), len});
   }
 
   /**
-   * Decodes any integer type from jam-compact-integer representation
-   * @return value according jam-compact-integer representation
+   * @brief Decodes a JAM compact-encoded integer from SCALE encoding.
+   * @param integer The output integer.
+   * @param decoder SCALE decoder.
    */
-  boost::multiprecision::uint128_t decodeJamCompactInteger(
-      ScaleDecoder auto &decoder) {
-    uint8_t byte;
+  void decode(CompactInteger auto &integer, ScaleDecoder auto &decoder) {
+    using underlying_type =
+        qtils::untagged_t<std::remove_cvref_t<decltype(integer)>>;
 
-    byte = decoder.take();
+    uint8_t byte = decoder.take();
 
     if (byte == 0) {
-      return 0;
+      integer = 0;
+      return;
     }
 
     uint8_t len_bits = byte;
@@ -105,8 +126,8 @@ namespace scale::detail {
       val_mask >>= 1;
       val_bits &= val_mask;
 
-      if ((len_bits & static_cast<uint8_t>(0x80))
-          == 0) {  // no more significant bytes
+      // check if no more significant bytes
+      if ((len_bits & static_cast<uint8_t>(0x80)) == 0) {
         value |= static_cast<size_t>(val_bits) << (8 * i);
         break;
       }
@@ -118,7 +139,12 @@ namespace scale::detail {
     if (val_bits == 0 and (byte & ~val_mask) == 0) {
       raise(DecodeError::REDUNDANT_COMPACT_ENCODING);
     }
-    return value;
+
+    if (value > std::numeric_limits<underlying_type>::max()) {
+      raise(DecodeError::DECODED_VALUE_OVERFLOWS_TARGET);
+    }
+
+    integer = value;
   }
 
-}  // namespace scale::detail
+}  // namespace scale
