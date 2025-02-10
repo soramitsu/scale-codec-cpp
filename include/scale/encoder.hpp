@@ -262,25 +262,6 @@ namespace scale {
     }
   }
 
-  template <uint8_t I>
-  void encode(const Variant auto &variant, ScaleEncoder auto &encoder) {
-    using T = VariantType<I, decltype(variant)>;
-
-    if (variant_index(variant) == I) {
-      encode(I, encoder);
-      encode(get_variant<T>(variant), encoder);
-      return;
-    }
-
-    if constexpr (std::tuple_size_v<VariantTypes<decltype(variant)>> > I + 1) {
-      encode<I + 1>(variant, encoder);
-    }
-  }
-
-  void encode(const Variant auto &variant, ScaleEncoder auto &encoder) {
-    encode<0>(variant, encoder);
-  }
-
   void encode(qtils::is_tagged_v auto &&tagged, ScaleEncoder auto &encoder)
     requires(not CompactInteger<decltype(tagged)>)
   {

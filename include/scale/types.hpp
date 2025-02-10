@@ -16,12 +16,6 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <qtils/tagged.hpp>
 
-#ifdef __has_include
-#if __has_include(<boost/variant.hpp>)
-#include <boost/variant.hpp>
-#define USE_BOOST_VARIANT
-#endif
-#endif
 
 #include <scale/bitvec.hpp>
 #include <scale/definitions.hpp>
@@ -48,7 +42,7 @@ namespace scale {
                                Encoder<typename T::BackendType>>;
   };
 
-  // Secoding components
+  // Decoding components
 
   class DecoderBackend;
 
@@ -313,91 +307,7 @@ namespace scale {
            std::optional<typename std::remove_cvref_t<T>::value_type>>)
       and (not OptionalBool<T>);
 
-  namespace {
-    template <typename T>
-    struct is_std_variant : std::false_type {};
 
-    template <typename... Ts>
-    struct is_std_variant<std::variant<Ts...>> : std::true_type {};
-
-    template <typename T>
-    concept StdVariant = is_std_variant<T>::value;
-
-    template <typename T, typename = void>
-    struct is_boost_variant : std::false_type {};
-
-    template <typename T>
-    struct is_boost_variant<T,
-                            std::void_t<decltype(std::declval<T &>().which())>>
-        : std::true_type {};
-
-    template <typename T>
-    concept BoostVariant = is_boost_variant<T>::value;
-
-    template <typename T>
-    concept Variant = is_std_variant<T>::value or is_boost_variant<T>::value;
-
-    template <typename T, typename = void>
-    struct variant_types {
-      using type = std::tuple<>;
-    };
-
-    template <typename... Ts>
-    struct variant_types<std::variant<Ts...>> {
-      using type = std::tuple<Ts...>;
-    };
-
-    template <typename T>
-    struct variant_types<T, std::enable_if_t<is_boost_variant<T>::value>> {
-      using type = typename T::types;
-    };
-
-    template <typename T>
-    using VariantTypes = typename variant_types<std::remove_cvref_t<T>>::type;
-
-    template <std::size_t I, typename T>
-    struct safe_tuple_element {
-      static_assert(I < std::tuple_size_v<VariantTypes<T>>,
-                    "Tuple element index out of range");
-      using type = std::tuple_element_t<I, VariantTypes<T>>;
-    };
-
-    template <std::size_t I, typename T>
-    using VariantType =
-        typename safe_tuple_element<I, std::remove_cvref_t<T>>::type;
-
-    template <typename T, typename Variant, typename = void>
-    struct has_std_get : std::false_type {};
-
-    template <typename T, typename Variant>
-    struct has_std_get<
-        T,
-        Variant,
-        std::void_t<decltype(std::get<T>(std::declval<Variant &>()))>>
-        : std::true_type {};
-
-    template <typename T, typename Variant>
-    decltype(auto) get_variant(Variant &var) {
-      return std::get<T>(var);
-    }
-
-    // Перегрузка для `boost::variant`, но без упоминания `boost::get`
-    template <typename T, BoostVariant Variant>
-    decltype(auto) get_variant(Variant &var) {
-      return var.template get<T>();
-    }
-
-    template <typename Variant>
-    auto variant_index(Variant &var) {
-      return var.index();
-    }
-
-    // Перегрузка для `boost::variant`, но без упоминания `boost::get`
-    template <BoostVariant Variant>
-    auto variant_index(Variant &var) {
-      return var.which();
-    }
-  }  // namespace
 
   namespace {
     template <typename T>
@@ -434,10 +344,8 @@ namespace scale {
   namespace {
     template <typename T, std::size_t N = detail::MAX_FIELD_NUM>
     concept Array =
-        // Сырые массивы: T[M]
-        std::is_bounded_array_v<T> or
-        // std::array<T, M>
-        (std::same_as<
+        std::is_bounded_array_v<T>
+        or (std::same_as<
             std::remove_cvref_t<T>,
             std::array<typename std::remove_cvref_t<T>::value_type,
                        std::tuple_size<std::remove_cvref_t<T>>::value>>);
@@ -445,19 +353,16 @@ namespace scale {
     template <typename T>
     struct array_size_impl;
 
-    // Частичная специализация для std::array<T, N>
     template <typename T, std::size_t N>
     struct array_size_impl<std::array<T, N>> {
       static constexpr std::size_t value = N;
     };
 
-    // Частичная специализация для C-массивов T[N]
     template <typename T, std::size_t N>
     struct array_size_impl<T[N]> {
       static constexpr std::size_t value = N;
     };
 
-    // Упрощённый alias для удобного использования
     template <typename T>
     inline constexpr std::size_t array_size =
         array_size_impl<std::remove_cvref_t<T>>::value;

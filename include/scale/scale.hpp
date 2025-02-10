@@ -12,6 +12,7 @@
 #include <qtils/outcome.hpp>
 #include <scale/configurable.hpp>
 #include <scale/definitions.hpp>
+#include <scale/detail/variant.hpp>
 #include <scale/enum_traits.hpp>
 
 #include <scale/decoder.hpp>
@@ -20,6 +21,8 @@
 #include <scale/backend/for_count.hpp>
 #include <scale/backend/from_bytes.hpp>
 #include <scale/backend/to_bytes.hpp>
+
+
 
 namespace scale {
 

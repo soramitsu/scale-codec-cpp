@@ -382,34 +382,6 @@ namespace scale {
     v = convert_to<Integer>(integer);
   }
 
-  template <size_t I>
-  void decode(Variant auto &variant,
-              ScaleDecoder auto &decoder,
-              const size_t index)
-    requires(I < std::tuple_size_v<VariantTypes<decltype(variant)>>)
-  {
-    using T = VariantType<I, decltype(variant)>;
-    static_assert(std::is_default_constructible_v<T>,
-                  "All types of variant must be default constructible");
-    if (I == index) {
-      T value;
-      decode(value, decoder);
-      variant = std::forward<T>(value);
-      return;
-    }
-    if constexpr (std::tuple_size_v<VariantTypes<decltype(variant)>> > I + 1) {
-      decode<I + 1>(variant, decoder, index);
-    }
-  }
-
-  void decode(Variant auto &variant, ScaleDecoder auto &decoder) {
-    uint8_t index = decoder.take();
-    if (index < std::tuple_size_v<VariantTypes<decltype(variant)>>) {
-      return decode<0>(variant, decoder, index);
-    }
-    raise(DecodeError::WRONG_TYPE_INDEX);
-  }
-
   void decode(qtils::is_tagged_v auto &tagged, ScaleDecoder auto &decoder)
     requires(not CompactInteger<decltype(tagged)>)
   {

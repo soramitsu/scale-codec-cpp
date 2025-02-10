@@ -8,8 +8,9 @@
 
 #include <qtils/test/outcome.hpp>
 #include <scale/scale.hpp>
+#include <scale/types.hpp>
 
-#ifdef USE_BOOST_VARIANT
+#ifdef HAS_BOOST_VARIANT
 
 using scale::ByteArray;
 using scale::decode;
@@ -63,7 +64,7 @@ INSTANTIATE_TEST_SUITE_P(CompactTestCases,
  * @then obtained varian has alternative type uint8_t and is equal to encoded
  * uint8_t value
  */
-TEST(ScaleBoostVariant, DecodeU8Success) {
+TEST(BoostVariant, DecodeU8Success) {
   ByteArray bytes = {0, 1};  // uint8_t{1}
   ASSERT_OUTCOME_SUCCESS(val, decode<Testee>(bytes));
   ASSERT_EQ(boost::get<uint8_t>(val), 1);
@@ -76,7 +77,7 @@ TEST(ScaleBoostVariant, DecodeU8Success) {
  * @then obtained varian has alternative type uint32_t and is equal to encoded
  * uint32_t value
  */
-TEST(ScaleBoostVariant, DecodeU32Success) {
+TEST(BoostVariant, DecodeU32Success) {
   ByteArray bytes = {1, 1, 0, 0, 0};  // uint32_t{1}
   ASSERT_OUTCOME_SUCCESS(val, decode<Testee>(bytes));
   ASSERT_EQ(boost::get<uint32_t>(val), 1);
@@ -89,7 +90,7 @@ TEST(ScaleBoostVariant, DecodeU32Success) {
  * @then obtained varian has alternative type uint32_t and is equal to encoded
  * uint32_t value
  */
-TEST(ScaleBoostVariant, DecodeWrongVariantIndex) {
+TEST(BoostVariant, DecodeWrongVariantIndex) {
   ByteArray bytes = {2, 0, 0, 0, 0};  // index out of bound
   ASSERT_OUTCOME_ERROR(decode<Testee>(bytes),
                        scale::DecodeError::WRONG_TYPE_INDEX);

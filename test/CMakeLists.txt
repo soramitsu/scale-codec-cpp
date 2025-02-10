@@ -104,13 +104,27 @@ target_link_libraries(scale_collection_test
     scale
 )
 
-addtest(scale_variant_test
+addtest(scale_std_variant_test
     scale_std_variant_test.cpp
-    scale_boost_variant_test.cpp
-)
-target_link_libraries(scale_variant_test
+ )
+target_link_libraries(scale_std_variant_test
     scale
 )
+
+addtest(scale_boost_variant_test
+    scale_boost_variant_test.cpp
+)
+target_link_libraries(scale_boost_variant_test
+    scale
+)
+
+#addtest(scale_variant_test
+#    scale_std_variant_test.cpp
+#    scale_boost_variant_test.cpp
+#)
+#target_link_libraries(scale_variant_test
+#    scale
+#)
 
 addtest(scale_pair_test
     scale_pair_test.cpp
