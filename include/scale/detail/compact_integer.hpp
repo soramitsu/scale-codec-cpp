@@ -41,15 +41,10 @@ namespace scale::detail {
 
   /**
    * Encodes any integer type to compact-integer representation
-   * @tparam T integer type
-   * @tparam S output stream type
-   * @param value integer value
-   * @return byte array representation of value as compact-integer
    */
-  template <typename T, typename S>
+  template <typename T>
     requires CompactCompatible<std::remove_cvref_t<T>>
-             and std::derived_from<std::remove_cvref_t<S>, ScaleEncoderStream>
-  void encodeCompactInteger(T &&value, S &stream) {
+  void encodeCompactInteger(T &&value, ScaleEncoder auto &encoder) {
     constexpr auto is_integral = std::unsigned_integral<std::remove_cvref_t<T>>;
 
     // cannot encode negative numbers
@@ -65,7 +60,7 @@ namespace scale::detail {
       } else {
         v = (value.template convert_to<uint8_t>() << 2u) | 0b00;
       }
-      return encodeInteger(v, stream);
+      return encodeInteger(v, encoder);
     }
 
     if (value < kMinUint32) {
@@ -76,7 +71,7 @@ namespace scale::detail {
       } else {
         v = (value.template convert_to<uint16_t>() << 2u) | 0b01;
       }
-      return encodeInteger(v, stream);
+      return encodeInteger(v, encoder);
     }
 
     if (value < kMinBigInteger) {
@@ -87,7 +82,7 @@ namespace scale::detail {
       } else {
         v = (value.template convert_to<uint32_t>() << 2u) | 0b10;
       }
-      return encodeInteger(v, stream);
+      return encodeInteger(v, encoder);
     }
 
     size_t significant_bytes_n;
@@ -98,7 +93,7 @@ namespace scale::detail {
       significant_bytes_n = msb(value) / 8 + 1;
 
       if (significant_bytes_n > 67) {
-        raise(EncodeError::COMPACT_INTEGER_TOO_BIG);
+        raise(EncodeError::VALUE_TOO_BIG_FOR_COMPACT_REPRESENTATION);
       }
     }
 
@@ -114,18 +109,17 @@ namespace scale::detail {
     // to the result of the previous operations.
     uint8_t header = ((significant_bytes_n - 4) << 2u) | 0b11;
 
-    stream << header;
+    encoder.put(header);
 
     for (auto v = value; v != 0; v >>= 8) {
       // push back the least significant byte
-      stream << static_cast<uint8_t>(v & 0xff);
+      encoder.put(static_cast<uint8_t>(v & 0xff));
     }
   }
 
-  template <typename S>
-    requires std::derived_from<std::remove_cvref_t<S>, ScaleDecoderStream>
-  boost::multiprecision::uint1024_t decodeCompactInteger(S &stream) {
-    auto first_byte = stream.nextByte();
+  boost::multiprecision::uint1024_t decodeCompactInteger(
+      ScaleDecoder auto &decoder) {
+    auto first_byte = decoder.take();
 
     const uint8_t flag = first_byte & 0b00000011u;
 
@@ -138,7 +132,7 @@ namespace scale::detail {
       }
 
       case 0b01u: {
-        auto second_byte = stream.nextByte();
+        auto second_byte = decoder.take();
 
         number = (static_cast<size_t>(first_byte & 0b11111100u)
                   + static_cast<size_t>(second_byte) * 256u)
@@ -152,14 +146,14 @@ namespace scale::detail {
       case 0b10u: {
         number = first_byte;
         size_t multiplier = 256u;
-        if (not stream.hasMore(3u)) {
+        if (not decoder.has(3)) {
           raise(DecodeError::NOT_ENOUGH_DATA);
         }
 
         for (auto i = 0u; i < 3u; ++i) {
           // we assured that there are 3 more bytes,
           // no need to make checks in a loop
-          number += stream.nextByte() * multiplier;
+          number += decoder.take() * multiplier;
           multiplier <<= 8u;
         }
         number = number >> 2u;
@@ -171,7 +165,7 @@ namespace scale::detail {
 
       case 0b11: {
         auto bytes_count = ((first_byte) >> 2u) + 4u;
-        if (not stream.hasMore(bytes_count)) {
+        if (not decoder.has(bytes_count)) {
           raise(DecodeError::NOT_ENOUGH_DATA);
         }
 
@@ -180,7 +174,7 @@ namespace scale::detail {
         // we assured that there are m more bytes,
         // no need to make checks in a loop
         for (auto i = 0u; i < bytes_count; ++i) {
-          value += stream.nextByte() * multiplier;
+          value += decoder.take() * multiplier;
           multiplier <<= 8u;
         }
         if (value.is_zero()) {
@@ -202,16 +196,13 @@ namespace scale::detail {
 
   /**
    * Decodes any integer type from compact-integer representation
-   * @tparam T integer type
-   * @tparam S input stream type
    * @param value integer value
    * @return value according compact-integer representation
    */
-  template <typename T, typename S>
+  template <typename T>
     requires std::unsigned_integral<T>
-             and std::derived_from<std::remove_cvref_t<S>, ScaleDecoderStream>
-  T decodeCompactInteger(S &stream) {
-    auto integer = decodeCompactInteger(stream);
+  T decodeCompactInteger(ScaleDecoder auto &decoder) {
+    auto integer = decodeCompactInteger(decoder);
     if (not integer.is_zero()
         and msb(integer) >= std::numeric_limits<T>::digits) {
       raise(DecodeError::DECODED_VALUE_OVERFLOWS_TARGET);

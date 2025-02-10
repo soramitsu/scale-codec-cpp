@@ -48,10 +48,10 @@ endfunction()
 # for tests' XML reports
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/xunit)
 
-addtest(scale_decoder_stream_test
-    scale_decoder_stream_test.cpp
+addtest(scale_decoder_test
+    scale_decoder_test.cpp
 )
-target_link_libraries(scale_decoder_stream_test
+target_link_libraries(scale_decoder_test
     scale
 )
 
@@ -158,6 +158,13 @@ addtest(scale_custom_decomposing_test
     scale_custom_decomposing_test.cpp
 )
 target_link_libraries(scale_custom_decomposing_test
+    scale
+)
+
+addtest(scale_sptr_and_refs_test
+    scale_sptr_and_refs_test.cpp
+)
+target_link_libraries(scale_sptr_and_refs_test
     scale
 )
 

@@ -1,0 +1,49 @@
+/**
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#pragma once
+
+#include <scale/definitions.hpp>
+#include <scale/detail/custom_decomposing.hpp>
+#include <scale/types.hpp>
+
+namespace scale::detail {
+
+  template <size_t N, typename T, typename F>
+  decltype(auto) decompose_and_apply(T &&v, const F &f) {
+    // clang-format off
+    if constexpr (N == 0) {
+      return f();
+    // -BEGIN-GENERATED-SECTION-
+    // -END-GENERATED-SECTION-
+    } else {
+      // We mustn't fall in here
+      static_assert(N <= MAX_FIELD_NUM, "Inconsistent value of MAX_FIELD_NUM");
+      static_assert(N > MAX_FIELD_NUM, "No code for cover aggregate with such big amount of fields");
+    }
+    // clang-format on
+  }
+
+  template <typename F>
+  decltype(auto) decompose_and_apply(DecomposableStructurallyBindable auto &&v,
+                                     const F &f) {
+    return decompose_and_apply<structured_binding_size_v<decltype(v)>>(
+        std::forward<decltype(v)>(v), f);
+  }
+
+  template <typename F>
+  decltype(auto) decompose_and_apply(DecomposableAggregate auto &&v, const F &f) {
+    return decompose_and_apply<field_number_of<decltype(v)>>(
+        std::forward<decltype(v)>(v), f);
+  }
+
+  template <typename F>
+  decltype(auto) decompose_and_apply(DecomposableArray auto &&v, const F &f) {
+    return decompose_and_apply<array_size<decltype(v)>>(
+        std::forward<decltype(v)>(v), f);
+  }
+
+
+}  // namespace scale::detail

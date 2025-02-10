@@ -16,7 +16,7 @@ using scale::encode;
  * @when encode array and decode back
  * @then given equal array
  */
-template <int N, typename Array = std::array<uint8_t, N>>
+template <size_t N, typename Array = std::array<uint8_t, N>>
 void testArray() {
   for (auto value : {0b0000'0000,
                      0b0011'0011,
@@ -24,8 +24,8 @@ void testArray() {
                      0b1010'1010,
                      0b1100'1100,
                      0b1111'1111}) {
-    Array testee;
-    std::fill(testee.begin(), testee.end(), value);
+    Array testee{};
+    std::ranges::fill(testee, value);
 
     ASSERT_OUTCOME_SUCCESS(data, encode(testee));
     ASSERT_OUTCOME_SUCCESS(result, decode<Array>(data));

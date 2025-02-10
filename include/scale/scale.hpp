@@ -13,80 +13,56 @@
 #include <scale/configurable.hpp>
 #include <scale/definitions.hpp>
 #include <scale/enum_traits.hpp>
-#include <scale/scale_decoder_stream.hpp>
-#include <scale/scale_encoder_stream.hpp>
+
+#include <scale/decoder.hpp>
+#include <scale/encoder.hpp>
+
+#include <scale/backend/for_count.hpp>
+#include <scale/backend/from_bytes.hpp>
+#include <scale/backend/to_bytes.hpp>
 
 namespace scale {
-  template <typename F>
-  outcome::result<std::invoke_result_t<F>> outcomeCatch(F &&f) {
+
+#ifdef CUSTOM_CONFIG_ENABLED
+  // template <typename T>
+  //   requires(not ScaleEncoder<T>)
+  // outcome::result<ByteArray> encode(const T &v, const auto &config) {
+  //   Encoder encoder(config);
+  //   OUTCOME_TRY(encode(v, encoder));
+  //   return outcome::success(encoder.to_vector());
+  // }
+  //
+  // template <typename T>
+  //   requires(not ScaleDecoder<T>)
+  // outcome::result<T> decode(ConstSpanOfBytes bytes, const auto &config) {
+  //   Decoder decoder(bytes, config);
+  //   T t;
+  //   OUTCOME_TRY(decode(t, decoder));
+  //   return outcome::success(std::move(t));
+  // }
+#endif
+
+  template <typename T>
+  outcome::result<std::vector<uint8_t>> encode(T &&value) {
+    Encoder<backend::ToBytes> encoder;
     try {
-      if constexpr (std::is_void_v<std::invoke_result_t<F>>) {
-        f();
-        return outcome::success();
-      } else {
-        return outcome::success(f());
-      }
+      encode(std::forward<T>(value), encoder);
     } catch (std::system_error &e) {
       return outcome::failure(e.code());
     }
-  }
-
-  /**
-   * @brief convenience function for encoding primitives data to stream
-   * @tparam Args primitive types to be encoded
-   * @param args data to encode
-   * @return encoded data
-   */
-  template <typename T>
-  outcome::result<std::vector<uint8_t>> encode(T &&v) {
-    ScaleEncoderStream s{};
-    OUTCOME_TRY(encode(s, std::forward<T>(v)));
-    return s.to_vector();
-  }
-  template <typename... Args>
-  outcome::result<void> encode(ScaleEncoderStream &s, Args &&...args) {
-    return outcomeCatch([&] { (s << ... << std::forward<Args>(args)); });
-  }
-
-  /**
-   * @brief convenience function for decoding primitives data from stream
-   * @tparam T primitive type that is decoded from provided span
-   * @param span of bytes with encoded data
-   * @return decoded T
-   */
-  template <typename T>
-  outcome::result<T> decode(ConstSpanOfBytes data) {
-    ScaleDecoderStream s(data);
-    return decode<T>(s);
-  }
-  template <typename T>
-  outcome::result<T> decode(ScaleDecoderStream &s) {
-    T t{};
-    OUTCOME_TRY(decode<T>(s, t));
-    return outcome::success(std::move(t));
-  }
-  template <typename T>
-  outcome::result<void> decode(ScaleDecoderStream &s, T &t) {
-    return outcomeCatch([&] { s >> t; });
-  }
-
-#ifdef CUSTOM_CONFIG_ENABLED
-  template <typename T>
-    requires(not std::derived_from<std::remove_cvref_t<T>, ScaleEncoderStream>)
-  outcome::result<ByteArray> encode(const T &v, const auto &config) {
-    ScaleEncoderStream s(config);
-    OUTCOME_TRY(encode(s, v));
-    return outcome::success(s.to_vector());
+    return std::move(encoder).backend().to_vector();
   }
 
   template <typename T>
-    requires(not std::derived_from<std::remove_cvref_t<T>, ScaleEncoderStream>)
-  outcome::result<T> decode(ConstSpanOfBytes bytes, const auto &config) {
-    ScaleDecoderStream s(bytes, config);
-    T t;
-    OUTCOME_TRY(decode<T>(s, t));
-    return outcome::success(std::move(t));
+  outcome::result<T> decode(ConstSpanOfBytes bytes) {
+    Decoder<backend::FromBytes> decoder{bytes};
+    T value;
+    try {
+      decode(value, decoder);
+    } catch (std::system_error &e) {
+      return outcome::failure(e.code());
+    }
+    return std::move(value);
   }
-#endif
 
 }  // namespace scale

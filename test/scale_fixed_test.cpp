@@ -5,23 +5,27 @@
  */
 
 #include <gtest/gtest.h>
+
+#include <qtils/test/outcome.hpp>
 #include <scale/scale.hpp>
 
 using scale::ByteArray;
-using scale::ScaleDecoderStream;
-using scale::ScaleEncoderStream;
+using scale::encode;
+using Encoder = scale::Encoder<scale::backend::ToBytes>;
+using Decoder = scale::Decoder<scale::backend::FromBytes>;
 
 template <typename T>
 class IntegerTest : public ::testing::TestWithParam<std::pair<T, ByteArray>> {
  public:
-  static std::pair<T, ByteArray> make_pair(T value, const ByteArray &match) {
+  static std::pair<T, ByteArray> make_pair(const T &value,
+                                           const ByteArray &match) {
     return std::make_pair(value, match);
   }
 
   using value_type = T;
 
  protected:
-  ScaleEncoderStream s;
+  Encoder encoder;
 };
 
 /**
@@ -31,21 +35,21 @@ class Int8Test : public IntegerTest<int8_t> {};
 
 /**
  * @given a number and match buffer
- * @when given number being encoded by ScaleEncoderStream
+ * @when given number being encoded
  * @then resulting buffer matches predefined one
  */
 TEST_P(Int8Test, EncodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleEncoderStream s;
-  ASSERT_NO_THROW((s << value));
-  ASSERT_EQ(s.to_vector(), match);
+  Encoder encoder;
+  ASSERT_OUTCOME_SUCCESS(encoded, encode(value));
+  ASSERT_EQ(encoded, match);
 }
 
 TEST_P(Int8Test, DecodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleDecoderStream s(match);
+  Decoder decoder(match);
   value_type v{0};
-  ASSERT_NO_THROW((s >> v));
+  ASSERT_NO_THROW((decoder >> v));
   ASSERT_EQ(v, value);
 }
 
@@ -65,26 +69,26 @@ class Uint8Test : public IntegerTest<uint8_t> {};
 
 /**
  * @given a number and match buffer
- * @when given number being encoded by ScaleEncoderStream
+ * @when given number being encoded
  * @then resulting buffer matches predefined one
  */
 TEST_P(Uint8Test, EncodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleEncoderStream s;
-  ASSERT_NO_THROW((s << value));
-  ASSERT_EQ(s.to_vector(), match);
+  Encoder encoder;
+  ASSERT_OUTCOME_SUCCESS(encoded, encode(value));
+  ASSERT_EQ(encoded, match);
 }
 
 /**
  * @given encoded sequence and match number
- * @when a number is decoded from given bytes by ScaleDecoderStream
+ * @when a number is decoded from given bytes
  * @then resulting number matches predefined one
  */
 TEST_P(Uint8Test, DecodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleDecoderStream s(match);
+  Decoder decoder(match);
   value_type v{0};
-  ASSERT_NO_THROW((s >> v));
+  ASSERT_NO_THROW((decoder >> v));
   ASSERT_EQ(v, value);
 }
 
@@ -101,26 +105,26 @@ class Int16Test : public IntegerTest<int16_t> {};
 
 /**
  * @given a number and match buffer
- * @when given number being encoded by ScaleEncoderStream
+ * @when given number being encoded
  * @then resulting buffer matches predefined one
  */
 TEST_P(Int16Test, EncodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleEncoderStream s;
-  ASSERT_NO_THROW((s << value));
-  ASSERT_EQ(s.to_vector(), match);
+  Encoder encoder;
+  ASSERT_OUTCOME_SUCCESS(encoded, encode(value));
+  ASSERT_EQ(encoded, match);
 }
 
 /**
  * @given encoded sequence and match number
- * @when a number is decoded from given bytes by ScaleDecoderStream
+ * @when a number is decoded from given bytes
  * @then resulting number matches predefined one
  */
 TEST_P(Int16Test, DecodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleDecoderStream s(match);
+  Decoder decoder(match);
   value_type v{0};
-  ASSERT_NO_THROW((s >> v));
+  ASSERT_NO_THROW((decoder >> v));
   ASSERT_EQ(v, value);
 }
 
@@ -141,26 +145,26 @@ class Uint16Test : public IntegerTest<uint16_t> {};
 
 /**
  * @given a number and match buffer
- * @when given number being encoded by ScaleEncoderStream
+ * @when given number being encoded
  * @then resulting buffer matches predefined one
  */
 TEST_P(Uint16Test, EncodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleEncoderStream s;
-  ASSERT_NO_THROW((s << value));
-  ASSERT_EQ(s.to_vector(), match);
+  Encoder encoder;
+  ASSERT_OUTCOME_SUCCESS(encoded, encode(value));
+  ASSERT_EQ(encoded, match);
 }
 
 /**
  * @given encoded sequence and match number
- * @when a number is decoded from given bytes by ScaleDecoderStream
+ * @when a number is decoded from given bytes
  * @then resulting number matches predefined one
  */
 TEST_P(Uint16Test, DecodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleDecoderStream s(match);
+  Decoder decoder(match);
   value_type v{0};
-  ASSERT_NO_THROW((s >> v));
+  ASSERT_NO_THROW((decoder >> v));
   ASSERT_EQ(v, value);
 }
 
@@ -177,26 +181,26 @@ class Int32Test : public IntegerTest<int32_t> {};
 
 /**
  * @given a number and match buffer
- * @when given number being encoded by ScaleEncoderStream
+ * @when given number being encoded
  * @then resulting buffer matches predefined one
  */
 TEST_P(Int32Test, EncodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleEncoderStream s;
-  ASSERT_NO_THROW((s << value));
-  ASSERT_EQ(s.to_vector(), match);
+  Encoder encoder;
+  ASSERT_OUTCOME_SUCCESS(encoded, encode(value));
+  ASSERT_EQ(encoded, match);
 }
 
 /**
  * @given encoded sequence and match number
- * @when a number is decoded from given bytes by ScaleDecoderStream
+ * @when a number is decoded from given bytes
  * @then resulting number matches predefined one
  */
 TEST_P(Int32Test, DecodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleDecoderStream s(match);
+  Decoder decoder(match);
   value_type v{0};
-  ASSERT_NO_THROW((s >> v));
+  ASSERT_NO_THROW((decoder >> v));
   ASSERT_EQ(v, value);
 }
 
@@ -214,26 +218,26 @@ class Uint32Test : public IntegerTest<uint32_t> {};
 
 /**
  * @given a number and match buffer
- * @when given number being encoded by ScaleEncoderStream
+ * @when given number being encoded
  * @then resulting buffer matches predefined one
  */
 TEST_P(Uint32Test, EncodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleEncoderStream s;
-  ASSERT_NO_THROW((s << value));
-  ASSERT_EQ(s.to_vector(), match);
+  Encoder encoder;
+  ASSERT_OUTCOME_SUCCESS(encoded, encode(value));
+  ASSERT_EQ(encoded, match);
 }
 
 /**
  * @given encoded sequence and match number
- * @when a number is decoded from given bytes by ScaleDecoderStream
+ * @when a number is decoded from given bytes
  * @then resulting number matches predefined one
  */
 TEST_P(Uint32Test, DecodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleDecoderStream s(match);
+  Decoder decoder(match);
   value_type v{0};
-  ASSERT_NO_THROW((s >> v));
+  ASSERT_NO_THROW((decoder >> v));
   ASSERT_EQ(v, value);
 }
 
@@ -250,26 +254,26 @@ class Int64Test : public IntegerTest<int64_t> {};
 
 /**
  * @given a number and match buffer
- * @when given number being encoded by ScaleEncoderStream
+ * @when given number being encoded
  * @then resulting buffer matches predefined one
  */
 TEST_P(Int64Test, EncodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleEncoderStream s;
-  ASSERT_NO_THROW((s << value));
-  ASSERT_EQ(s.to_vector(), match);
+  Encoder encoder;
+  ASSERT_OUTCOME_SUCCESS(encoded, encode(value));
+  ASSERT_EQ(encoded, match);
 }
 
 /**
  * @given encoded sequence and match number
- * @when a number is decoded from given bytes by ScaleDecoderStream
+ * @when a number is decoded from given bytes
  * @then resulting number matches predefined one
  */
 TEST_P(Int64Test, DecodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleDecoderStream s(match);
+  Decoder decoder(match);
   value_type v{0};
-  ASSERT_NO_THROW((s >> v));
+  ASSERT_NO_THROW((decoder >> v));
   ASSERT_EQ(v, value);
 }
 
@@ -287,26 +291,26 @@ class Uint64Test : public IntegerTest<uint64_t> {};
 
 /**
  * @given a number and match buffer
- * @when given number being encoded by ScaleEncoderStream
+ * @when given number being encoded
  * @then resulting buffer matches predefined one
  */
 TEST_P(Uint64Test, EncodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleEncoderStream s;
-  ASSERT_NO_THROW((s << value));
-  ASSERT_EQ(s.to_vector(), match);
+  Encoder encoder;
+  ASSERT_OUTCOME_SUCCESS(encoded, encode(value));
+  ASSERT_EQ(encoded, match);
 }
 
 /**
  * @given encoded sequence and match number
- * @when a number is decoded from given bytes by ScaleDecoderStream
+ * @when a number is decoded from given bytes
  * @then resulting number matches predefined one
  */
 TEST_P(Uint64Test, DecodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleDecoderStream s(match);
+  Decoder decoder(match);
   value_type v{0};
-  ASSERT_NO_THROW((s >> v));
+  ASSERT_NO_THROW((decoder >> v));
   ASSERT_EQ(v, value);
 }
 
@@ -322,26 +326,26 @@ class Uint128Test : public IntegerTest<scale::uint128_t> {};
 
 /**
  * @given a number and match buffer
- * @when given number being encoded by ScaleEncoderStream
+ * @when given number being encoded
  * @then resulting buffer matches predefined one
  */
 TEST_P(Uint128Test, EncodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleEncoderStream s;
-  ASSERT_NO_THROW((s << value));
-  ASSERT_EQ(s.to_vector(), match);
+  Encoder encoder;
+  ASSERT_OUTCOME_SUCCESS(encoded, encode(value));
+  ASSERT_EQ(encoded, match);
 }
 
 /**
  * @given encoded sequence and match number
- * @when a number is decoded from given bytes by ScaleDecoderStream
+ * @when a number is decoded from given bytes
  * @then resulting number matches predefined one
  */
 TEST_P(Uint128Test, DecodeSuccess) {
   auto [value, match] = GetParam();
-  ScaleDecoderStream s(match);
+  Decoder decoder(match);
   value_type v{0};
-  ASSERT_NO_THROW((s >> v));
+  ASSERT_NO_THROW((decoder >> v));
   ASSERT_EQ(v, value);
 }
 

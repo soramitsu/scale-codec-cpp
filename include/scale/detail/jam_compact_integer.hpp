@@ -7,7 +7,6 @@
 #pragma once
 
 #include <array>
-#include <concepts>
 #include <cstddef>
 #include <cstdint>
 
@@ -29,14 +28,11 @@ namespace scale::detail {
   /**
    * Encodes any integer type to jam-compact-integer representation
    * @tparam T integer type
-   * @tparam S output stream type
-   * @param value integer value
    * @return byte array representation of value as jam-compact-integer
    */
-  template <typename T, typename S>
+  template <typename T>
     requires CompactCompatible<std::remove_cvref_t<T>>
-             and std::derived_from<std::remove_cvref_t<S>, ScaleEncoderStream>
-  void encodeJamCompactInteger(T &&integer, S &stream) {
+  void encodeJamCompactInteger(T &&integer, ScaleEncoder auto &encoder) {
     constexpr auto is_integral = std::unsigned_integral<std::remove_cvref_t<T>>;
 
     size_t value;
@@ -60,10 +56,11 @@ namespace scale::detail {
     }
 
     if (value < 0x80) {
-      stream << static_cast<uint8_t>(value);
+      encoder.put(static_cast<uint8_t>(value));
       return;
     }
 
+    // NOLINTNEXTLINE(*-pro-type-member-init)
     std::array<uint8_t, sizeof(size_t) + 1> bytes;
     uint8_t &prefix = bytes[0] = 0;
     size_t len = 1;
@@ -79,24 +76,20 @@ namespace scale::detail {
     }
 
     for (auto byte : bytes) {
-      stream << byte;
+      encoder.put(byte);
       if (--len == 0) break;
     }
   }
 
   /**
    * Decodes any integer type from jam-compact-integer representation
-   * @tparam T integer type
-   * @tparam S input stream type
-   * @param value integer value
    * @return value according jam-compact-integer representation
    */
-  template <typename S>
-    requires std::derived_from<std::remove_cvref_t<S>, ScaleDecoderStream>
-  boost::multiprecision::uint128_t decodeJamCompactInteger(S &stream) {
+  boost::multiprecision::uint128_t decodeJamCompactInteger(
+      ScaleDecoder auto &decoder) {
     uint8_t byte;
 
-    stream >> byte;
+    byte = decoder.take();
 
     if (byte == 0) {
       return 0;
@@ -119,7 +112,7 @@ namespace scale::detail {
       }
       len_bits <<= 1;
 
-      stream >> byte;
+      byte = decoder.take();
       value |= static_cast<size_t>(byte) << (8 * i);
     }
     if (val_bits == 0 and (byte & ~val_mask) == 0) {

@@ -13,8 +13,6 @@ OUTCOME_CPP_DEFINE_CATEGORY(scale, EncodeError, e) {
       return "SCALE encode: compact integers cannot be negative";
     case EncodeError::VALUE_TOO_BIG_FOR_COMPACT_REPRESENTATION:
       return "SCALE decode: value too big for compact representation";
-    case EncodeError::COMPACT_INTEGER_TOO_BIG:
-      return "SCALE encode: compact integers too big";
     case EncodeError::DEREF_NULLPOINTER:
       return "SCALE encode: attempt to dereference a nullptr";
   }

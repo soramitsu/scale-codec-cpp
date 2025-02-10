@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#pragma once
+
 /**
  * @brief Defines a custom decomposition mechanism and function application to
  * an object, allowing easy customization of encoding (e.g., using only specific
@@ -11,6 +13,8 @@
  * @param Self The name of the class where this macro is used.
  * @param ... The list of class members in the desired order that will
  * participate in decomposition.
+ *
+ * @attention Macro can be used only in public section!
  *
  * Example usage:
  * @code
@@ -21,8 +25,7 @@
  * };
  * @endcode
  */
-#define SCALE_CUSTOM_DECOMPOSITION(Self, ...)                                    \
- private:                                                                      \
+#define SCALE_CUSTOM_DECOMPOSITION(Self, ...)                                  \
   decltype(auto) _custom_decompose_and_apply(auto &&f) {                       \
     return std::forward<decltype(f)>(f)(__VA_ARGS__);                          \
   }                                                                            \

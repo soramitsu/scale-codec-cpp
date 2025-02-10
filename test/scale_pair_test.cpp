@@ -5,24 +5,29 @@
  */
 
 #include <gtest/gtest.h>
+
+#include <qtils/test/outcome.hpp>
 #include <scale/scale.hpp>
 
 using scale::ByteArray;
-using scale::ScaleDecoderStream;
-using scale::ScaleEncoderStream;
+using scale::encode;
+using scale::decode;
+using Encoder = scale::Encoder<scale::backend::ToBytes>;
+using Decoder = scale::Decoder<scale::backend::FromBytes>;
 
 /**
  * @given pair of values of different types: uint8_t and uint32_t
  * @when encode is applied
  * @then obtained serialized value meets predefined one
  */
-TEST(Scale, encodePair) {
+TEST(Pair, Encode) {
   uint8_t v1 = 1;
   uint32_t v2 = 2;
 
-  ScaleEncoderStream s;
-  ASSERT_NO_THROW((s << std::make_pair(v1, v2)));
-  ASSERT_EQ(s.to_vector(), (ByteArray{1, 2, 0, 0, 0}));
+  Encoder encoder;
+
+  ASSERT_OUTCOME_SUCCESS(encoded, encode(std::make_pair(v1, v2)));
+  ASSERT_EQ(encoded, (ByteArray{1, 2, 0, 0, 0}));
 }
 
 /**
@@ -31,12 +36,11 @@ TEST(Scale, encodePair) {
  * @when decode is applied
  * @then obtained pair mathces predefined one
  */
-TEST(Scale, decodePair) {
+TEST(Pair, Decode) {
   ByteArray bytes = {1, 2, 0, 0, 0};
-  ScaleDecoderStream s(bytes);
-  using pair_type = std::pair<uint8_t, uint32_t>;
-  pair_type pair{};
-  ASSERT_NO_THROW((s >> pair));
-  ASSERT_EQ(pair.first, 1);
-  ASSERT_EQ(pair.second, 2);
+
+  using Pair = std::pair<uint8_t, uint32_t>;
+  ASSERT_OUTCOME_SUCCESS(decoded, decode<Pair>(bytes));
+  ASSERT_EQ(decoded.first, 1);
+  ASSERT_EQ(decoded.second, 2);
 }

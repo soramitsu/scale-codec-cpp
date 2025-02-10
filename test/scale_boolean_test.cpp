@@ -9,10 +9,12 @@
 #include <scale/scale.hpp>
 
 using scale::ByteArray;
+using scale::decode;
 using scale::DecodeError;
+using scale::encode;
 using scale::EncodeError;
-using scale::ScaleDecoderStream;
-using scale::ScaleEncoderStream;
+using Encoder = scale::Encoder<scale::backend::ToBytes>;
+using Decoder = scale::Decoder<scale::backend::FromBytes>;
 
 /**
  * @given bool values: true and false
@@ -21,14 +23,14 @@ using scale::ScaleEncoderStream;
  */
 TEST(ScaleBoolTest, EncodeBoolSuccess) {
   {
-    ScaleEncoderStream s;
-    ASSERT_NO_THROW((s << true));
-    ASSERT_EQ(s.to_vector(), (ByteArray{0x1}));
+    Encoder encoder;
+    ASSERT_OUTCOME_SUCCESS(encoded, encode(true));
+    ASSERT_EQ(encoded, ByteArray{0x1});
   }
   {
-    ScaleEncoderStream s;
-    ASSERT_NO_THROW((s << false));
-    ASSERT_EQ(s.to_vector(), (ByteArray{0x0}));
+    Encoder encoder;
+    ASSERT_OUTCOME_SUCCESS(encoded, encode(false));
+    ASSERT_EQ(encoded, ByteArray{0x0});
   }
 }
 
@@ -61,8 +63,8 @@ TEST(ScaleBoolTest, fixedwidthDecodeBoolFail) {
  */
 TEST(ScaleBoolTest, fixedwidthDecodeBoolSuccess) {
   auto bytes = ByteArray{0, 1, 0};
-  ASSERT_OUTCOME_SUCCESS(res, scale::decode<ThreeBooleans>(bytes));
-  ASSERT_EQ(res.b1, false);
-  ASSERT_EQ(res.b2, true);
-  ASSERT_EQ(res.b3, false);
+  ASSERT_OUTCOME_SUCCESS(decoded, decode<ThreeBooleans>(bytes));
+  ASSERT_EQ(decoded.b1, false);
+  ASSERT_EQ(decoded.b2, true);
+  ASSERT_EQ(decoded.b3, false);
 }

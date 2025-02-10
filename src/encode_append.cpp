@@ -27,12 +27,13 @@ namespace scale {
   outcome::result<std::tuple<uint32_t, uint32_t, uint32_t>> extract_length_data(
       const std::vector<uint8_t> &data) {
     OUTCOME_TRY(len, scale::decode<Compact<uint32_t>>(data));
-    auto new_len = len + 1;
+    auto old_len = untagged(len);
+    auto new_len = old_len + 1;
 #ifdef JAM_COMPATIBILITY_ENABLED
-    auto encoded_len = detail::lengthOfEncodedJamCompactInteger(untagged(len));
+    auto encoded_len = detail::lengthOfEncodedJamCompactInteger(old_len);
     auto encoded_new_len = detail::lengthOfEncodedJamCompactInteger(new_len);
 #else
-    auto encoded_len = detail::lengthOfEncodedCompactInteger(untagged(len));
+    auto encoded_len = detail::lengthOfEncodedCompactInteger(old_len);
     auto encoded_new_len = detail::lengthOfEncodedCompactInteger(new_len);
 #endif
     return std::make_tuple(new_len, encoded_len, encoded_new_len);
@@ -44,8 +45,9 @@ namespace scale {
 
     // No data present, just encode the given input data.
     if (self_encoded.empty()) {
-      self_encoded =
-          scale::encode(std::vector<EncodeOpaqueValue>{opaque_value}).value();
+      Encoder<backend::ToBytes> encoder;
+      encoder << std::vector{opaque_value};
+      self_encoded = encoder.backend().to_vector();
       return outcome::success();
     }
 
@@ -53,7 +55,7 @@ namespace scale {
     const auto &[new_len, encoded_len, encoded_new_len] = extract_tuple;
 
     auto replace_len = [new_len = new_len](std::vector<uint8_t> &dest) {
-      auto e = scale::encode(Length(new_len)).value();
+      auto e = encode(as_compact(new_len)).value();
       std::move(e.begin(), e.end(), dest.begin());
     };
 

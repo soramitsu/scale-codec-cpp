@@ -11,10 +11,9 @@
 
 #include <scale/outcome/outcome_throw.hpp>
 #include <scale/scale_error.hpp>
+#include <scale/types.hpp>
 
 namespace scale {
-
-  class ScaleDecoderStream;
 
   /**
    * Description of an enum type
@@ -76,25 +75,6 @@ namespace scale {
   constexpr bool is_valid_enum_value(
       std::underlying_type_t<std::decay_t<T>> value) noexcept {
     return true;
-  }
-
-  /**
-   * @brief scale-decodes any enum type as underlying type
-   * @tparam T enum type
-   * @param v value of enum type
-   * @return reference to stream
-   */
-  template <typename T>
-    requires std::is_enum_v<std::remove_cvref_t<T>>
-  ScaleDecoderStream &operator>>(ScaleDecoderStream &s, T &v) {
-    using E = std::decay_t<T>;
-    std::underlying_type_t<E> value;
-    s >> value;
-    if (is_valid_enum_value<E>(value)) {
-      v = static_cast<E>(value);
-      return s;
-    }
-    raise(DecodeError::INVALID_ENUM_VALUE);
   }
 
 }  // namespace scale

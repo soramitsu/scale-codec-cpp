@@ -10,6 +10,8 @@
 
 using scale::decode;
 using scale::encode;
+using Encoder = scale::Encoder<scale::backend::ToBytes>;
+using Decoder = scale::Decoder<scale::backend::FromBytes>;
 
 struct CustomDecomposableObject {
   CustomDecomposableObject() : a(0xff), b(0xff), c(0xff), d(0xff), e(0xff) {}
@@ -33,17 +35,8 @@ TEST(CustomDecomposable, encode) {
 
   std::vector expected = {x.b, x.c, x.d};
 
-  {
-    scale::ScaleEncoderStream s;
-    s << x;
-    auto actual = s.to_vector();
-    EXPECT_EQ(expected, actual);
-  }
-
-  {
-    ASSERT_OUTCOME_SUCCESS(actual, scale::encode(x));
-    EXPECT_EQ(expected, actual);
-  }
+  ASSERT_OUTCOME_SUCCESS(actual, scale::encode(x));
+  EXPECT_EQ(expected, actual);
 }
 
 TEST(CustomDecomposable, decode) {
@@ -51,16 +44,6 @@ TEST(CustomDecomposable, decode) {
 
   CustomDecomposableObject expected(0xff, 1, 2, 3, 0xff);
 
-  {
-    scale::ScaleDecoderStream s(data);
-    CustomDecomposableObject actual{0xff, 0xff, 0xff, 0xff, 0xff};
-    s >> actual;
-    EXPECT_EQ(expected, actual);
-  }
-
-  {
-    ASSERT_OUTCOME_SUCCESS(actual,
-                           scale::decode<CustomDecomposableObject>(data));
-    EXPECT_EQ(expected, actual);
-  }
+  ASSERT_OUTCOME_SUCCESS(actual, scale::decode<CustomDecomposableObject>(data));
+  EXPECT_EQ(expected, actual);
 }

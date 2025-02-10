@@ -1,21 +1,21 @@
-set(SCRIPT_PATH "${CMAKE_SOURCE_DIR}/scripts/generate_aggregate_hpp.sh")
-set(AGGREGATE_HPP_IN "${CMAKE_SOURCE_DIR}/include/scale/detail/aggregate.hpp.in")
-set(AGGREGATE_HPP "${CMAKE_BINARY_DIR}/include/scale/detail/aggregate.hpp")
+set(SCRIPT_PATH "${CMAKE_SOURCE_DIR}/scripts/generate_decompose_and_apply_hpp.sh")
+set(DECOMPOSE_AND_APPLY_HPP_IN "${CMAKE_SOURCE_DIR}/include/scale/detail/decompose_and_apply.hpp.in")
+set(DECOMPOSE_AND_APPLY_HPP "${CMAKE_BINARY_DIR}/include/scale/detail/decompose_and_apply.hpp")
 add_custom_command(
-    OUTPUT  ${AGGREGATE_HPP}
-    COMMAND ${CMAKE_COMMAND} -E echo "Running: ${SCRIPT_PATH} '${AGGREGATE_HPP_IN}' '${MAX_AGGREGATE_FIELDS}' '${AGGREGATE_HPP}'"
-    COMMAND ${SCRIPT_PATH} ${AGGREGATE_HPP_IN} ${MAX_AGGREGATE_FIELDS} ${AGGREGATE_HPP}
-    DEPENDS ${SCRIPT_PATH} ${AGGREGATE_HPP_IN}
-    COMMENT "Generating include/scale/detail/aggregate.hpp"
+    OUTPUT  ${DECOMPOSE_AND_APPLY_HPP}
+    COMMAND ${CMAKE_COMMAND} -E echo "Running: ${SCRIPT_PATH} '${DECOMPOSE_AND_APPLY_HPP_IN}' '${MAX_AGGREGATE_FIELDS}' '${DECOMPOSE_AND_APPLY_HPP}'"
+    COMMAND ${SCRIPT_PATH} ${DECOMPOSE_AND_APPLY_HPP_IN} ${MAX_AGGREGATE_FIELDS} ${DECOMPOSE_AND_APPLY_HPP}
+    DEPENDS ${SCRIPT_PATH} ${DECOMPOSE_AND_APPLY_HPP_IN}
+    COMMENT "Generating include/scale/detail/decompose_and_apply.hpp"
     VERBATIM
 )
 
 add_library(scale
     encode_append.cpp
-    scale_decoder_stream.cpp
-    scale_encoder_stream.cpp
+    encoder.cpp
+    decoder.cpp
     scale_error.cpp
-    ${AGGREGATE_HPP}
+    ${DECOMPOSE_AND_APPLY_HPP}
     )
 
 target_include_directories(scale PUBLIC
